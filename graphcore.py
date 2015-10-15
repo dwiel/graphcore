@@ -282,6 +282,8 @@ class QueryPlan(object):
                     for clause in input_clauses
                 ))
 
+                # if the result of the rule is one value, just set the value,
+                # otherwise, if there are many, explode out the result set
                 if rule.cardinality == 'one':
                     result.set(output_clause.lhs, ret)
                 elif rule.cardinality == 'many':
