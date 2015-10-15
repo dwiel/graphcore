@@ -236,9 +236,8 @@ class QueryPlan(object):
             if clause.has_unbound_outvar():
                 return clause
 
-    def apply_rule(self, output_clause, prefix_rule):
+    def apply_rule_backwards(self, output_clause, prefix, rule):
         """bind the output of rule to output_clause from the query"""
-        prefix, rule = prefix_rule
 
         # add input/unify clauses of function to query
         input_clauses = []
@@ -261,9 +260,16 @@ class QueryPlan(object):
         output_clause.ground()
 
     def backward(self):
+        """apply rules in reverse looking for the call chain that will be
+        necessary to complete the query.
+
+        we can pick any old clause off the stack since the order that rules are
+        resolved, at this point in the search is unimportant.  We can always
+        optimize the call graph later, one we have one.
+        """
         for clause in self.clauses_with_unbound_outvar():
-            self.apply_rule(
-                clause, self.graphcore.lookup_rule_for_clause(clause)
+            self.apply_rule_backwards(
+                clause, *self.graphcore.lookup_rule_for_clause(clause)
             )
 
     def forward(self):
