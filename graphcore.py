@@ -80,8 +80,7 @@ class AbsolutePath(object):
 
 class Clause(object):
     def __init__(self, key, value):
-        self.lhs = AbsolutePath(key)
-        self.rhs = value
+        self.lhs, self.rhs = self._parse_clause(key, value)
 
         if isinstance(self.rhs, OutVar):
             self.grounded = False
@@ -89,6 +88,12 @@ class Clause(object):
         else:
             self.grounded = True
             self.value = value
+
+    def _parse_clause(lhs, rhs):
+        if lhs[-1] == '?':
+            return lhs[:-1], OutVar()
+        else:
+            return AbsolutePath(lhs), rhs
 
     def has_unbound_outvar(self):
         if isinstance(self.rhs, OutVar):
