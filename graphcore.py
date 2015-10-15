@@ -295,14 +295,32 @@ class Rule(object):
         self.output = Path(output)
 
 
+class Relationship(object):
+    def __init__(self, base_type, kind, property, other_type):
+        self.base_type = base_type
+        self.kind = kind
+        self.property = property
+        self.other_type = other_type
+
+
+class Schema(object):
+    def __init__(self):
+        self.relationships = []
+
+    def append(self, relationship):
+        self.relationships.append(relationship)
+
+
 class Graphcore(object):
     def __init__(self):
         # rules are indexed by the Path of thier output
         self.rules = {}
-        self.schema = []
+        self.schema = Schema()
 
     def has_many(self, base_type, property, other_type):
-        self.schema.append((base_type, property, other_type))
+        self.schema.append(
+            Relationship(base_type, 'has_many', property, other_type)
+        )
 
     def rule(self, inputs, output):
         def decorator(fn):
