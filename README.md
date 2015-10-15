@@ -1,11 +1,11 @@
-# graphcore
+# Graphcore
 falcor + graphql + axpress
 
-### example
+### Example
 
 Here is an example of a query and the returned data structure:
 
-```
+```python
 ret = testgraphcore.query({
     'user.id': 1,
     'user.books.id?': None,
@@ -18,7 +18,8 @@ assert ret == [
 ```
 
 Here is the setup code used to make that query possible:
-```
+
+```python
 import graphcore
 
 testgraphcore = graphcore.Graphcore()
