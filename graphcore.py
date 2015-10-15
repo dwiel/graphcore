@@ -153,13 +153,9 @@ class Result(object):
             self.result = {}
 
     def set(self, path, value):
-        print 'set', self, path, value
         self.result[str(path)] = value
 
     def get(self, path):
-        print 'Result.get'
-        print '  self:', self
-        print '  path:', path
         return self.result[str(path)]
 
     def to_json(self):
@@ -272,10 +268,6 @@ class QueryPlan(object):
                 self.query.append(Clause(absolute_path, TempVar()))
             )
 
-        print 'apply_rule_backward'
-        print '  input_clauses:', input_clauses
-        print '  output_clause:', output_clause
-        print '  rule:', rule
         self.rules.append((input_clauses, output_clause, rule))
 
         output_clause.ground()
