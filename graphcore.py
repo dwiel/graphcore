@@ -1,8 +1,10 @@
 class OutVar(object):
     pass
 
+
 class TempVar(OutVar):
     pass
+
 
 class RelativePath(object):
     def __init__(self, init):
