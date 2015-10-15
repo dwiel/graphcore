@@ -184,7 +184,6 @@ class QueryPlan(object):
             )
 
     def forward(self):
-        # TODO: *** make this work for simple case ***
         # TODO: somehow make this work for more than single object output
         for input_clauses, output_clause, rule in self.rules:
             output_clause.value = rule.function(**dict(
