@@ -290,6 +290,19 @@ class QueryPlan(object):
     def outputs(self):
         return self.result_set.extract_json(self.query.output_paths())
 
+    def apply_macros(self):
+        pass
+
+    def execute(self):
+        self.apply_macros()
+
+        # TODO: move backward/forward/outputs call to QueryPlan
+        self.backward()
+
+        self.forward()
+
+        return self.outputs()
+
 
 class Rule(object):
     def __init__(self, function, inputs, output, cardinality):
@@ -393,17 +406,7 @@ class Graphcore(object):
             )
         )
 
-    def apply_macros(self):
-        pass
-
     def query(self, query):
         query = QueryPlan(self, query)
 
-        self.apply_macros()
-
-        # TODO: move backward/forward/outputs call to QueryPlan
-        query.backward()
-
-        query.forward()
-
-        return query.outputs()
+        return query.execute()
