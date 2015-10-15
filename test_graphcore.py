@@ -34,18 +34,21 @@ class TestGraphcore(unittest.TestCase):
 
 
 class TestQueryPlan(unittest.TestCase):
-    """
     def test_clauses_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
             'user.id': 1,
             'user.name': testgraphcore.outvar(),
         })
-        clauses = list(query.clauses_with_unbound_outvar())
+        unbound_clauses = query.clauses_with_unbound_outvar()
+        clauses = []
+        for clause in unbound_clauses:
+            clause.ground()
+            clauses.append(clause)
+
         self.assertEqual(
             clauses,
             [query.query[1]],
         )
-    """
 
     def test_clause_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
