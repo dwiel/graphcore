@@ -29,10 +29,6 @@ class Path(object):
     def property(self):
         return self.parts[-1]
 
-    def reroot_path(self, other):
-        # TODO: assert that self.parts[:-1] is same type as other.parts[0]
-        return Path(self.parts[:-1] + other.parts[-1:])
-
     def subpaths(self):
         for i in range(-2, -len(self.parts) - 1, -1):
             yield Path(self.parts[i:])
