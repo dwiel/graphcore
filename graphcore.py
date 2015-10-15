@@ -180,7 +180,7 @@ class QueryPlan(object):
     def backward(self):
         for clause in self.clauses_with_unbound_outvar():
             self.apply_rule(
-                clause, self.graphcore._lookup_rule_for_clause(clause)
+                clause, self.graphcore.lookup_rule_for_clause(clause)
             )
 
     def forward(self):
@@ -232,7 +232,7 @@ class Graphcore(object):
     def outvar(self):
         return OutVar()
 
-    def _lookup_rule_for_clause(self, clause):
+    def lookup_rule_for_clause(self, clause):
         relative_path = clause.lhs.relative
         if relative_path not in self.rules:
             raise IndexError(
