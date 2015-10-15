@@ -26,5 +26,5 @@ def test_basic(self):
         'user.abbreviation': graphcore.OutVar(),
     })
     
-    self.assertEqual(ret, {'user.name': 'JBS1'})
+    self.assertEqual(ret, {'user.abbreviation': 'JBS1'})
 ```
