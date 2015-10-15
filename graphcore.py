@@ -280,9 +280,9 @@ class QueryPlan(object):
                     for clause in input_clauses
                 ))
 
-                if rule.cardinality == 'single':
+                if rule.cardinality == 'one':
                     result.set(output_clause.lhs, ret)
-                elif rule.cardinality == 'multi':
+                elif rule.cardinality == 'many':
                     self.result_set.explode(result, output_clause.lhs, ret)
                 else:
                     raise TypeError()
@@ -353,7 +353,7 @@ class Graphcore(object):
             Relationship(base_type, 'has_many', property, other_type)
         )
 
-    def rule(self, inputs, output, cardinality='single'):
+    def rule(self, inputs, output, cardinality='one'):
         def decorator(fn):
             self.rules.append(Rule(
                 fn, inputs, output, cardinality
