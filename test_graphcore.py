@@ -37,7 +37,6 @@ class TestGraphcore(unittest.TestCase):
         })
         self.assertEqual(ret, [{'user.name': 'John Smith'}])
 
-    # @unittest.expectedFailure
     def test_simple_join(self):
         ret = testgraphcore.query({
             'user.id': 1,
