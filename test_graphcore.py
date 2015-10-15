@@ -108,7 +108,7 @@ class TestQueryPlan(unittest.TestCase):
     def test_clauses_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
             'user.id': 1,
-            'user.name': testgraphcore.outvar(),
+            'user.name': graphcore.OutVar(),
         })
         unbound_clauses = query.clauses_with_unbound_outvar()
         clauses = []

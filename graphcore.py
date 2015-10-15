@@ -378,9 +378,6 @@ class Graphcore(object):
             return fn
         return decorator
 
-    def outvar(self):
-        return OutVar()
-
     def available_rules_string(self):
         return ', '.join(
             str(rule.output) for rule in self.rules
