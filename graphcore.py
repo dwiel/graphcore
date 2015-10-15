@@ -291,8 +291,8 @@ class QueryPlan(object):
 class Rule(object):
     def __init__(self, function, inputs, output):
         self.function = function
-        self.inputs = inputs
-        self.output = output
+        self.inputs = [Path(input) for input in inputs]
+        self.output = Path(output)
 
 
 class Graphcore(object):
@@ -307,7 +307,7 @@ class Graphcore(object):
     def rule(self, inputs, output):
         def decorator(fn):
             self.rules[Path(output)] = Rule(
-                fn, map(Path, inputs), Path(output)
+                fn, inputs, output
             )
             return fn
         return decorator
@@ -322,6 +322,7 @@ class Graphcore(object):
 
     def lookup_rule_for_clause(self, clause):
         for path in clause.lhs.subpaths():
+            print path
             if path in self.rules:
                 return self.rules[path]
 
