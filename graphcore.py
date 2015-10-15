@@ -297,6 +297,7 @@ class Rule(object):
 
 class Graphcore(object):
     def __init__(self):
+        # rules are indexed by the Path of thier output
         self.rules = {}
         self.schema = []
 
