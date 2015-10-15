@@ -171,40 +171,28 @@ class Result(object):
 
 
 class ResultSet(object):
-    def __init__(self):
+    def __init__(self, init=None):
         # TODO handle more complex result set toplogies
-        self.results = [Result()]
+        if isinstance(init, ResultSet):
+            self.results = init.results.copy()
+        else:
+            self.results = {Result()}
 
     def set(self, path, value):
-        if isinstance(value, list):
-            # similar to self.results *= len(values), but with better handling
-            # of copies of results
-            print 'set many'
-            print '  path:', path
-            print '  value:', value
-            self.results = [
-                Result(result)
-                for _ in range(len(value))
-                for result in self.results
-            ]
+        for result in self.results:
+            result.set(path, value)
 
-            for result, subvalue in zip(self.results, value):
-                result.set(path, subvalue)
-        else:
-            print 'set single'
-            print '  path:', path
-            print '  value:', value
-            for result in self.results:
-                result.set(path, value)
+    def explode(self, existing_result, path, values):
+        new_results = {
+            Result(existing_result)
+            for _ in range(len(values))
+        }
 
-    def get(self, path):
-        # TODO: this is definitely wrong
-        print 'get'
-        print '  self:', self
-        print '  path:', path
-        ret = self.results[0].get(path)
-        print '  ret:', ret
-        return ret
+        for result, value in zip(new_results, values):
+            result.set(path, value)
+
+        self.results.remove(existing_result)
+        self.results.update(new_results)
 
     def extract_from_query(self, query):
         for clause in query:
@@ -227,6 +215,12 @@ class ResultSet(object):
     def __str__(self):
         return str(self.to_json())
 
+    def __iter__(self):
+        return iter(self.results)
+
+    def copy(self):
+        return ResultSet(self)
+
 
 class QueryPlan(object):
     def __init__(self, graphcore, query):
@@ -246,21 +240,19 @@ class QueryPlan(object):
             if clause.has_unbound_outvar():
                 return clause
 
-    def apply_rule(self, output_clause, rule):
+    def apply_rule(self, output_clause, prefix_rule):
         """bind the output of rule to output_clause from the query"""
+        prefix, rule = prefix_rule
 
         # add input/unify clauses of function to query
         input_clauses = []
         for input in rule.inputs:
-            # what is here now is not correct, but no tests will fail it yet. :)
-            # it will need to be something like one of these two:
-            #     absolute_path = output_clause.lhs.reroot_path(input)
-            #     absolute_path = input.reroot_path(output_clause.lhs)
-            absolute_path = input
-            print 'reroot_path'
-            print '  output_clause.lhs:', output_clause.lhs
-            print '  rule.input:', input
-            print '  absolute_path:', absolute_path
+            # TODO: this is almost certainly an edge case handling rather than
+            # handling the general case
+            if len(prefix):
+                absolute_path = prefix + input[1:]
+            else:
+                absolute_path = input
 
             # this append is conditional on there not already being a clause
             # with this absolute_path
@@ -279,19 +271,26 @@ class QueryPlan(object):
             )
 
     def forward(self):
-        # TODO: somehow make this work for more than single object output
         for input_clauses, output_clause, rule in reversed(self.rules):
-            print 'forward', input_clauses, output_clause, rule
-            self.result_set.set(output_clause.lhs, rule.function(**dict(
-                (clause.lhs.relative.property, self.result_set.get(clause.lhs))
-                for clause in input_clauses
-            )))
+            # must copy result set iterator since we are mutating it while we
+            # iterate and don't want to iterate over the new result_set
+            for result in self.result_set.copy():
+                ret = rule.function(**dict(
+                    (clause.lhs.relative.property, result.get(clause.lhs))
+                    for clause in input_clauses
+                ))
+
+                if rule.cardinality == 'single':
+                    result.set(output_clause.lhs, ret)
+                elif rule.cardinality == 'multi':
+                    self.result_set.explode(result, output_clause.lhs, ret)
+                else:
+                    raise TypeError()
 
     def outputs(self):
         return self.result_set.extract_json(self.query.output_paths())
 
     def outputs_(self):
-        # TODO: allow ret to be more complex than single object
         ret = {}
         for clause in self.query:
             if isinstance(clause.rhs, OutVar):
@@ -301,10 +300,11 @@ class QueryPlan(object):
 
 
 class Rule(object):
-    def __init__(self, function, inputs, output):
+    def __init__(self, function, inputs, output, cardinality):
         self.function = function
         self.inputs = [Path(input) for input in inputs]
         self.output = Path(output)
+        self.cardinality = cardinality
 
 
 class Relationship(object):
@@ -334,11 +334,26 @@ class Schema(object):
     def __repr__(self):
         return '<Schema {str}>'.format(str=str(self))
 
+    def __iter__(self):
+        return iter(self.relationships)
+
+    def base_type_and_property_of_path(self, path):
+        for relation in self.relationships:
+            if path[0] == relation.base_type:
+                if path[1] == relation.property:
+                    # TODO: this return type prefix, rule is kinda nasty ...
+                    return (
+                        Path(path[:2]),
+                        Path((relation.other_type,) + path[2:]),
+                    )
+
+        return [], path
+
 
 class Graphcore(object):
     def __init__(self):
         # rules are indexed by the Path of thier output
-        self.rules = {}
+        self.rules = []
         self.schema = Schema()
 
     def has_many(self, base_type, property, other_type):
@@ -346,11 +361,11 @@ class Graphcore(object):
             Relationship(base_type, 'has_many', property, other_type)
         )
 
-    def rule(self, inputs, output):
+    def rule(self, inputs, output, cardinality='single'):
         def decorator(fn):
-            self.rules[Path(output)] = Rule(
-                fn, inputs, output
-            )
+            self.rules.append(Rule(
+                fn, inputs, output, cardinality
+            ))
             return fn
         return decorator
 
@@ -359,14 +374,25 @@ class Graphcore(object):
 
     def available_rules_string(self):
         return ', '.join(
-            str(rule.output) for rule in self.rules.itervalues()
+            str(rule.output) for rule in self.rules
         )
 
     def lookup_rule_for_clause(self, clause):
         for path in clause.lhs.subpaths():
-            print path
-            if path in self.rules:
-                return self.rules[path]
+            # TODO: this will almost certainly become a loop looking for
+            # possible matches
+
+            # first try finding a match direct on the root
+            for rule in self.rules:
+                if path == rule.output:
+                    return [], rule
+
+            # then try extracting the base type out and finding a prefix
+            prefix, path = self.schema.base_type_and_property_of_path(path)
+
+            for rule in self.rules:
+                if path == rule.output:
+                    return prefix, rule
 
         raise IndexError(
             '{path} not found in available rules: {rules}'.format(

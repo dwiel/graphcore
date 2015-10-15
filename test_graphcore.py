@@ -23,13 +23,49 @@ def user_id_to_user_name(id):
 testgraphcore.has_many('user', 'books', 'book')
 
 
-@testgraphcore.rule(['user.id'], 'user.books.id')
+@testgraphcore.rule(['user.id'], 'user.books.id', cardinality='many')
 def user_id_to_books_id(id):
     # this would normally come out of a db
     return [1, 2, 3]
 
 
+BOOK_ID_TO_BOOK_NAME = {
+    1: 'The Giver',
+    2: 'REAMDE',
+    3: 'The Diamond Age',
+}
+
+
+@testgraphcore.rule(['book.id'], 'book.name')
+def book_id_to_book_name(id):
+    print 'book_id_to_book_name', id
+    return BOOK_ID_TO_BOOK_NAME[id]
+
+
+class hashabledict(dict):
+    def __hash__(self):
+        return hash(tuple(sorted(self.items())))
+
+
+def make_ret_comparable(ret):
+    """ convert lists to sets and dicts in them to frozen dicts """
+    if isinstance(ret, list):
+        return set(make_ret_comparable(e) for e in ret)
+    elif isinstance(ret, dict):
+        return hashabledict(
+            (k, make_ret_comparable(v)) for k, v in ret.iteritems()
+        )
+    else:
+        return ret
+
+
 class TestGraphcore(unittest.TestCase):
+    def assertRetEqual(self, ret1, ret2):
+        self.assertEqual(
+            make_ret_comparable(ret1),
+            make_ret_comparable(ret2),
+        )
+
     def test_basic(self):
         ret = testgraphcore.query({
             'user.id': 1,
@@ -37,23 +73,36 @@ class TestGraphcore(unittest.TestCase):
         })
         self.assertEqual(ret, [{'user.name': 'John Smith'}])
 
-    def test_simple_join(self):
-        ret = testgraphcore.query({
-            'user.id': 1,
-            'user.books.id?': None,
-        })
-        self.assertEqual(ret, [
-            {'user.books.id': 1},
-            {'user.books.id': 2},
-            {'user.books.id': 3},
-        ])
-
     def test_basic_two_step(self):
         ret = testgraphcore.query({
             'user.id': 1,
             'user.abbreviation?': None,
         })
         self.assertEqual(ret, [{'user.abbreviation': 'JS'}])
+
+    def test_simple_join(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id?': None,
+        })
+        self.assertRetEqual(ret, [
+            {'user.books.id': 1},
+            {'user.books.id': 2},
+            {'user.books.id': 3},
+        ])
+
+    def test_simple_join_with_next_step(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.name?': None,
+        })
+        self.assertRetEqual(
+            ret, [
+                {'user.books.name': 'The Giver'},
+                {'user.books.name': 'REAMDE'},
+                {'user.books.name': 'The Diamond Age'},
+            ]
+        )
 
 
 class TestQueryPlan(unittest.TestCase):
