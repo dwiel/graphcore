@@ -290,14 +290,6 @@ class QueryPlan(object):
     def outputs(self):
         return self.result_set.extract_json(self.query.output_paths())
 
-    def outputs_(self):
-        ret = {}
-        for clause in self.query:
-            if isinstance(clause.rhs, OutVar):
-                ret[str(clause.lhs)] = clause.value
-
-        return ret
-
 
 class Rule(object):
     def __init__(self, function, inputs, output, cardinality):
