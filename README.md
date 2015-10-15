@@ -8,14 +8,12 @@ import graphcore
 
 testgraphcore = graphcore.Graphcore()
 
-@testgraphcore.input(('user.name',))
-@testgraphcore.output('user.abbreviation')
-def user_id_to_user_name(name):
-    return ''.join(part[0].upper() for part in name.split(' ') )
+@testgraphcore.rule(['user.name'], 'user.abbreviation')
+def user_name_to_abbreviation(name):
+    return ''.join(part[0].upper() for part in name.split(' '))
 
 
-@testgraphcore.input(('user.id',))
-@testgraphcore.output('user.name')
+@testgraphcore.rule(['user.id'], 'user.name')
 def user_id_to_user_name(id):
     return 'John Bob Smith '+str(id)
 
@@ -23,7 +21,7 @@ def user_id_to_user_name(id):
 def test_basic():
     testgraphcore.query({
         'user.id': 1,
-        'user.abbreviation': graphcore.OutVar(),
+        'user.abbreviation?': None,
     })
     
     self.assertEqual(ret, {'user.abbreviation': 'JBS1'})

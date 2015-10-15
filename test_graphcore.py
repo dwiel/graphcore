@@ -5,16 +5,20 @@ import graphcore
 testgraphcore = graphcore.Graphcore()
 
 
-@testgraphcore.input(('user.name',))
-@testgraphcore.output('user.abbreviation')
+@testgraphcore.rule(['user.name'], 'user.abbreviation')
 def user_name_to_abbreviation(name):
     return ''.join(part[0].upper() for part in name.split(' '))
 
 
-@testgraphcore.input(('user.id',))
-@testgraphcore.output('user.name')
+@testgraphcore.rule(['user.id'], 'user.name')
 def user_id_to_user_name(id):
     return 'John Bob Smith '+str(id)
+
+
+@testgraphcore.rule(['user.id'], 'user.books.id')
+def user_id_to_books_id(id):
+    # this would normally come out of a db
+    return [1, 2, 3]
 
 
 class TestGraphcore(unittest.TestCase):
@@ -24,6 +28,18 @@ class TestGraphcore(unittest.TestCase):
             'user.name?': None,
         })
         self.assertEqual(ret, {'user.name': 'John Bob Smith 1'})
+
+    @unittest.expectedFailure
+    def test_simple_join(self):
+        ret = testgraphcore.query([{
+            'user.id': 1,
+            'user.books.id?': None,
+        }])
+        self.assertEqual(ret, [
+            {'user.books.id': 1},
+            {'user.books.id': 2},
+            {'user.books.id': 3},
+        ])
 
     def test_basic_two_step(self):
         ret = testgraphcore.query({

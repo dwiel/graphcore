@@ -5,83 +5,45 @@ class Var(object):
 class OutVar(Var):
     pass
 
+
 class TempVar(Var):
     pass
 
 
-class RelativePath(object):
+class Path(object):
     def __init__(self, init):
         if isinstance(init, basestring):
-            split = init.split('.')
-            if len(split) != 2:
-                raise ValueError('RelativePath must be something.something')
-            self.type, self.property = split
-        elif isinstance(init, (list, tuple)):
-            if len(init) != 2:
-                raise ValueError(
-                    'RelativePath can take in a tuple of length 2 only'
-                )
-            self.type, self.property = init
+            self.parts = tuple(init.split('.'))
+        elif isinstance(init, Path):
+            self.parts = tuple(init.parts)
+        elif isinstance(init, (tuple, list)):
+            self.parts = tuple(init)
         else:
-            raise ValueError(
-                'RelativePath can take in only a tuple or a string, '
-                'got a {type}'.format(type=type(init))
-            )
+            raise TypeError()
 
-    def __hash__(self):
-        return hash((self.type, self.property))
+    @property
+    def relative(self):
+        return Path(self.parts[-2:])
 
-    def __str__(self):
-        return '{type}.{property}'.format(**self.__dict__)
+    @property
+    def property(self):
+        return self.parts[-1]
 
-    __repr__ = __str__
-
-    def __eq__(self, other):
-        return self.type == other.type and self.property == other.property
-
-
-class AbsolutePath(object):
-    def __init__(self, string):
-        if isinstance(string, basestring):
-            split = string.split('.')
-            if len(split) < 2:
-                raise ValueError(
-                    'AbsolutePath must have atleast one . in the strong'
-                )
-
-            self.root = '.'.join(split[:-2])
-            self.relative = RelativePath(split[-2:])
-        elif isinstance(string, AbsolutePath):
-            self.root = string.root
-            self.relative = string.relative
-        else:
-            raise ValueError(
-                'AbsolutePath takes only a string as input, '
-                'got a {type}'.format(type=type(string))
-            )
-
-    def root_relative_path(self, relative):
-        """returns an absolute path representive absolute+relative"""
-
-        return AbsolutePath(self.root + '.' + str(relative))
+    def reroot_path(self, other):
+        # TODO: assert that self.parts[:-1] is same type as other.parts[0]
+        return Path(self.parts[:-1] + other.parts[-1:])
 
     def __repr__(self):
-        return '<AbsolutePath {str}>'.format(str=str(self))
+        return '<Path {str}>'.format(str=str(self))
 
     def __str__(self):
-        if self.root:
-            return '{root}.{relative}'.format(**self.__dict__)
-        else:
-            return '{relative}'.format(**self.__dict__)
+        return '.'.join(self.parts)
 
     def __hash__(self):
-        return hash((self.root, self.relative))
+        return hash(self.parts)
 
     def __eq__(self, other):
-        return self.root == other.root and self.relative == other.relative
-
-    def __getitem__(self, index):
-        return str(self)[index]
+        return self.parts == other.parts
 
 
 class Clause(object):
@@ -96,10 +58,10 @@ class Clause(object):
             self.value = value
 
     def _parse_clause(self, lhs, rhs):
-        if lhs[-1] == '?':
-            return AbsolutePath(lhs[:-1]), OutVar()
+        if str(lhs)[-1] == '?':
+            return Path(lhs[:-1]), OutVar()
         else:
-            return AbsolutePath(lhs), rhs
+            return Path(lhs), rhs
 
     def has_unbound_outvar(self):
         if isinstance(self.rhs, Var):
@@ -173,7 +135,7 @@ class QueryPlan(object):
         # add input/unify clauses of function to query
         input_clauses = []
         for input in rule.inputs:
-            absolute_path = output_clause.lhs.root_relative_path(input)
+            absolute_path = output_clause.lhs.reroot_path(input)
 
             # this append is conditional on there not already being a clause
             # with this absolute_path
@@ -220,20 +182,12 @@ class Graphcore(object):
     def __init__(self):
         self.rules = {}
 
-    def input(self, inputs):
+    def rule(self, inputs, output):
         def decorator(fn):
-            self.rules[RelativePath(fn._output)] = Rule(
-                fn, map(RelativePath, inputs), RelativePath(fn._output)
+            self.rules[Path(output)] = Rule(
+                fn, map(Path, inputs), Path(output)
             )
             return fn
-
-        return decorator
-
-    def output(self, output):
-        def decorator(fn):
-            fn._output = output
-            return fn
-
         return decorator
 
     def outvar(self):
