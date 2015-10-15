@@ -7,14 +7,17 @@ testgraphcore = graphcore.Graphcore()
 
 @testgraphcore.rule(['user.name'], 'user.abbreviation')
 def user_name_to_abbreviation(name):
-    print 'user_name_to_abbreviation', name
     return ''.join(part[0].upper() for part in name.split(' '))
+
+
+USER_ID_TO_USER_NAME = {
+    1: 'John Smith',
+}
 
 
 @testgraphcore.rule(['user.id'], 'user.name')
 def user_id_to_user_name(id):
-    print 'user_id_to_user_name', id
-    return 'John Bob Smith '+str(id)
+    return USER_ID_TO_USER_NAME[id]
 
 
 testgraphcore.has_many('user', 'books', 'book')
@@ -32,7 +35,7 @@ class TestGraphcore(unittest.TestCase):
             'user.id': 1,
             'user.name?': None,
         })
-        self.assertEqual(ret, [{'user.name': 'John Bob Smith 1'}])
+        self.assertEqual(ret, [{'user.name': 'John Smith'}])
 
     # @unittest.expectedFailure
     def test_simple_join(self):
@@ -51,7 +54,7 @@ class TestGraphcore(unittest.TestCase):
             'user.id': 1,
             'user.abbreviation?': None,
         })
-        self.assertEqual(ret, [{'user.abbreviation': 'JBS1'}])
+        self.assertEqual(ret, [{'user.abbreviation': 'JS'}])
 
 
 class TestQueryPlan(unittest.TestCase):
