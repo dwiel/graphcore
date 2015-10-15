@@ -115,8 +115,6 @@ class Query(object):
 
     def append(self, clause):
         if clause.lhs not in self.clause_map:
-            print 'append', clause
-            print 'clauses', self.clauses
             self.clauses.append(clause)
             self.clause_map[clause.lhs] = clause
 
