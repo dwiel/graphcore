@@ -7,12 +7,17 @@ testgraphcore = graphcore.Graphcore()
 
 @testgraphcore.rule(['user.name'], 'user.abbreviation')
 def user_name_to_abbreviation(name):
+    print 'user_name_to_abbreviation', name
     return ''.join(part[0].upper() for part in name.split(' '))
 
 
 @testgraphcore.rule(['user.id'], 'user.name')
 def user_id_to_user_name(id):
+    print 'user_id_to_user_name', id
     return 'John Bob Smith '+str(id)
+
+
+testgraphcore.has_many('user', 'books', 'book')
 
 
 @testgraphcore.rule(['user.id'], 'user.books.id')
@@ -27,14 +32,14 @@ class TestGraphcore(unittest.TestCase):
             'user.id': 1,
             'user.name?': None,
         })
-        self.assertEqual(ret, {'user.name': 'John Bob Smith 1'})
+        self.assertEqual(ret, [{'user.name': 'John Bob Smith 1'}])
 
-    @unittest.expectedFailure
+    # @unittest.expectedFailure
     def test_simple_join(self):
-        ret = testgraphcore.query([{
+        ret = testgraphcore.query({
             'user.id': 1,
             'user.books.id?': None,
-        }])
+        })
         self.assertEqual(ret, [
             {'user.books.id': 1},
             {'user.books.id': 2},
@@ -46,7 +51,7 @@ class TestGraphcore(unittest.TestCase):
             'user.id': 1,
             'user.abbreviation?': None,
         })
-        self.assertEqual(ret, {'user.abbreviation': 'JBS1'})
+        self.assertEqual(ret, [{'user.abbreviation': 'JBS1'}])
 
 
 class TestQueryPlan(unittest.TestCase):
@@ -85,3 +90,15 @@ class TestClause(unittest.TestCase):
     def test_has_unbound_outvar(self):
         clause = graphcore.Clause('meter.id', graphcore.OutVar())
         self.assertTrue(clause.has_unbound_outvar())
+
+
+class TestPath(unittest.TestCase):
+    def test_subpaths(self):
+        path = graphcore.Path('a.b.c.d')
+        self.assertEqual(
+            list(path.subpaths()), [
+                graphcore.Path('c.d'),
+                graphcore.Path('b.c.d'),
+                graphcore.Path('a.b.c.d')
+            ]
+        )

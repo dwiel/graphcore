@@ -33,6 +33,10 @@ class Path(object):
         # TODO: assert that self.parts[:-1] is same type as other.parts[0]
         return Path(self.parts[:-1] + other.parts[-1:])
 
+    def subpaths(self):
+        for i in range(-2, -len(self.parts) - 1, -1):
+            yield Path(self.parts[i:])
+
     def __repr__(self):
         return '<Path {str}>'.format(str=str(self))
 
@@ -93,6 +97,12 @@ class Query(object):
 
         return self.clause_map[clause.lhs]
 
+    def output_paths(self):
+        return [
+            clause.lhs for clause in self.clauses
+            if isinstance(clause.rhs, OutVar)
+        ]
+
     def __iter__(self):
         return iter(self.clauses)
 
@@ -115,10 +125,99 @@ class QueryPlanIterator(object):
             raise StopIteration
 
 
+class Result(object):
+    def __init__(self, result=None):
+        if isinstance(result, Result):
+            self.result = result.result.copy()
+        else:
+            self.result = {}
+
+    def set(self, path, value):
+        print 'set', self, path, value
+        self.result[str(path)] = value
+
+    def get(self, path):
+        print 'Result.get'
+        print '  self:', self
+        print '  path:', path
+        return self.result[str(path)]
+
+    def to_json(self):
+        return self.result
+
+    def extract_json(self, paths):
+        return {
+            str(path): self.get(path) for path in paths
+        }
+
+    def __repr__(self):
+        return '<Result {result}>'.format(result=repr(self.result))
+
+
+class ResultSet(object):
+    def __init__(self):
+        # TODO handle more complex result set toplogies
+        self.results = [Result()]
+
+    def set(self, path, value):
+        if isinstance(value, list):
+            # similar to self.results *= len(values), but with better handling
+            # of copies of results
+            print 'set many'
+            print '  path:', path
+            print '  value:', value
+            self.results = [
+                Result(result)
+                for _ in range(len(value))
+                for result in self.results
+            ]
+
+            for result, subvalue in zip(self.results, value):
+                result.set(path, subvalue)
+        else:
+            print 'set single'
+            print '  path:', path
+            print '  value:', value
+            for result in self.results:
+                result.set(path, value)
+
+    def get(self, path):
+        # TODO: this is definitely wrong
+        print 'get'
+        print '  self:', self
+        print '  path:', path
+        ret = self.results[0].get(path)
+        print '  ret:', ret
+        return ret
+
+    def extract_from_query(self, query):
+        for clause in query:
+            if clause.value:
+                self.set(clause.lhs, clause.value)
+
+    def to_json(self):
+        return [
+            result.to_json() for result in self.results
+        ]
+
+    def extract_json(self, paths):
+        return [
+            result.extract_json(paths) for result in self.results
+        ]
+
+    def __repr__(self):
+        return '<ResultSet {str}>'.format(str=str(self))
+
+    def __str__(self):
+        return str(self.to_json())
+
+
 class QueryPlan(object):
     def __init__(self, graphcore, query):
         # TODO: basic query validation
         self.query = Query(query)
+        self.result_set = ResultSet()
+        self.result_set.extract_from_query(self.query)
 
         self.graphcore = graphcore
         self.rules = []
@@ -132,10 +231,20 @@ class QueryPlan(object):
                 return clause
 
     def apply_rule(self, output_clause, rule):
+        """bind the output of rule to output_clause from the query"""
+
         # add input/unify clauses of function to query
         input_clauses = []
         for input in rule.inputs:
-            absolute_path = output_clause.lhs.reroot_path(input)
+            # what is here now is not correct, but no tests will fail it yet. :)
+            # it will need to be something like one of these two:
+            #     absolute_path = output_clause.lhs.reroot_path(input)
+            #     absolute_path = input.reroot_path(output_clause.lhs)
+            absolute_path = input
+            print 'reroot_path'
+            print '  output_clause.lhs:', output_clause.lhs
+            print '  rule.input:', input
+            print '  absolute_path:', absolute_path
 
             # this append is conditional on there not already being a clause
             # with this absolute_path
@@ -143,6 +252,10 @@ class QueryPlan(object):
                 self.query.append(Clause(absolute_path, TempVar()))
             )
 
+        print 'apply_rule_backward'
+        print '  input_clauses:', input_clauses
+        print '  output_clause:', output_clause
+        print '  rule:', rule
         self.rules.append((input_clauses, output_clause, rule))
 
         output_clause.ground()
@@ -156,12 +269,16 @@ class QueryPlan(object):
     def forward(self):
         # TODO: somehow make this work for more than single object output
         for input_clauses, output_clause, rule in reversed(self.rules):
-            output_clause.value = rule.function(**dict(
-                (clause.lhs.relative.property, clause.value)
+            print 'forward', input_clauses, output_clause, rule
+            self.result_set.set(output_clause.lhs, rule.function(**dict(
+                (clause.lhs.relative.property, self.result_set.get(clause.lhs))
                 for clause in input_clauses
-            ))
+            )))
 
     def outputs(self):
+        return self.result_set.extract_json(self.query.output_paths())
+
+    def outputs_(self):
         # TODO: allow ret to be more complex than single object
         ret = {}
         for clause in self.query:
@@ -181,6 +298,10 @@ class Rule(object):
 class Graphcore(object):
     def __init__(self):
         self.rules = {}
+        self.schema = []
+
+    def has_many(self, base_type, property, other_type):
+        self.schema.append((base_type, property, other_type))
 
     def rule(self, inputs, output):
         def decorator(fn):
@@ -193,17 +314,22 @@ class Graphcore(object):
     def outvar(self):
         return OutVar()
 
+    def available_rules_string(self):
+        return ', '.join(
+            str(rule.output) for rule in self.rules.itervalues()
+        )
+
     def lookup_rule_for_clause(self, clause):
-        relative_path = clause.lhs.relative
-        if relative_path not in self.rules:
-            raise IndexError(
-                '{relative_path} not found in rules {rules}'.format(
-                    relative_path=relative_path,
-                    rules=self.rules,
-                )
+        for path in clause.lhs.subpaths():
+            if path in self.rules:
+                return self.rules[path]
+
+        raise IndexError(
+            '{path} not found in available rules: {rules}'.format(
+                path=path,
+                rules=self.available_rules_string(),
             )
-        else:
-            return self.rules[relative_path]
+        )
 
     def apply_macros(self):
         pass
