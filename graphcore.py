@@ -1,8 +1,11 @@
-class OutVar(object):
+class Var(object):
     pass
 
 
-class TempVar(OutVar):
+class OutVar(Var):
+    pass
+
+class TempVar(Var):
     pass
 
 
@@ -85,7 +88,7 @@ class Clause(object):
     def __init__(self, key, value):
         self.lhs, self.rhs = self._parse_clause(key, value)
 
-        if isinstance(self.rhs, OutVar):
+        if isinstance(self.rhs, Var):
             self.grounded = False
             self.value = None
         else:
@@ -99,7 +102,7 @@ class Clause(object):
             return AbsolutePath(lhs), rhs
 
     def has_unbound_outvar(self):
-        if isinstance(self.rhs, OutVar):
+        if isinstance(self.rhs, Var):
             if not self.grounded:
                 return True
         return False
@@ -190,11 +193,14 @@ class QueryPlan(object):
 
     def forward(self):
         # TODO: somehow make this work for more than single object output
-        for input_clauses, output_clause, rule in self.rules:
+        print self.rules
+        for input_clauses, output_clause, rule in reversed(self.rules):
+            print 'output_clause',output_clause
             output_clause.value = rule.function(**dict(
                 (clause.lhs.relative.property, clause.value)
                 for clause in input_clauses
             ))
+            print 'output', output_clause.value
 
     def outputs(self):
         # TODO: allow ret to be more complex than single object

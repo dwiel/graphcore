@@ -5,27 +5,40 @@ import graphcore
 testgraphcore = graphcore.Graphcore()
 
 
-@testgraphcore.input(('users.id',))
-@testgraphcore.output('users.name')
+@testgraphcore.input(('user.name',))
+@testgraphcore.output('user.abbreviation')
+def user_name_to_abbreviation(name):
+    return ''.join(part[0].upper() for part in name.split(' '))
+
+
+@testgraphcore.input(('user.id',))
+@testgraphcore.output('user.name')
 def user_id_to_user_name(id):
-    return 'name_'+str(id)
+    return 'John Bob Smith '+str(id)
 
 
 class TestGraphcore(unittest.TestCase):
     def test_basic(self):
         ret = testgraphcore.query({
-            'users.id': 1,
-            'users.name?': None,
+            'user.id': 1,
+            'user.name?': None,
         })
-        self.assertEqual(ret, {'users.name': 'name_1'})
+        self.assertEqual(ret, {'user.name': 'John Bob Smith 1'})
+
+    def test_basic_two_step(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.abbreviation?': None,
+        })
+        self.assertEqual(ret, {'user.abbreviation': 'JBS1'})
 
 
 class TestQueryPlan(unittest.TestCase):
     """
     def test_clauses_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
-            'users.id': 1,
-            'users.name': testgraphcore.outvar(),
+            'user.id': 1,
+            'user.name': testgraphcore.outvar(),
         })
         clauses = list(query.clauses_with_unbound_outvar())
         self.assertEqual(
@@ -36,7 +49,7 @@ class TestQueryPlan(unittest.TestCase):
 
     def test_clause_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
-            'users.name?': None,
+            'user.name?': None,
         })
         clauses = query.clause_with_unbound_outvar()
         self.assertEqual(
