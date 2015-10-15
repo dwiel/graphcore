@@ -38,7 +38,6 @@ BOOK_ID_TO_BOOK_NAME = {
 
 @testgraphcore.rule(['book.id'], 'book.name')
 def book_id_to_book_name(id):
-    print 'book_id_to_book_name', id
     return BOOK_ID_TO_BOOK_NAME[id]
 
 
