@@ -20,7 +20,7 @@ def user_id_to_user_name(id):
     return 'John Bob Smith '+str(id)
 
 
-def test_basic(self):
+def test_basic():
     testgraphcore.query({
         'user.id': 1,
         'user.abbreviation': graphcore.OutVar(),

@@ -158,7 +158,6 @@ class QueryPlan(object):
     def clause_with_unbound_outvar(self):
         for clause in self.query:
             if clause.has_unbound_outvar():
-                print 'unbound outvar', clause
                 return clause
 
     def apply_rule(self, output_clause, rule):
