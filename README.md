@@ -8,17 +8,23 @@ import graphcore
 
 testgraphcore = graphcore.Graphcore()
 
-@testgraphcore.input(('users.id',))
-@testgraphcore.output('users.name')
+@testgraphcore.input(('user.name',))
+@testgraphcore.output('user.abbreviation')
+def user_id_to_user_name(name):
+    return ''.join(part[0].upper() for part in name.split(' ') )
+
+
+@testgraphcore.input(('user.id',))
+@testgraphcore.output('user.name')
 def user_id_to_user_name(id):
-    return 'name_'+str(id)
+    return 'John Bob Smith '+str(id)
 
 
 def test_basic(self):
     testgraphcore.query({
-        'users.id': 1,
-        'users.name': graphcore.OutVar(),
+        'user.id': 1,
+        'user.abbreviation': graphcore.OutVar(),
     })
     
-    self.assertEqual(ret, {'users.name': 'name_1'})
+    self.assertEqual(ret, {'user.name': 'JBS1'})
 ```
