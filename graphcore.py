@@ -49,6 +49,18 @@ class Path(object):
     def __eq__(self, other):
         return self.parts == other.parts
 
+    def __getitem__(self, index):
+        return self.parts[index]
+
+    def __len__(self):
+        return len(self.parts)
+
+    def __add__(self, other):
+        if isinstance(other, tuple):
+            return Path(self.parts + other)
+        else:
+            return Path(self.parts + other.parts)
+
 
 class Clause(object):
     def __init__(self, key, value):
@@ -75,6 +87,9 @@ class Clause(object):
 
     def ground(self):
         self.grounded = True
+
+    def __str__(self):
+        return '{lhs} {rhs}'.format(**self.__dict__)
 
     def __repr__(self):
         return '<Clause ({lhs}) ({rhs}) grounded={grounded}>'.format(
@@ -108,6 +123,11 @@ class Query(object):
 
     def __getitem__(self, index):
         return self.clauses[index]
+
+    def __str__(self):
+        return '[\n%s]' % ''.join(
+            '  ' + str(clause) + '\n' for clause in self.clauses
+        )
 
 
 class QueryPlanIterator(object):
@@ -302,6 +322,12 @@ class Relationship(object):
         self.property = property
         self.other_type = other_type
 
+    def __repr__(self):
+        return (
+            '<Relationship {base_type} {kind} {property} of '
+            'type {other_type}>'.format(**self.__dict__)
+        )
+
 
 class Schema(object):
     def __init__(self):
@@ -309,6 +335,12 @@ class Schema(object):
 
     def append(self, relationship):
         self.relationships.append(relationship)
+
+    def __str__(self):
+        return repr(self.relationships)
+
+    def __repr__(self):
+        return '<Schema {str}>'.format(str=str(self))
 
 
 class Graphcore(object):
