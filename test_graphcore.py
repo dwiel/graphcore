@@ -15,7 +15,7 @@ class TestGraphcore(unittest.TestCase):
     def test_basic(self):
         ret = testgraphcore.query({
             'users.id': 1,
-            'users.name': testgraphcore.outvar(),
+            'users.name?': None,
         })
         self.assertEqual(ret, {'users.name': 'name_1'})
 
@@ -36,7 +36,7 @@ class TestQueryPlan(unittest.TestCase):
 
     def test_clause_with_unbound_output(self):
         query = graphcore.QueryPlan(testgraphcore, {
-            'users.name': testgraphcore.outvar(),
+            'users.name?': None,
         })
         clauses = query.clause_with_unbound_outvar()
         self.assertEqual(

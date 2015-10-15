@@ -77,6 +77,9 @@ class AbsolutePath(object):
     def __eq__(self, other):
         return self.root == other.root and self.relative == other.relative
 
+    def __getitem__(self, index):
+        return str(self)[index]
+
 
 class Clause(object):
     def __init__(self, key, value):
@@ -89,9 +92,9 @@ class Clause(object):
             self.grounded = True
             self.value = value
 
-    def _parse_clause(lhs, rhs):
+    def _parse_clause(self, lhs, rhs):
         if lhs[-1] == '?':
-            return lhs[:-1], OutVar()
+            return AbsolutePath(lhs[:-1]), OutVar()
         else:
             return AbsolutePath(lhs), rhs
 
