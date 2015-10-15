@@ -252,6 +252,7 @@ class Graphcore(object):
 
         self.apply_macros()
 
+        # TODO: move backward/forward/outputs call to QueryPlan
         query.backward()
 
         query.forward()
