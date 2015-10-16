@@ -15,7 +15,7 @@ class SQLQuery(object):
     def __init__(self, tables, selects, where):
         self.tables = parse_comma_seperated_set(tables)
         self.selects = parse_comma_seperated_set(selects)
-        self.where = where
+        self.where = where.copy()
 
         self.flatten()
 
