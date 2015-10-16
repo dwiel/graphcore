@@ -19,10 +19,22 @@ class SQLQuery(object):
 
         self.flatten()
 
+    def _assert_flattenable(self):
+        if any(' ' in table for table in self.tables):
+            raise ValueError('no table names can have aliases')
+        if not all('.' in select for select in self.selects):
+            raise ValueError('all selects must be of form table.column')
+        if not all('.' in key for key in self.where.keys())
+            raise ValueError('all left hand sides of where clauses must '
+                             'be of form table.column')
+
     def flatten(self):
+        self._assert_flattenable()
+
         for k, v in list(self.where.copy().items()):
             if isinstance(v, SQLQuery):
-                # this is definitely wrong, but its a start
+                v._assert_flattenable()
+
                 self.tables.update(v.tables)
                 self.where.update(v.where)
                 if len(v.selects) != 1:
