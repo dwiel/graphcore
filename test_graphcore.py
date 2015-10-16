@@ -6,7 +6,7 @@ testgraphcore = graphcore.Graphcore()
 
 
 @testgraphcore.rule(['user.name'], 'user.abbreviation')
-def user_name_to_abbreviation(name):
+def user_abbreviation(name):
     return ''.join(part[0].upper() for part in name.split(' '))
 
 
@@ -16,7 +16,7 @@ USER_ID_TO_USER_NAME = {
 
 
 @testgraphcore.rule(['user.id'], 'user.name')
-def user_id_to_user_name(id):
+def user_name(id):
     return USER_ID_TO_USER_NAME[id]
 
 
@@ -24,7 +24,7 @@ testgraphcore.has_many('user', 'books', 'book')
 
 
 @testgraphcore.rule(['user.id'], 'user.books.id', cardinality='many')
-def user_id_to_books_id(id):
+def user_books_id(id):
     # this would normally come out of a db
     return [1, 2, 3]
 
@@ -37,7 +37,7 @@ BOOK_ID_TO_BOOK_NAME = {
 
 
 @testgraphcore.rule(['book.id'], 'book.name')
-def book_id_to_book_name(id):
+def book_name(id):
     return BOOK_ID_TO_BOOK_NAME[id]
 
 
