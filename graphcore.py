@@ -101,7 +101,7 @@ class Query(object):
         self.clauses = []
         self.clause_map = {}
 
-        for key, value in query.items():
+        for key, value in list(query.items()):
             self.append(Clause(key, value))
 
     def append(self, clause):
@@ -136,12 +136,15 @@ class QueryPlanIterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         clause = self.query.clause_with_unbound_outvar()
         if clause:
             return clause
         else:
             raise StopIteration
+
+    # python2 support
+    next = __next__
 
 
 class Result(object):

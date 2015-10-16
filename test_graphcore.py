@@ -52,7 +52,7 @@ def make_ret_comparable(ret):
         return set(make_ret_comparable(e) for e in ret)
     elif isinstance(ret, dict):
         return hashabledict(
-            (k, make_ret_comparable(v)) for k, v in ret.iteritems()
+            (k, make_ret_comparable(v)) for k, v in ret.items()
         )
     else:
         return ret

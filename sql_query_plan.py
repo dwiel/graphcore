@@ -20,7 +20,7 @@ class SQLQuery(object):
         self.flatten()
 
     def flatten(self):
-        for k, v in self.where.copy().iteritems():
+        for k, v in list(self.where.copy().items()):
             if isinstance(v, SQLQuery):
                 # this is definitely wrong, but its a start
                 self.tables.update(v.tables)
