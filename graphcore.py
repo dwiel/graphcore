@@ -1,3 +1,6 @@
+import six
+
+
 class Var(object):
     pass
 
@@ -12,7 +15,7 @@ class TempVar(Var):
 
 class Path(object):
     def __init__(self, init):
-        if isinstance(init, basestring):
+        if isinstance(init, six.string_types):
             self.parts = tuple(init.split('.'))
         elif isinstance(init, Path):
             self.parts = tuple(init.parts)
