@@ -12,11 +12,13 @@ class AssertSQLQueryEqual():
 
 class TestSQLQueryPlan(unittest.TestCase, AssertSQLQueryEqual):
     def test_simple_query_merge(self):
+        book_id = SQLQuery(['users', 'books'], 'books.id', {
+            'users.id': id,
+            'users.id': mysql_col('books.id'),
+        })
+
         combined = SQLQuery(['books'], 'name', {
-            'books.id': SQLQuery(['users', 'books'], 'books.id', {
-                'users.id': id,
-                'users.id': mysql_col('books.id'),
-            })
+            'books.id': book_id
         })
 
         self.assertSQLQueryEqual(
