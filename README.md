@@ -1,7 +1,21 @@
 [![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore)
 
 # Graphcore
-falcor + graphql + axpress
+
+Graphcore is a python library which allows you to query a graph
+structure with a query language similar to MQL, Falcor or GraphQL.
+
+The graph structure can be defined by python functions or SQL
+relations.  Graphcore will find an optimal way to organize the call
+graph so as to group SQL queries together.
+
+### Comparison with Falcor
+
+In Falcor, your router must resolve each path to a function which
+optionally takes parameters describing the path.  With Graphcore, your
+function can depend on other parts of the graph.  This allows you to
+describe the dependencies between all of the functions / paths and
+allow graphcore
 
 ### Example
 
