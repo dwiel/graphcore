@@ -8,12 +8,12 @@ Here is an example of a query and the returned data structure:
 ```python
 ret = testgraphcore.query({
     'user.id': 1,
-    'user.books.id?': None,
+    'user.books.name?': None,
 })
 assert ret == [
-    {'user.books.id': 1},
-    {'user.books.id': 2},
-    {'user.books.id': 3},
+    {'user.books.name': 'The Giver'},
+    {'user.books.name': 'REAMDE'},
+    {'user.books.name': 'The Diamond Age'},
 ]
 ```
 
