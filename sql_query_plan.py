@@ -31,7 +31,7 @@ class SQLQuery(object):
     def flatten(self):
         self._assert_flattenable()
 
-        for k, v in list(self.where.copy().items()):
+        for k, v in self.where.copy().items():
             if isinstance(v, SQLQuery):
                 v._assert_flattenable()
 
