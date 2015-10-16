@@ -101,7 +101,7 @@ class Query(object):
         self.clauses = []
         self.clause_map = {}
 
-        for key, value in list(query.items()):
+        for key, value in query.items():
             self.append(Clause(key, value))
 
     def append(self, clause):
