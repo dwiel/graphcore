@@ -20,6 +20,12 @@ class SQLQuery(object):
         self.flatten()
 
     def _assert_flattenable(self):
+        """ ensure that the query is flattenable
+
+        flatten currently doesnt handle many common types of queries
+        which is why we need to check manually
+        """
+
         if any(' ' in table for table in self.tables):
             raise ValueError('no table names can have aliases')
         if not all('.' in select for select in self.selects):
@@ -29,6 +35,9 @@ class SQLQuery(object):
                              'be of form table.column')
 
     def flatten(self):
+        """ merge any SQLQuery objects on the rhs of a where clause
+        into self. """
+
         self._assert_flattenable()
 
         for k, v in self.where.copy().items():
