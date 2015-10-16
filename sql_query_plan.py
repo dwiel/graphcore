@@ -34,6 +34,13 @@ class SQLQuery(object):
             raise ValueError('all left hand sides of where clauses must '
                              'be of form table.column')
 
+    def _assert_no_overlapping_where(self, where):
+        overlap = set(self.where.keys()).intersection(where.keys())
+        if overlap:
+            raise ValueError('where clauses had overlap: {overlap}'.format(
+                overlap=', '.join(map(str, overlap))
+            ))
+
     def flatten(self):
         """ merge any SQLQuery objects on the rhs of a where clause
         into self. """
@@ -45,6 +52,9 @@ class SQLQuery(object):
                 v._assert_flattenable()
 
                 self.tables.update(v.tables)
+
+                self._assert_no_overlapping_where(v.where)
+
                 self.where.update(v.where)
                 if len(v.selects) != 1:
                     raise ValueError('SQLQuery merging is only possible when the '
