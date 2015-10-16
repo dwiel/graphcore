@@ -17,15 +17,14 @@ class TestSQLQueryPlan(unittest.TestCase, AssertSQLQueryEqual):
             'users.id': mysql_col('books.id'),
         })
 
-        combined = SQLQuery(['books'], 'name', {
+        combined = SQLQuery(['books'], 'books.name', {
             'books.id': book_id
         })
 
         self.assertSQLQueryEqual(
             combined,
-            SQLQuery('users, books', 'name', {
+            SQLQuery('users, books', 'books.name', {
                 'users.id': id,
                 'users.id': mysql_col('books.id'),
-                'books.id': mysql_col('books.id'),
             })
         )

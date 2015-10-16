@@ -24,7 +24,7 @@ class SQLQuery(object):
             raise ValueError('no table names can have aliases')
         if not all('.' in select for select in self.selects):
             raise ValueError('all selects must be of form table.column')
-        if not all('.' in key for key in self.where.keys())
+        if not all('.' in key for key in self.where.keys()):
             raise ValueError('all left hand sides of where clauses must '
                              'be of form table.column')
 
@@ -41,3 +41,13 @@ class SQLQuery(object):
                     raise ValueError('SQLQuery merging is only possible when the '
                                      'embedded query has one select')
                 self.where[k] = mysql_col(list(v.selects)[0])
+
+        self.cleanup()
+
+    def cleanup(self):
+        """ remove clauses like 'users.id': mysql_col('users.id') """
+
+        for k, v in self.where.copy().items():
+            if isinstance(v, mysql_col):
+                if k == v:
+                    del self.where[k]
