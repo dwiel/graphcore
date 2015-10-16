@@ -118,7 +118,7 @@ class TestQueryPlan(unittest.TestCase):
 
         self.assertEqual(
             clauses,
-            [query.query[1]],
+            [query.query.clause_map[graphcore.Path('user.name')]],
         )
 
     def test_clause_with_unbound_output(self):
