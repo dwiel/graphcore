@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore)
+
 # Graphcore
 falcor + graphql + axpress
 
