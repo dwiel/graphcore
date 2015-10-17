@@ -42,6 +42,7 @@ def book_name(id):
 
 
 class hashabledict(dict):
+    """ a hashable dict to make it easier to compare query results """
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
 
