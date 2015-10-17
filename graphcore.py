@@ -306,7 +306,6 @@ class QueryPlan(object):
     def execute(self):
         self.apply_macros()
 
-        # TODO: move backward/forward/outputs call to QueryPlan
         self.backward()
 
         self.forward()
