@@ -2,20 +2,23 @@
 
 # Graphcore
 
-Graphcore is a python library which allows you to query a graph
-structure with a query language similar to MQL, Falcor or GraphQL.
+Graphcore is a python library which allows you to query a graph structure with
+a query language similar to MQL, Falcor or GraphQL.
 
-The graph structure can be defined by python functions or SQL
-relations.  Graphcore will find an optimal way to organize the call
-graph so as to group SQL queries together.
+The graph structure can be defined by python functions or SQL relations.
+Graphcore will find an optimal way to organize the call graph so as to group
+SQL queries together.
 
 ### Comparison with Falcor
 
-In Falcor, your router must resolve each path to a function which
-optionally takes parameters describing the path.  With Graphcore, your
-function can depend on other parts of the graph.  This allows you to
-describe the dependencies between all of the functions / paths and
-allow graphcore
+In Falcor, your router must resolve each path to a function which optionally
+takes parameters describing the path, but that is it.  In falcor, your routes
+can not know anything else about other parts of the virtual json object.  With
+Graphcore, your function can depend on other parts of the graph.  This allows
+you to describe the dependencies between all of the functions / paths and allow
+graphcore to find an optimal way to glue your backend together.  There will
+also be hooks which allow you to give hints or make specific changes to the AST
+and control how the query is executed if you need to.
 
 ### Example
 
