@@ -21,9 +21,7 @@ class CallGraphIterator(object):
             return True
 
         nodes = node.incoming_nodes()
-        print 'incoming', node.name, [n.name for n in nodes]
         if len(nodes) == 0:
-            print 'no incoming', node.name
             return True
         else:
             return all(id(n) in self._grounded for n in nodes)
