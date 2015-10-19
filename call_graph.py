@@ -56,7 +56,7 @@ TODO: out_paths: {key: (Path, Node), ...}
 
 """
 
-from path import Path
+from .path import Path
 
 
 def freeze(o):
