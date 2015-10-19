@@ -1,6 +1,7 @@
 import unittest
 
-import graphcore
+from . import graphcore
+from . import call_graph
 
 testgraphcore = graphcore.Graphcore()
 
@@ -105,9 +106,34 @@ class TestGraphcore(unittest.TestCase):
         )
 
 
-class TestQueryPlan(unittest.TestCase):
+"""
+class AssertNodeEqual(object):
+    def __init__(self, *args):
+        super(AssertNodeEqual, self).__init__(*args)
+
+        self.addTypeEqualityFunc(call_graph.Node, self.assertNodeEqual)
+
+    def assertNodeEqual(self, node1, node2, msg=None):
+        self.assertEqual(node1.children, node2.children, msg)
+
+
+class AssertApplyEqual(object):
+    def __init__(self, *args):
+        super(AssertApplyEqual, self).__init__(*args)
+
+        self.addTypeEqualityFunc(call_graph.Apply, self.assertApplyEqual)
+
+    def assertApplyEqual(self, apply1, apply2, msg=None):
+        self.assertEqual(apply1.paths, apply2.paths, msg)
+        self.assertEqual(apply1.call, apply2.call, msg)
+"""
+
+class TestQuerySearch(unittest.TestCase):
+    def __init__(self, *args):
+        super(TestQuerySearch, self).__init__(*args)
+
     def test_clauses_with_unbound_output(self):
-        query = graphcore.QueryPlan(testgraphcore, {
+        query = graphcore.QuerySearch(testgraphcore, {
             'user.id': 1,
             'user.name': graphcore.OutVar(),
         })
@@ -123,7 +149,7 @@ class TestQueryPlan(unittest.TestCase):
         )
 
     def test_clause_with_unbound_output(self):
-        query = graphcore.QueryPlan(testgraphcore, {
+        query = graphcore.QuerySearch(testgraphcore, {
             'user.name?': None,
         })
         clauses = query.clause_with_unbound_outvar()
@@ -131,6 +157,15 @@ class TestQueryPlan(unittest.TestCase):
             clauses,
             query.query[0],
         )
+
+    def test_call_graph_repr(self):
+        query = graphcore.QuerySearch(testgraphcore, {
+            'user.id': 1,
+            'user.name?': None, 
+        })
+        query.backward()
+
+        repr(query.call_graph)
 
 
 class TestClause(unittest.TestCase):

@@ -1,6 +1,9 @@
 import six
 
 from path import Path
+from . import call_graph
+from .query_planner import QueryPlanner
+from .result_set import ResultSet
 
 class Var(object):
     pass
@@ -64,12 +67,6 @@ class Query(object):
 
         return self.clause_map[clause.lhs]
 
-    def output_paths(self):
-        return [
-            clause.lhs for clause in self.clauses
-            if isinstance(clause.rhs, OutVar)
-        ]
-
     def __iter__(self):
         return iter(self.clauses)
 
@@ -82,7 +79,7 @@ class Query(object):
         )
 
 
-class QueryPlanIterator(object):
+class QuerySearchIterator(object):
     def __init__(self, query):
         self.query = query
 
@@ -100,84 +97,12 @@ class QueryPlanIterator(object):
     next = __next__
 
 
-class Result(object):
-    def __init__(self, result=None):
-        if isinstance(result, Result):
-            self.result = result.result.copy()
-        else:
-            self.result = {}
+class QuerySearch(object):
+    """
+    The QuerySearch object takes a Graphcore and a Query and generates a
+    CallGraph.
+    """
 
-    def set(self, path, value):
-        self.result[str(path)] = value
-
-    def get(self, path):
-        return self.result[str(path)]
-
-    def to_json(self):
-        return self.result
-
-    def extract_json(self, paths):
-        return {
-            str(path): self.get(path) for path in paths
-        }
-
-    def __repr__(self):
-        return '<Result {result}>'.format(result=repr(self.result))
-
-
-class ResultSet(object):
-    def __init__(self, init=None):
-        # TODO handle more complex result set toplogies
-        if isinstance(init, ResultSet):
-            self.results = init.results.copy()
-        else:
-            self.results = {Result()}
-
-    def set(self, path, value):
-        for result in self.results:
-            result.set(path, value)
-
-    def explode(self, existing_result, path, values):
-        new_results = {
-            Result(existing_result)
-            for _ in range(len(values))
-        }
-
-        for result, value in zip(new_results, values):
-            result.set(path, value)
-
-        self.results.remove(existing_result)
-        self.results.update(new_results)
-
-    def extract_from_query(self, query):
-        for clause in query:
-            if clause.value:
-                self.set(clause.lhs, clause.value)
-
-    def to_json(self):
-        return [
-            result.to_json() for result in self.results
-        ]
-
-    def extract_json(self, paths):
-        return [
-            result.extract_json(paths) for result in self.results
-        ]
-
-    def __repr__(self):
-        return '<ResultSet {str}>'.format(str=str(self))
-
-    def __str__(self):
-        return str(self.to_json())
-
-    def __iter__(self):
-        return iter(self.results)
-
-    def copy(self):
-        return ResultSet(self)
-
-
-class QueryPlan(object):
     def __init__(self, graphcore, query):
         # TODO: basic query validation
         self.query = Query(query)
@@ -185,10 +110,11 @@ class QueryPlan(object):
         self.result_set.extract_from_query(self.query)
 
         self.graphcore = graphcore
-        self.rules = []
+        
+        self.call_graph = call_graph.CallGraph()
 
     def clauses_with_unbound_outvar(self):
-        return QueryPlanIterator(self)
+        return QuerySearchIterator(self)
 
     def clause_with_unbound_outvar(self):
         for clause in self.query:
@@ -208,13 +134,18 @@ class QueryPlan(object):
             else:
                 absolute_path = input
 
-            # this append is conditional on there not already being a clause
+            # self.query.append is conditional on there not already being a clause
             # with this absolute_path
             input_clauses.append(
                 self.query.append(Clause(absolute_path, TempVar()))
             )
 
-        self.rules.append((input_clauses, output_clause, rule))
+        self.call_graph.add_node(
+                [clause.lhs for clause in input_clauses], 
+                output_clause.lhs,
+                rule,
+                isinstance(output_clause.rhs, OutVar)
+        )
 
         output_clause.ground()
 
@@ -231,40 +162,6 @@ class QueryPlan(object):
                 clause, *self.graphcore.lookup_rule_for_clause(clause)
             )
 
-    def forward(self):
-        for input_clauses, output_clause, rule in reversed(self.rules):
-            # must copy result set iterator since we are mutating it while we
-            # iterate and don't want to iterate over the new result_set
-            for result in self.result_set.copy():
-                ret = rule.function(**dict(
-                    (clause.lhs.relative.property, result.get(clause.lhs))
-                    for clause in input_clauses
-                ))
-
-                # if the result of the rule is one value, just set the value,
-                # otherwise, if there are many, explode out the result set
-                if rule.cardinality == 'one':
-                    result.set(output_clause.lhs, ret)
-                elif rule.cardinality == 'many':
-                    self.result_set.explode(result, output_clause.lhs, ret)
-                else:
-                    raise TypeError()
-
-    def outputs(self):
-        return self.result_set.extract_json(self.query.output_paths())
-
-    def apply_macros(self):
-        pass
-
-    def execute(self):
-        self.apply_macros()
-
-        self.backward()
-
-        self.forward()
-
-        return self.outputs()
-
 
 class Rule(object):
     def __init__(self, function, inputs, output, cardinality):
@@ -273,6 +170,14 @@ class Rule(object):
         self.output = Path(output)
         self.cardinality = cardinality
 
+    def __repr__(self):
+        string = '<Rule {output} = {function_name}({inputs}) {cardinality}'
+        return string.format(
+                output=self.output,
+                function_name=self.function.__name__,
+                inputs=', '.join(map(str, self.inputs)),
+                cardinality=self.cardinality,
+        )
 
 class Relationship(object):
     def __init__(self, base_type, kind, property, other_type):
@@ -366,6 +271,13 @@ class Graphcore(object):
         )
 
     def query(self, query):
-        query = QueryPlan(self, query)
+        query = QuerySearch(self, query)
 
-        return query.execute()
+        query.backward()
+
+        # optimize query.call_graph here
+
+        query_planner = QueryPlanner(query.call_graph, query.query)
+        query_plan = query_planner.plan_query()
+
+        return query_plan.execute()
