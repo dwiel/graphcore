@@ -193,14 +193,14 @@ class CallGraph(object):
             return self.edges.setdefault(path, Edge(path, [], None, False))
 
     def output_paths(self):
-        return [edge.path for edge in self.edges.itervalues() if edge.out]
+        return [edge.path for edge in self.edges.values() if edge.out]
 
     def __repr__(self):
         return '<CallGraph nodes=[{nodes}\n] edges={{{edges}\n}}>'.format(
                 nodes=''.join('\n  '+str(node) for node in self.nodes),
                 edges=''.join(
                     '\n  '+str(k)+': '+str(v)
-                    for k, v in self.edges.iteritems()
+                    for k, v in self.edges.items()
                 ),
         )
     __str__ = __repr__
