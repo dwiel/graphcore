@@ -1,6 +1,6 @@
 import six
 
-from path import Path
+from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
 from .result_set import ResultSet
