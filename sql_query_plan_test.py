@@ -1,6 +1,6 @@
 import unittest
 
-from sql_query_plan import SQLQuery, mysql_col
+from .sql_query_plan import SQLQuery, mysql_col
 
 
 class AssertSQLQueryEqual():
