@@ -125,7 +125,6 @@ class Node(EqualityMixin):
         string+='{outgoing_path} = {name}({incoming_paths}) '
         string+='filter={filter}'
         string+='>'
-        print self.rule
         return (string.format(
                 outgoing_path=self.outgoing_edge.path if self.outgoing_edge else None,
                 name=self.name,
