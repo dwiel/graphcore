@@ -24,6 +24,8 @@ class QueryPlan(object):
     def forward(self):
         # for input_clauses, output_clause, rule in reversed(self.nodes):
         for node in self.nodes:
+            # TODO: only copy for cardinality 'many' where result_set size
+            # changes.
             # must copy result set iterator since we are mutating it while we
             # iterate and don't want to iterate over the new result_set
             for result in self.result_set.copy():
