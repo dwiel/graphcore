@@ -70,3 +70,6 @@ class SQLQuery(object):
             if isinstance(v, mysql_col):
                 if k == v:
                     del self.where[k]
+
+    def __call__(self):
+        raise NotImplemented()
