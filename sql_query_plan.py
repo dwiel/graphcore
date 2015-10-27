@@ -12,10 +12,30 @@ def parse_comma_seperated_set(input):
 
 
 class SQLQuery(object):
-    def __init__(self, tables, selects, where):
+    def __init__(self, tables, selects, where, input_mapping):
+        """
+        tables: ['table_name_1', 'table_name_2', ...] or
+                'table_name_1, table_name_2, ...'
+        selects: {'table.column', ...} or
+                 'table.column, table.column, ...'
+        where: {
+            'table_name.column': 123,
+            'table_name.column2>': 10,
+            ...
+        }
+        input_mapping: {
+            'kwargs_name': 'table_name.column',
+            'kwargs_name': 'table_name.column!=',
+            ...
+        }
+            input_mapping is used to map variables passed in to the 
+            __call__ into where clauses
+        """
+
         self.tables = parse_comma_seperated_set(tables)
         self.selects = parse_comma_seperated_set(selects)
         self.where = where.copy()
+        self.input_mapping = input_mapping.copy()
 
         self.flatten()
 
