@@ -137,15 +137,3 @@ class TestClause(unittest.TestCase):
     def test_has_unbound_outvar(self):
         clause = graphcore.Clause('meter.id', graphcore.OutVar())
         self.assertTrue(clause.has_unbound_outvar())
-
-
-class TestPath(unittest.TestCase):
-    def test_subpaths(self):
-        path = graphcore.Path('a.b.c.d')
-        self.assertEqual(
-            list(path.subpaths()), [
-                graphcore.Path('c.d'),
-                graphcore.Path('b.c.d'),
-                graphcore.Path('a.b.c.d')
-            ]
-        )
