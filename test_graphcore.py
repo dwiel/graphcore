@@ -67,28 +67,6 @@ class TestGraphcore(unittest.TestCase):
         )
 
 
-"""
-class AssertNodeEqual(object):
-    def __init__(self, *args):
-        super(AssertNodeEqual, self).__init__(*args)
-
-        self.addTypeEqualityFunc(call_graph.Node, self.assertNodeEqual)
-
-    def assertNodeEqual(self, node1, node2, msg=None):
-        self.assertEqual(node1.children, node2.children, msg)
-
-
-class AssertApplyEqual(object):
-    def __init__(self, *args):
-        super(AssertApplyEqual, self).__init__(*args)
-
-        self.addTypeEqualityFunc(call_graph.Apply, self.assertApplyEqual)
-
-    def assertApplyEqual(self, apply1, apply2, msg=None):
-        self.assertEqual(apply1.paths, apply2.paths, msg)
-        self.assertEqual(apply1.call, apply2.call, msg)
-"""
-
 class TestQuerySearch(unittest.TestCase):
     def __init__(self, *args):
         super(TestQuerySearch, self).__init__(*args)
