@@ -12,7 +12,7 @@ def parse_comma_seperated_set(input):
 
 
 class SQLQuery(object):
-    def __init__(self, tables, selects, where, input_mapping):
+    def __init__(self, tables, selects, where, input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
@@ -35,7 +35,10 @@ class SQLQuery(object):
         self.tables = parse_comma_seperated_set(tables)
         self.selects = parse_comma_seperated_set(selects)
         self.where = where.copy()
-        self.input_mapping = input_mapping.copy()
+        if input_mapping:
+            self.input_mapping = input_mapping.copy()
+        else:
+            self.input_mapping = {}
 
         self.flatten()
 
@@ -61,6 +64,28 @@ class SQLQuery(object):
                 overlap=', '.join(map(str, overlap))
             ))
 
+    def _assert_no_overlapping_input_mapping(self, input_mapping):
+        column_overlap = set(self.input_mapping.values()).intersection(
+            input_mapping.values()
+        )
+        if column_overlap:
+            raise ValueError(
+                'input_mapping has column overlap: {column_overlap}'.format(
+                    column_overlap=', '.join(map(str, column_overlap))
+                )
+            )
+
+        kwargs_overlap = set(self.input_mapping.keys()).intersection(
+            input_mapping.keys()
+        )
+        if kwargs_overlap:
+            raise ValueError(
+                'input_mapping has kwargs overlap: {kwargs_overlap}'.format(
+                    kwargs_overlap=', '.join(map(str, kwargs_overlap))
+                )
+            )
+
+
     def flatten(self):
         """ merge any SQLQuery objects on the rhs of a where clause
         into self. """
@@ -74,6 +99,7 @@ class SQLQuery(object):
                 self.tables.update(v.tables)
 
                 self._assert_no_overlapping_where(v.where)
+                self._assert_no_overlapping_input_mapping(v.input_mapping)
 
                 self.where.update(v.where)
                 if len(v.selects) != 1:
