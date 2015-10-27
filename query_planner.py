@@ -47,8 +47,10 @@ class CallGraphIterator(object):
 
             if not grounded_node:
                 raise ValueError(
-                    'call graph iterator infinite loop: {nodes}'.format(
-                        nodes=nodes
+                        ('CallGraphIterator never saw some nodes: {nodes}.  '
+                         'Did see these nodes: {grounded_nodes}').format(
+                        nodes=nodes,
+                        grounded_nodes=set(self._call_graph.nodes.copy()) - nodes,
                     )
                 )
 

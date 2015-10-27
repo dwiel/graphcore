@@ -42,6 +42,9 @@ class SQLQuery(object):
 
         self.flatten()
 
+    def __name__(self):
+        return repr(self)
+
     def _assert_flattenable(self):
         """ ensure that the query is flattenable
 

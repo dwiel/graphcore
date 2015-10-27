@@ -86,9 +86,9 @@ class EqualityMixin(object):
 
 
 class Node(EqualityMixin):
-    def __init__(self, incoming_edges, outgoing_edge, rule, filter=None):
+    def __init__(self, incoming_edges, outgoing_edges, rule, filter=None):
         self.incoming_edges = incoming_edges
-        self.outgoing_edge = outgoing_edge
+        self.outgoing_edges = outgoing_edges
         self.rule = rule
         self.filter = filter
 
@@ -102,8 +102,8 @@ class Node(EqualityMixin):
     def incoming_paths(self):
         return [edge.path for edge in self.incoming_edges]
 
-    def outgoing_path(self):
-        return self.outgoing_edge.path
+    def outgoing_paths(self):
+        return [edge.path for edge in self.outgoing_edges]
 
     def __hash__(self):
         """ a custom hash is required because the data structure is recursive.
@@ -115,18 +115,20 @@ class Node(EqualityMixin):
 
         return hash((
             tuple(edge.path for edge in self.incoming_edges),
-            self.outgoing_edge.path,
+            tuple(edge.path for edge in self.outgoing_edges),
             self.rule,
             self.filter
         ))
 
     def __repr__(self):
         string='<Node '
-        string+='{outgoing_path} = {name}({incoming_paths}) '
+        string+='{outgoing_paths} = {name}({incoming_paths}) '
         string+='filter={filter}'
         string+='>'
         return (string.format(
-                outgoing_path=self.outgoing_edge.path if self.outgoing_edge else None,
+                outgoing_paths=', '.join(
+                    str(edge.path) for edge in self.outgoing_edges
+                ),
                 name=self.name,
                 incoming_paths=', '.join(
                     str(edge.path) for edge in self.incoming_edges
@@ -166,22 +168,24 @@ class CallGraph(object):
         self.nodes = set()
         self.edges = {}
 
-    def add_node(self, incoming_paths, outgoing_path, rule, out, filter=None):
+    def add_node(self, incoming_paths, outgoing_paths, rule, filter=None):
         # lookup or create edges for all of the paths
         incoming_edges = {
             self.edge(path) for path in incoming_paths
         }
 
         # grab outgoing_edge and set it's out if this is an output computation
-        outgoing_edge = self.edge(outgoing_path)
-        outgoing_edge.out = outgoing_edge.out or out
+        outgoing_edges = {
+            self.edge(path) for path in outgoing_paths
+        }
 
         # build a node
-        node = Node(incoming_edges, outgoing_edge, rule, filter)
+        node = Node(incoming_edges, outgoing_edges, rule, filter)
         self.nodes.add(node)
 
         # add the node to the edges
-        outgoing_edge.setter = node
+        for outgoing_edge in outgoing_edges:
+            outgoing_edge.setter = node
 
         for edge in incoming_edges:
             edge.getters.add(node)

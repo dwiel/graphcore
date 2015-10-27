@@ -142,10 +142,12 @@ class QuerySearch(object):
 
         self.call_graph.add_node(
                 [clause.lhs for clause in input_clauses], 
-                output_clause.lhs,
+                [output_clause.lhs],
                 rule,
-                isinstance(output_clause.rhs, OutVar)
         )
+
+        if isinstance(output_clause.rhs, OutVar):
+            self.call_graph.edge(output_clause.lhs).out = True
 
         output_clause.ground()
 
@@ -232,6 +234,11 @@ class Graphcore(object):
         self.schema.append(
             Relationship(base_type, 'has_many', property, other_type)
         )
+
+    def register_rule(self, inputs, output, cardinality='one', function=None):
+        self.rules.append(Rule(
+            function, inputs, output, cardinality
+        ))
 
     def rule(self, inputs, output, cardinality='one'):
         def decorator(fn):

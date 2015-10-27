@@ -61,6 +61,7 @@ class ResultSet(object):
         ]
 
     def extract_json(self, paths):
+        print 'extract_json', self, paths
         return [
             result.extract_json(paths) for result in self.results
         ]

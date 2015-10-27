@@ -37,9 +37,9 @@ class QueryPlan(object):
                 # if the result of the rule is one value, just set the value,
                 # otherwise, if there are many, explode out the result set
                 if node.rule.cardinality == 'one':
-                    result.set(node.outgoing_path(), ret)
+                    result.set(node.outgoing_paths()[0], ret)
                 elif node.rule.cardinality == 'many':
-                    self.result_set.explode(result, node.outgoing_path(), ret)
+                    self.result_set.explode(result, node.outgoing_paths()[0], ret)
                 else:
                     raise TypeError()
 
@@ -48,5 +48,7 @@ class QueryPlan(object):
 
     def execute(self):
         self.forward()
+
+        print self.result_set
 
         return self.outputs()
