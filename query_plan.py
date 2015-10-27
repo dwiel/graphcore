@@ -49,6 +49,4 @@ class QueryPlan(object):
     def execute(self):
         self.forward()
 
-        print self.result_set
-
         return self.outputs()
