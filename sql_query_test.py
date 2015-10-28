@@ -8,6 +8,7 @@ class AssertSQLQueryEqual():
         self.assertEqual(query1.tables, query2.tables)
         self.assertEqual(query1.selects, query2.selects)
         self.assertEqual(query1.where, query2.where)
+        self.assertEqual(query1.input_mapping, query2.input_mapping)
 
 
 class TestSQLQueryPlan(unittest.TestCase, AssertSQLQueryEqual):
@@ -28,3 +29,30 @@ class TestSQLQueryPlan(unittest.TestCase, AssertSQLQueryEqual):
                 'books.user_id': mysql_col('user.id'),
             })
         )
+
+    def test_simple_add(self):
+        first_name = SQLQuery(['users'], 'users.first_name', {
+            'users.id': 1,
+        })
+        last_name = SQLQuery(['users'], 'users.last_name', {
+            'users.id': 1,
+        })
+
+        first_and_last_name = SQLQuery(
+            ['users'], ['users.first_name', 'users.last_name'], {
+                'users.id': 1,
+            }
+        )
+
+        self.assertSQLQueryEqual(first_name + last_name, first_and_last_name)
+
+    def test_hash(self):
+        def build():
+            SQLQuery(['users'], 'users.first_name', {
+                'users.id': 1,
+            }, {
+                'users.name': 'name',
+            })
+
+        self.assertEqual(hash(build()),  hash(build()))
+

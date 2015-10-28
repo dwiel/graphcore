@@ -57,38 +57,13 @@ TODO: out_paths: {key: (Path, Node), ...}
 """
 
 from .path import Path
-
-
-def freeze(o):
-    if isinstance(o, list):
-        return tuple(freeze(e) for e in o)
-    elif isinstance(o, set):
-        return frozenset(freeze(e) for e in o)
-    elif isinstance(o, dict):
-        return tuple((freeze(k), freeze(v)) for k, v in sorted(o.items()))
-    else:
-        return o
-
-class EqualityMixin(object):
-    def __eq__(self, other):
-        """Override the default Equals behavior"""
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        """Define a non-equality test"""
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        """Override the default hash behavior (that returns the id or the object)"""
-        return hash(freeze(self.__dict__))
+from .equality_mixin import EqualityMixin
 
 
 class Node(EqualityMixin):
     def __init__(self, incoming_edges, outgoing_edges, rule, filter=None):
-        self.incoming_edges = incoming_edges
-        self.outgoing_edges = outgoing_edges
+        self.incoming_edges = list(incoming_edges)
+        self.outgoing_edges = list(outgoing_edges)
         self.rule = rule
         self.filter = filter
 
@@ -120,6 +95,17 @@ class Node(EqualityMixin):
             self.filter
         ))
 
+    def _shallow(self):
+        return (
+            tuple(edge.path for edge in self.incoming_edges),
+            tuple(edge.path for edge in self.outgoing_edges),
+            self.rule,
+            self.filter
+        )
+
+    def __eq__(self, other):
+        return self._shallow() == other._shallow()
+
     def __repr__(self):
         string='<Node '
         string+='{outgoing_paths} = {name}({incoming_paths}) '
@@ -146,26 +132,33 @@ class Filter(EqualityMixin):
         self.operation = operation
         self.value = value
 
-class Edge(EqualityMixin):
+class Edge(object):
     def __init__(self, path, getters, setter, out):
         self.path = path
         self.getters = set(getters)
         self.setter = setter
         self.out = out
 
+    def __hash__(self):
+        return hash(self.path)
+    
     def __repr__(self):
-        return '<Edge {path} getters={{{getters}}} setter={setter}>'.format(
-                path=self.path,
-                getters=', '.join(
-                    str(getter.name) for getter in self.getters
-                ),
-                setter=self.setter.name if self.setter else None,
-        )
+        return '<Edge {path}>'.format(**self.__dict__)
+
+    def __eq__(self, other):
+        return self.path == other.path
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class CallGraph(object):
+    # TODO: Edge objects seem a bit heavy-handed, perhaps the CallGraph
+    # object should just provide helpers to get at edge.incoming_nodes, etc
+    # instead of trying to keep them up to date on those objects all the time
+
     def __init__(self):
-        self.nodes = set()
+        self.nodes = []
         self.edges = {}
 
     def add_node(self, incoming_paths, outgoing_paths, rule, filter=None):
@@ -181,7 +174,7 @@ class CallGraph(object):
 
         # build a node
         node = Node(incoming_edges, outgoing_edges, rule, filter)
-        self.nodes.add(node)
+        self.nodes.append(node)
 
         # add the node to the edges
         for outgoing_edge in outgoing_edges:
@@ -190,7 +183,18 @@ class CallGraph(object):
         for edge in incoming_edges:
             edge.getters.add(node)
 
+    def remove_node(self, node):
+        self.nodes.remove(node)
+
+        for edge in node.incoming_edges:
+            edge.getters.remove(node)
+
+        for edge in node.outgoing_edges:
+            edge.setter = None
+
     def edge(self, path):
+        path = Path(path)
+
         if path in self.edges:
             return self.edges[path]
         else:

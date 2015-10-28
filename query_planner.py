@@ -7,6 +7,9 @@ from .query_plan import QueryPlan
 
 
 class CallGraphIterator(object):
+    # TODO: this iterator could only check nodes for grounded ness if
+    # one of its incoming_nodes changed groundedness
+
     def __init__(self, call_graph):
         self._call_graph = call_graph
 
@@ -32,13 +35,13 @@ class CallGraphIterator(object):
 
     def __iter__(self):
         # local copy of set that we can modify
-        nodes = self._call_graph.nodes.copy()
+        nodes = list(self._call_graph.nodes)
 
         # if a node is grounded, add it to the plan
         # iterate over a copy so that we can remove while we go
         while len(nodes):
             grounded_node = False
-            for node in nodes.copy():
+            for node in list(nodes):
                 if self._is_grounded(node):
                     grounded_node = True
                     yield node

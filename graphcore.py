@@ -4,6 +4,7 @@ from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
 from .result_set import ResultSet
+from .equality_mixin import EqualityMixin
 
 class Var(object):
     pass
@@ -165,17 +166,20 @@ class QuerySearch(object):
             )
 
 
-class Rule(object):
-    def __init__(self, function, inputs, output, cardinality):
+class Rule(EqualityMixin):
+    def __init__(self, function, inputs, outputs, cardinality):
         self.function = function
         self.inputs = [Path(input) for input in inputs]
-        self.output = Path(output)
+        if isinstance(outputs, (Path, six.string_types)):
+            self.outputs = [outputs]
+        else:
+            self.outputs = [Path(output) for output in outputs]
         self.cardinality = cardinality
 
     def __repr__(self):
-        string = '<Rule {output} = {function_name}({inputs}) {cardinality}'
+        string = '<Rule {outputs} = {function_name}({inputs}) {cardinality}'
         return string.format(
-                output=self.output,
+                outputs=', '.join(map(str, self.outputs)),
                 function_name=self.function.__name__,
                 inputs=', '.join(map(str, self.inputs)),
                 cardinality=self.cardinality,
@@ -260,14 +264,14 @@ class Graphcore(object):
 
             # first try finding a match direct on the root
             for rule in self.rules:
-                if path == rule.output:
+                if path in rule.outputs:
                     return [], rule
 
             # then try extracting the base type out and finding a prefix
             prefix, path = self.schema.base_type_and_property_of_path(path)
 
             for rule in self.rules:
-                if path == rule.output:
+                if path in rule.outputs:
                     return prefix, rule
 
         raise IndexError(

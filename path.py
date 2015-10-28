@@ -34,7 +34,10 @@ class Path(object):
         return hash(self.parts)
 
     def __eq__(self, other):
-        return self.parts == other.parts
+        if isinstance(other, Path):
+            return self.parts == other.parts
+        else:
+            return self.parts == Path(other).parts
 
     def __getitem__(self, index):
         return self.parts[index]

@@ -1,5 +1,7 @@
 import six
 
+from .equality_mixin import EqualityMixin
+
 class mysql_col(str):
     pass
 
@@ -11,7 +13,7 @@ def parse_comma_seperated_set(input):
         return set(input)
 
 
-class SQLQuery(object):
+class SQLQuery(EqualityMixin):
     def __init__(self, tables, selects, where, input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
@@ -42,8 +44,20 @@ class SQLQuery(object):
 
         self.flatten()
 
+    @property
     def __name__(self):
         return repr(self)
+
+    def __repr__(self):
+        return (
+            '<SQLQuery tables:{tables}; selects:{selects}; where:{where} '
+            'input_mapping:{input_mapping}'
+        ).format(
+            tables=', '.join(self.tables),
+            selects=', '.join(self.selects),
+            where=self.where,
+            input_mapping=self.input_mapping,
+        )
 
     def _assert_flattenable(self):
         """ ensure that the query is flattenable
@@ -120,5 +134,29 @@ class SQLQuery(object):
                 if k == v:
                     del self.where[k]
 
+    def __add__(self, other):
+        where = {}
+        where.update(self.where)
+        where.update(other.where)
+
+        input_mapping = {}
+        input_mapping.update(self.input_mapping)
+        input_mapping.update(other.input_mapping)
+
+        return SQLQuery(
+            self.tables.union(other.tables),
+            self.selects.union(other.selects),
+            where,
+            input_mapping,
+        )
+
     def __call__(self):
         raise NotImplemented()
+
+    def copy(self):
+        return SQLQuery(
+            self.tables.copy(),
+            self.selects.copy(),
+            self.where.copy(),
+            self.input_mapping.copy(),
+        )
