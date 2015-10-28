@@ -73,6 +73,7 @@ class SQLRulesTest(unittest.TestCase):
         self.addTypeEqualityFunc(CallGraph, 'assertCallGraphEqual')
 
     def assertCallGraphEqual(self, call_graph1, call_graph2, msg=None):
+        self.maxDiff = None
         self.assertEqual(call_graph1.nodes, call_graph2.nodes)
         self.assertEqual(call_graph1.edges, call_graph2.edges)
 
