@@ -33,7 +33,7 @@ and you don't want a large number of round trips.
 
 Node: {
     'incoming_edges': {Edge},
-    'outgoing_edges': Edge|[Edge]|{str: Edge},
+    'outgoing_edges': {Edge},
     'rule': Rule,
     'filter': Filter
 }
@@ -47,7 +47,7 @@ Filter: {
 Edge: {
     'path': Path,
     'getters': {Node},
-    'setter': Node,
+    'setter': Node|None,
 }
 
 the order of the in_paths is irrelevant (set)
