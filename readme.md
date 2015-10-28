@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore)
+[![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore) [![Coverage Status](https://coveralls.io/repos/dwiel/graphcore/badge.svg?branch=master&service=github)](https://coveralls.io/github/dwiel/graphcore?branch=master)
 
 # Graphcore
 
