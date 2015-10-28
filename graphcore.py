@@ -4,7 +4,7 @@ from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
 from .result_set import ResultSet
-from .equality_mixin import EqualityMixin
+from .equality_mixin import EqualityMixin, HashMixin
 
 class Var(object):
     pass
@@ -166,7 +166,7 @@ class QuerySearch(object):
             )
 
 
-class Rule(EqualityMixin):
+class Rule(EqualityMixin, HashMixin):
     def __init__(self, function, inputs, outputs, cardinality):
         self.function = function
         self.inputs = [Path(input) for input in inputs]
