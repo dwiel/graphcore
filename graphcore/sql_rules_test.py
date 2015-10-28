@@ -5,7 +5,12 @@ from .path import Path
 from .call_graph import CallGraph, Edge, Node
 from .graphcore import Graphcore, QuerySearch, Rule
 
-def optimize(call_graph, rule_type, merge_function):
+def reduce_like_siblings(call_graph, rule_type, merge_function):
+    """Given a call_graph, reduce sibling nodes of rule_type
+    using merge_function.
+
+    Returns a modified call_graph
+    """
     for path, edge in call_graph.edges.items():
         nodes = [
             node for node in edge.getters
@@ -42,7 +47,7 @@ def optimize(call_graph, rule_type, merge_function):
     return call_graph
 
 
-def test_optimization():
+def test_reduce_like_siblings():
     # use sets for rule functions, user set.__or__ as merge
     # operation
 
@@ -58,7 +63,7 @@ def test_optimization():
         Rule(set([2]), ['user.id'], ['user.last_name'], 'one'),
     )
 
-    call_graph_out = optimize(call_graph_in, set, set.__or__)
+    call_graph_out = reduce_like_siblings(call_graph_in, set, set.__or__)
 
     call_graph_expected = CallGraph()
     call_graph_expected.add_node(
