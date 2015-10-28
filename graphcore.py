@@ -166,7 +166,7 @@ class QuerySearch(object):
             )
 
 
-class Rule(EqualityMixin, HashMixin):
+class Rule(HashMixin, EqualityMixin):
     def __init__(self, function, inputs, outputs, cardinality):
         self.function = function
         self.inputs = [Path(input) for input in inputs]
