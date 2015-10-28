@@ -197,3 +197,12 @@ class CallGraph(object):
         )
     __str__ = __repr__
 
+    def __key(self):
+        return (
+            self.nodes,
+            self.edges,
+        )
+
+    def __eq__(self, other):
+        return self.__key() == other.__key()
+
