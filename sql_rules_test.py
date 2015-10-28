@@ -50,8 +50,8 @@ def optimize(call_graph):
             incoming_paths = set()
             outgoing_paths = set()
             for node in nodes:
-                incoming_paths.update(node.incoming_paths())
-                outgoing_paths.update(node.outgoing_paths())
+                incoming_paths.update(node.incoming_paths)
+                outgoing_paths.update(node.outgoing_paths)
 
                 call_graph.remove_node(node)
             

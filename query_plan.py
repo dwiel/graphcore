@@ -31,15 +31,15 @@ class QueryPlan(object):
             for result in self.result_set.copy():
                 ret = node.rule.function(**{
                     path.relative.property: result.get(path)
-                    for path in node.incoming_paths()
+                    for path in node.incoming_paths
                     })
 
                 # if the result of the rule is one value, just set the value,
                 # otherwise, if there are many, explode out the result set
                 if node.rule.cardinality == 'one':
-                    result.set(node.outgoing_paths()[0], ret)
+                    result.set(node.outgoing_paths[0], ret)
                 elif node.rule.cardinality == 'many':
-                    self.result_set.explode(result, node.outgoing_paths()[0], ret)
+                    self.result_set.explode(result, node.outgoing_paths[0], ret)
                 else:
                     raise TypeError()
 

@@ -60,51 +60,37 @@ from .path import Path
 from .equality_mixin import EqualityMixin
 
 
-class Node(EqualityMixin):
-    def __init__(self, incoming_edges, outgoing_edges, rule, filter=None):
-        self.incoming_edges = list(incoming_edges)
-        self.outgoing_edges = list(outgoing_edges)
+class Node(object):
+    def __init__(self, call_graph, incoming_paths, outgoing_paths, rule, filter=None):
+        self.call_graph = call_graph
+        self.incoming_paths = tuple(incoming_paths)
+        self.outgoing_paths = tuple(outgoing_paths)
         self.rule = rule
         self.filter = filter
 
         # this is useful for QueryPlanner to iterate over CallGraph
         self._visited = False
 
+    def incoming_edges(self):
+        return [self.call_graph.edge(path) for path in self.incoming_paths]
+
     def incoming_nodes(self):
-        return [edge.setter for edge in self.incoming_edges
+        return [edge.setter for edge in self.incoming_edges()
                 if edge.setter is not None]
 
-    def incoming_paths(self):
-        return [edge.path for edge in self.incoming_edges]
-
-    def outgoing_paths(self):
-        return [edge.path for edge in self.outgoing_edges]
-
     def __hash__(self):
-        """ a custom hash is required because the data structure is recursive.
+        return hash(self.__key())
 
-        edges are expressed in the hash as their paths only.  A node will be
-        considered equal if it has the same rule, filter and paths it is
-        connected to regardless of what else is happening in the CallGraph
-        """
-
-        return hash((
-            tuple(edge.path for edge in self.incoming_edges),
-            tuple(edge.path for edge in self.outgoing_edges),
-            self.rule,
-            self.filter
-        ))
-
-    def _shallow(self):
+    def __key(self):
         return (
-            tuple(edge.path for edge in self.incoming_edges),
-            tuple(edge.path for edge in self.outgoing_edges),
+            self.incoming_paths,
+            self.outgoing_paths,
             self.rule,
             self.filter
         )
 
     def __eq__(self, other):
-        return self._shallow() == other._shallow()
+        return self.__key() == other.__key()
 
     def __repr__(self):
         string='<Node '
@@ -112,13 +98,9 @@ class Node(EqualityMixin):
         string+='filter={filter}'
         string+='>'
         return (string.format(
-                outgoing_paths=', '.join(
-                    str(edge.path) for edge in self.outgoing_edges
-                ),
+                outgoing_paths=', '.join(map(str, self.outgoing_paths)),
+                incoming_paths=', '.join(map(str, self.incoming_paths)),
                 name=self.name,
-                incoming_paths=', '.join(
-                    str(edge.path) for edge in self.incoming_edges
-                ),
                 filter=self.filter
             )
         )
@@ -162,35 +144,25 @@ class CallGraph(object):
         self.edges = {}
 
     def add_node(self, incoming_paths, outgoing_paths, rule, filter=None):
-        # lookup or create edges for all of the paths
-        incoming_edges = {
-            self.edge(path) for path in incoming_paths
-        }
-
-        # grab outgoing_edge and set it's out if this is an output computation
-        outgoing_edges = {
-            self.edge(path) for path in outgoing_paths
-        }
-
         # build a node
-        node = Node(incoming_edges, outgoing_edges, rule, filter)
+        node = Node(self, incoming_paths, outgoing_paths, rule, filter)
         self.nodes.append(node)
 
         # add the node to the edges
-        for outgoing_edge in outgoing_edges:
-            outgoing_edge.setter = node
+        for outgoing_path in outgoing_paths:
+            self.edge(outgoing_path).setter = node
 
-        for edge in incoming_edges:
-            edge.getters.add(node)
+        for incoming_path in incoming_paths:
+            self.edge(incoming_path).getters.add(node)
 
     def remove_node(self, node):
         self.nodes.remove(node)
 
-        for edge in node.incoming_edges:
-            edge.getters.remove(node)
+        for path in node.incoming_paths:
+            self.edge(path).getters.remove(node)
 
-        for edge in node.outgoing_edges:
-            edge.setter = None
+        for path in node.outgoing_paths:
+            self.edge(path).setter = None
 
     def edge(self, path):
         path = Path(path)
