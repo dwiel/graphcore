@@ -34,16 +34,14 @@ class Path(object):
         return hash(self.parts)
 
     def __eq__(self, other):
-        if isinstance(other, Path):
-            return self.parts == other.parts
-        else:
-            return self.parts == Path(other).parts
+        if not isinstance(other, Path):
+            other = Path(other)
+        return self.parts == other.parts
 
-    def __cmp__(self, other):
-        if isinstance(other, Path):
-            return cmp(self.parts, other.parts)
-        else:
-            return cmp(self.parts, Path(other).parts)
+    def __lt__(self, other):
+        if not isinstance(other, Path):
+            other = Path(other)
+        return self.parts < other.parts
 
     def __getitem__(self, index):
         return self.parts[index]
