@@ -107,18 +107,30 @@ class Node(object):
 
     @property
     def name(self):
-        return self.rule.function.__name__
+        if hasattr(self.rule.function, '__name__'):
+            return self.rule.function.__name__
+        else:
+            return str(self.rule.function)
+
 
 class Filter(EqualityMixin):
     def __init__(self, operation, value):
         self.operation = operation
         self.value = value
 
+# user.book.id
+
 class Edge(object):
+    """
+    out: bool - True if is this path used in the final ResultSet, False
+        if it is an intermediate value
+    """
+
     def __init__(self, path, getters, setter, out):
         self.path = path
         self.getters = set(getters)
         self.setter = setter
+        # TODO: rename out
         self.out = out
 
     def __hash__(self):
