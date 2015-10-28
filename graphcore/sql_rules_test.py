@@ -4,39 +4,25 @@ import unittest
 from .path import Path
 from .call_graph import CallGraph, Edge, Node
 from .graphcore import Graphcore, QuerySearch, Rule
-from . import sql_query
 
-testgraphcore = Graphcore()
-
-
-testgraphcore.register_rule(
-    ['user.id'], 'user.first_name',
-    function=sql_query.SQLQuery(
-        ['users'], ['users.first_name'], {}, {'id': 'users.id'}
-    )
-)
-
-testgraphcore.register_rule(
-    ['user.id'], 'user.last_name',
-    function=sql_query.SQLQuery(
-        ['users'], ['users.last_name'], {}, {'id': 'users.id'}
-    )
-)
-
-
-def optimize(call_graph):
+def optimize(call_graph, rule_type, merge_function):
     for path, edge in call_graph.edges.items():
         nodes = [
             node for node in edge.getters
-            if isinstance(node.rule.function, sql_query.SQLQuery)
+            if isinstance(node.rule.function, rule_type)
         ]
-        if nodes:
+        if len(nodes) > 1:
             # combine sql_queries
-            function = nodes[0].rule.function.copy()
+            function = reduce(
+                merge_function,
+                [node.rule.function for node in nodes]
+            )
+            print([node.rule.function for node in nodes])
+            print(function)
+
             outputs = set(nodes[0].rule.outputs)
             inputs = set(nodes[0].rule.inputs)
             for node in nodes[1:]:
-                function += node.rule.function
                 outputs.update(node.rule.outputs)
                 inputs.update(node.rule.inputs)
             rule = Rule(function, inputs, outputs, 'one')
@@ -92,31 +78,38 @@ class SQLRulesTest(unittest.TestCase):
         self.assertEqual(call_graph1.edges, call_graph2.edges)
 
     def test_optimization(self):
-        query = QuerySearch(testgraphcore, {
-            'user.id': 1,
-            'user.first_name?': None,
-            'user.last_name?': None,
-        })
-        query.backward()
+        # use sets for rule functions, user set.__or__ as merge
+        # operation
 
-        query.call_graph = optimize(query.call_graph)
+        call_graph_in = CallGraph()
+        call_graph_in.add_node(
+            ['user.id'],
+            ['user.first_name'],
+            Rule(set([1]), ['user.id'], ['user.first_name'], 'one'),
+        )
+        call_graph_in.add_node(
+            ['user.id'],
+            ['user.last_name'],
+            Rule(set([2]), ['user.id'], ['user.last_name'], 'one'),
+        )
 
-        call_graph = CallGraph()
-        call_graph.add_node(
+        call_graph_out = optimize(call_graph_in, set, set.__or__)
+
+        call_graph_expected = CallGraph()
+        call_graph_expected.add_node(
             ['user.id'],
             ['user.first_name', 'user.last_name'],
             Rule(
-                sql_query.SQLQuery(
-                    ['users'], ['users.first_name', 'users.last_name'], {}, {
-                        'id': 'users.id',
-                }),
+                set([1, 2]),
                 ['user.id'],
                 ['user.first_name', 'user.last_name'],
                 'one'
             )
         )
-        call_graph.edge('user.first_name').out = True
-        call_graph.edge('user.last_name').out = True
+        call_graph_expected.edge('user.first_name').out = True
+        call_graph_expected.edge('user.last_name').out = True
 
-        self.assertEqual(type(query.call_graph), type(call_graph))
-        self.assertEqual(query.call_graph, call_graph)
+        print(call_graph_out)
+        print(call_graph_expected)
+
+        self.assertEqual(call_graph_expected, call_graph_out)
