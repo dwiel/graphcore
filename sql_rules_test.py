@@ -69,6 +69,13 @@ def optimize_node(node):
 class SQLRulesTest(unittest.TestCase):
     def setUp(self):
         self.addTypeEqualityFunc(CallGraph, 'assertCallGraphEqual')
+        self.addTypeEqualityFunc(Node, 'assertNodeEqual')
+
+    def assertNodeEqual(self, node1, node2, msg=None):
+        self.assertEqual(node1.incoming_paths, node2.incoming_paths)
+        self.assertEqual(node1.outgoing_paths, node2.outgoing_paths)
+        self.assertEqual(node1.rule, node2.rule)
+        self.assertEqual(node1.filter, node2.filter)
 
     def assertCallGraphEqual(self, call_graph1, call_graph2, msg=None):
         self.maxDiff = None
