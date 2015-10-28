@@ -17,8 +17,6 @@ def optimize(call_graph, rule_type, merge_function):
                 merge_function,
                 [node.rule.function for node in nodes]
             )
-            print([node.rule.function for node in nodes])
-            print(function)
 
             outputs = set(nodes[0].rule.outputs)
             inputs = set(nodes[0].rule.inputs)
@@ -108,8 +106,5 @@ class SQLRulesTest(unittest.TestCase):
         )
         call_graph_expected.edge('user.first_name').out = True
         call_graph_expected.edge('user.last_name').out = True
-
-        print(call_graph_out)
-        print(call_graph_expected)
 
         self.assertEqual(call_graph_expected, call_graph_out)
