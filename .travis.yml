@@ -12,7 +12,5 @@ script: py.test
 notifications:
   email:
     - zdwiel@gmail.com
-install:
-  - pip install codecov
 after_success:
   - codecov
