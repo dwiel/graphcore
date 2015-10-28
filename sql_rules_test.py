@@ -27,7 +27,7 @@ testgraphcore.register_rule(
 def optimize(call_graph):
     print(call_graph)
 
-    for path, edge in call_graph.edges.iteritems():
+    for path, edge in call_graph.edges.items():
         nodes = [
             node for node in edge.getters
             if isinstance(node.rule.function, sql_query.SQLQuery)
