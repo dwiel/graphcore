@@ -149,14 +149,3 @@ class SQLQuery(HashMixin, EqualityMixin):
             where,
             input_mapping,
         )
-
-    def __call__(self):
-        raise NotImplemented()
-
-    def copy(self):
-        return SQLQuery(
-            self.tables.copy(),
-            self.selects.copy(),
-            self.where.copy(),
-            self.input_mapping.copy(),
-        )
