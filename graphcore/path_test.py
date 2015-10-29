@@ -1,3 +1,5 @@
+import pytest
+
 from .path import Path
 
 
@@ -17,3 +19,7 @@ def test_lt():
 
 def test_repr():
     assert repr(Path('a')) == '<Path a>'
+
+def test_init_error():
+    with pytest.raises(TypeError):
+        Path(1)
