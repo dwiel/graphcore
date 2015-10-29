@@ -1,15 +1,16 @@
-import unittest
-
-from . import graphcore
+from .path import Path
 
 
-class TestPath(unittest.TestCase):
-    def test_subpaths(self):
-        path = graphcore.Path('a.b.c.d')
-        self.assertEqual(
-            list(path.subpaths()), [
-                graphcore.Path('c.d'),
-                graphcore.Path('b.c.d'),
-                graphcore.Path('a.b.c.d')
-            ]
-        )
+def test_subpaths():
+    path = Path('a.b.c.d')
+    assert list(path.subpaths()) == [
+        Path('c.d'),
+        Path('b.c.d'),
+        Path('a.b.c.d')
+    ]
+
+def test_add():
+    assert Path('a') + Path('b') == Path('a.b')
+
+def test_lt():
+    assert Path('a') < 'b'
