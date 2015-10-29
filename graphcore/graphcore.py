@@ -1,5 +1,6 @@
 import six
 
+from .rule import Rule, Cardinality
 from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
@@ -166,25 +167,6 @@ class QuerySearch(object):
             )
 
 
-class Rule(HashMixin, EqualityMixin):
-    def __init__(self, function, inputs, outputs, cardinality):
-        self.function = function
-        self.inputs = sorted([Path(input) for input in inputs])
-        if isinstance(outputs, (Path, six.string_types)):
-            self.outputs = [outputs]
-        else:
-            self.outputs = sorted([Path(output) for output in outputs])
-        self.cardinality = cardinality
-
-    def __repr__(self):
-        string = '<Rule {outputs} = {function_name}({inputs}) {cardinality}'
-        return string.format(
-                outputs=', '.join(map(str, self.outputs)),
-                function_name=self.function.__name__,
-                inputs=', '.join(map(str, self.inputs)),
-                cardinality=self.cardinality,
-        )
-
 class Relationship(object):
     def __init__(self, base_type, kind, property, other_type):
         self.base_type = base_type
@@ -239,12 +221,12 @@ class Graphcore(object):
             Relationship(base_type, 'has_many', property, other_type)
         )
 
-    def register_rule(self, inputs, output, cardinality='one', function=None):
+    def register_rule(self, inputs, output, cardinality=Cardinality.one, function=None):
         self.rules.append(Rule(
             function, inputs, output, cardinality
         ))
 
-    def rule(self, inputs, output, cardinality='one'):
+    def rule(self, inputs, output, cardinality=Cardinality.one):
         def decorator(fn):
             self.rules.append(Rule(
                 fn, inputs, output, cardinality

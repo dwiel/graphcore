@@ -3,6 +3,7 @@ The query plan is a sequential list of rules to apply.  Other QueryPlans may in
 the future also handle parallel execution.
 """
 
+from .rule import Cardinality
 from .result_set import ResultSet
 
 class QueryPlan(object):
@@ -36,12 +37,10 @@ class QueryPlan(object):
 
                 # if the result of the rule is one value, just set the value,
                 # otherwise, if there are many, explode out the result set
-                if node.rule.cardinality == 'one':
+                if node.rule.cardinality == Cardinality.one:
                     result.set(node.outgoing_paths[0], ret)
-                elif node.rule.cardinality == 'many':
+                elif node.rule.cardinality == Cardinality.many:
                     self.result_set.explode(result, node.outgoing_paths[0], ret)
-                else:
-                    raise TypeError()
 
     def outputs(self):
         return self.result_set.extract_json(self.output_paths)

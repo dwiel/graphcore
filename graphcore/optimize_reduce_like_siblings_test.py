@@ -1,4 +1,4 @@
-from .graphcore import Rule
+from .rule import Rule
 from .call_graph import CallGraph
 
 from .optimize_reduce_like_siblings import reduce_like_siblings
