@@ -16,5 +16,4 @@ notifications:
   email:
     - zdwiel@gmail.com
 after_success:
-  - codecov
   - coveralls
