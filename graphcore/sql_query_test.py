@@ -1,3 +1,5 @@
+import pytest
+
 from .sql_query import SQLQuery, mysql_col
 
 
@@ -43,3 +45,17 @@ def test_hash():
 
     assert hash(build()) == hash(build())
 
+
+def test_assert_flattenable_table_alias():
+    with pytest.raises(ValueError):
+        SQLQuery(['users u'], 'users.id', {})
+
+
+def test_assert_flattenable_column_with_no_table():
+    with pytest.raises(ValueError):
+        SQLQuery(['users'], 'id', {})
+
+
+def test_assert_flattenable_clause_with_no_table():
+    with pytest.raises(ValueError):
+        SQLQuery(['users'], 'users.id', {'id': 1})
