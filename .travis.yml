@@ -10,7 +10,9 @@ python:
 install:
   - echo $TRAVIS_PYTHON_VERSION
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install -r requirements_python2.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then pip install -r requirements_python2.txt; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then pip install -r requirements_python3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == pypy3* ]]; then pip install -r requirements_python3.txt; fi
   - pip install pytest-cov coveralls
 # command to run tests
 script: py.test --cov=graphcore
