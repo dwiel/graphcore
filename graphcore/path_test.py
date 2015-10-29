@@ -14,3 +14,6 @@ def test_add():
 
 def test_lt():
     assert Path('a') < 'b'
+
+def test_repr():
+    assert repr(Path('a')) == '<Path a>'
