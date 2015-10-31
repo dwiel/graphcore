@@ -1,3 +1,5 @@
+import pytest
+
 from .query_plan import QueryPlan
 from .rule import Rule
 from .call_graph import Node
@@ -19,3 +21,16 @@ def test_query_plan_multiple_outputs():
     ret = query_plan.execute()
 
     assert ret == [{'a.out1': 1, 'a.out2': 2}]
+
+
+def test_query_plan_multiple_outputs_cardinality_many():
+    query_plan = QueryPlan({'a.in1': 1}, ['a.out1', 'a.out2'])
+    rule = Rule(
+        lambda in1:in1, ['a.in1'], ['a.out1', 'a.out2'], 'many'
+    )
+    query_plan.append(
+        Node(None, ['a.in1'], ['a.out1', 'a.out2'], rule)
+    )
+
+    with pytest.raises(NotImplementedError):
+        ret = query_plan.execute()

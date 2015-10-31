@@ -44,6 +44,11 @@ class QueryPlan(object):
                     else:
                         result.set(node.outgoing_paths[0], ret)
                 elif node.rule.cardinality == Cardinality.many:
+                    if len(node.rule.outputs) > 1:
+                        raise NotImplementedError(
+                            'cardinality.many and multiple outputs are'
+                            'not yet supported'
+                        )
                     self.result_set.explode(
                         result, node.outgoing_paths[0], ret)
 
