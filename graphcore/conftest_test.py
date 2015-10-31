@@ -11,11 +11,11 @@ def test_sql_query_repr_compare():
     assert sql_query_repr_compare(
         SQLQuery('a', 'a.b', {}),
         SQLQuery('a', 'a.c', {})
-    ) != None
+    ) is not None
 
 
 def test_call_graph_repr_compare():
-    assert call_graph_repr_compare(CallGraph(), CallGraph()) != None
+    assert call_graph_repr_compare(CallGraph(), CallGraph()) is not None
 
 
 def test_pytest_assertrepr_compare_sql_query():
