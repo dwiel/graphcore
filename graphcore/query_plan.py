@@ -6,7 +6,9 @@ the future also handle parallel execution.
 from .rule import Cardinality
 from .result_set import ResultSet
 
+
 class QueryPlan(object):
+
     def __init__(self, query, output_paths):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
@@ -33,14 +35,15 @@ class QueryPlan(object):
                 ret = node.rule.function(**{
                     path.relative.property: result.get(path)
                     for path in node.incoming_paths
-                    })
+                })
 
                 # if the result of the rule is one value, just set the value,
                 # otherwise, if there are many, explode out the result set
                 if node.rule.cardinality == Cardinality.one:
                     result.set(node.outgoing_paths[0], ret)
                 elif node.rule.cardinality == Cardinality.many:
-                    self.result_set.explode(result, node.outgoing_paths[0], ret)
+                    self.result_set.explode(
+                        result, node.outgoing_paths[0], ret)
 
     def outputs(self):
         return self.result_set.extract_json(self.output_paths)

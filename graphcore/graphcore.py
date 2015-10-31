@@ -7,6 +7,7 @@ from .query_planner import QueryPlanner
 from .result_set import ResultSet
 from .equality_mixin import EqualityMixin, HashMixin
 
+
 class Var(object):
     pass
 
@@ -20,6 +21,7 @@ class TempVar(Var):
 
 
 class Clause(object):
+
     def __init__(self, key, value):
         self.lhs, self.rhs = self._parse_clause(key, value)
 
@@ -55,6 +57,7 @@ class Clause(object):
 
 
 class Query(object):
+
     def __init__(self, query):
         self.clauses = []
         self.clause_map = {}
@@ -82,6 +85,7 @@ class Query(object):
 
 
 class QuerySearchIterator(object):
+
     def __init__(self, query):
         self.query = query
 
@@ -112,7 +116,7 @@ class QuerySearch(object):
         self.result_set.extract_from_query(self.query)
 
         self.graphcore = graphcore
-        
+
         self.call_graph = call_graph.CallGraph()
 
     def clauses_with_unbound_outvar(self):
@@ -143,9 +147,9 @@ class QuerySearch(object):
             )
 
         self.call_graph.add_node(
-                [clause.lhs for clause in input_clauses], 
-                [output_clause.lhs],
-                rule,
+            [clause.lhs for clause in input_clauses],
+            [output_clause.lhs],
+            rule,
         )
 
         if isinstance(output_clause.rhs, OutVar):
@@ -168,6 +172,7 @@ class QuerySearch(object):
 
 
 class Relationship(object):
+
     def __init__(self, base_type, kind, property, other_type):
         self.base_type = base_type
         self.kind = kind
@@ -182,6 +187,7 @@ class Relationship(object):
 
 
 class Schema(object):
+
     def __init__(self):
         self.relationships = []
 
@@ -211,6 +217,7 @@ class Schema(object):
 
 
 class Graphcore(object):
+
     def __init__(self):
         # rules are indexed by the Path of thier output
         self.rules = []

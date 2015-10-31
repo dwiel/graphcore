@@ -2,6 +2,7 @@ import six
 
 
 class Path(object):
+
     def __init__(self, init):
         if isinstance(init, six.string_types):
             self.parts = tuple(init.split('.'))

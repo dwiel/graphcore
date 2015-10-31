@@ -1,5 +1,6 @@
 
 class Result(object):
+
     def __init__(self, result=None):
         if isinstance(result, Result):
             self.result = result.result.copy()
@@ -26,7 +27,7 @@ class Result(object):
 
 class ResultSet(object):
     """ The ResultSet holds the state of the query as it is executed. """
-    
+
     def __init__(self, init=None):
         # TODO handle more complex result set toplogies
         if isinstance(init, ResultSet):
@@ -76,5 +77,3 @@ class ResultSet(object):
 
     def copy(self):
         return ResultSet(self)
-
-

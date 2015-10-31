@@ -2,6 +2,7 @@ import six
 
 from .equality_mixin import EqualityMixin, HashMixin
 
+
 class mysql_col(str):
     pass
 
@@ -14,6 +15,7 @@ def parse_comma_seperated_set(input):
 
 
 class SQLQuery(HashMixin, EqualityMixin):
+
     def __init__(self, tables, selects, where, input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
@@ -101,7 +103,6 @@ class SQLQuery(HashMixin, EqualityMixin):
                     kwargs_overlap=', '.join(map(str, kwargs_overlap))
                 )
             )
-
 
     def flatten(self):
         """ merge any SQLQuery objects on the rhs of a where clause

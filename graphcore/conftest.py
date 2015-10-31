@@ -3,6 +3,7 @@ import difflib
 from .call_graph import CallGraph
 from .sql_query import SQLQuery
 
+
 def call_graph_repr_compare(left, right):
     return list(difflib.ndiff(
         repr(left).splitlines(1),

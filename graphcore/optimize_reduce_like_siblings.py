@@ -6,6 +6,7 @@ from .call_graph import CallGraph, Edge, Node
 from .graphcore import Graphcore, QuerySearch
 from .rule import Rule, Cardinality
 
+
 def reduce_like_siblings(call_graph, rule_type, merge_function):
     """Given a call_graph, reduce sibling nodes of rule_type
     using merge_function.
@@ -42,7 +43,7 @@ def reduce_like_siblings(call_graph, rule_type, merge_function):
                 outgoing_paths.update(node.outgoing_paths)
 
                 call_graph.remove_node(node)
-            
+
             call_graph.add_node(incoming_paths, outgoing_paths, rule)
 
     return call_graph

@@ -38,8 +38,7 @@ def test_pytest_assertrepr_compare_call_graph():
 
     with mock.patch('graphcore.conftest.call_graph_repr_compare') as fn:
         with pytest.raises(Exception):
-            assert call_graph1 == call_graph2 
+            assert call_graph1 == call_graph2
 
         # not sure why its getting called more than once ...
         assert len(fn.mock_calls) != 0
-

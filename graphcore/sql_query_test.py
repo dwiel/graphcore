@@ -19,6 +19,7 @@ def test_simple_query_merge():
             'books.user_id': mysql_col('user.id'),
         })
 
+
 def test_simple_add():
     first_name = SQLQuery(['users'], 'users.first_name', {
         'users.id': 1,
@@ -34,6 +35,7 @@ def test_simple_add():
     )
 
     assert first_name + last_name == first_and_last_name
+
 
 def test_hash():
     def build():

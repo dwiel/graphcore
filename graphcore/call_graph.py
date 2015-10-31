@@ -61,6 +61,7 @@ from .equality_mixin import EqualityMixin
 
 
 class Node(object):
+
     def __init__(self, call_graph, incoming_paths, outgoing_paths, rule, filter=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(incoming_paths))
@@ -93,17 +94,17 @@ class Node(object):
         return self.__key() == other.__key()
 
     def __repr__(self):
-        string='<Node '
-        string+='{outgoing_paths} = {name}({incoming_paths}) '
-        string+='filter={filter}'
-        string+='>'
+        string = '<Node '
+        string += '{outgoing_paths} = {name}({incoming_paths}) '
+        string += 'filter={filter}'
+        string += '>'
         return (string.format(
                 outgoing_paths=', '.join(map(str, self.outgoing_paths)),
                 incoming_paths=', '.join(map(str, self.incoming_paths)),
                 name=self.name,
                 filter=self.filter
-            )
-        )
+                )
+                )
 
     @property
     def name(self):
@@ -114,11 +115,13 @@ class Node(object):
 
 
 class Filter(EqualityMixin):
+
     def __init__(self, operation, value):
         self.operation = operation
         self.value = value
 
 # user.book.id
+
 
 class Edge(object):
     """
@@ -135,7 +138,7 @@ class Edge(object):
 
     def __hash__(self):
         return hash(self.path)
-    
+
     def __repr__(self):
         return '<Edge {path}>'.format(**self.__dict__)
 
@@ -189,11 +192,11 @@ class CallGraph(object):
 
     def __repr__(self):
         return '<CallGraph nodes=[{nodes}\n] edges={{{edges}\n}}>'.format(
-                nodes=''.join('\n  '+str(node) for node in self.nodes),
-                edges=''.join(
-                    '\n  '+str(k)+': '+str(v)
-                    for k, v in self.edges.items()
-                ),
+            nodes=''.join('\n  ' + str(node) for node in self.nodes),
+            edges=''.join(
+                '\n  ' + str(k) + ': ' + str(v)
+                for k, v in self.edges.items()
+            ),
         )
     __str__ = __repr__
 
@@ -205,4 +208,3 @@ class CallGraph(object):
 
     def __eq__(self, other):
         return self.__key() == other.__key()
-

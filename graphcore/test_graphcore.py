@@ -3,8 +3,10 @@ import unittest
 from . import graphcore
 from .test_harness import testgraphcore
 
+
 class hashabledict(dict):
     """ a hashable dict to make it easier to compare query results """
+
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
 
@@ -22,6 +24,7 @@ def make_ret_comparable(ret):
 
 
 class TestGraphcore(unittest.TestCase):
+
     def assertRetEqual(self, ret1, ret2):
         self.assertEqual(
             make_ret_comparable(ret1),
@@ -81,6 +84,7 @@ class TestGraphcore(unittest.TestCase):
 
 
 class TestQuerySearch(unittest.TestCase):
+
     def __init__(self, *args):
         super(TestQuerySearch, self).__init__(*args)
 
@@ -113,7 +117,7 @@ class TestQuerySearch(unittest.TestCase):
     def test_call_graph_repr(self):
         query = graphcore.QuerySearch(testgraphcore, {
             'user.id': 1,
-            'user.name?': None, 
+            'user.name?': None,
         })
         query.backward()
 
@@ -121,6 +125,7 @@ class TestQuerySearch(unittest.TestCase):
 
 
 class TestClause(unittest.TestCase):
+
     def test_has_bound_value(self):
         clause = graphcore.Clause('meter.id', 1)
         self.assertFalse(clause.has_unbound_outvar())

@@ -6,6 +6,7 @@ from .call_graph import CallGraph, Edge, Node
 from .graphcore import Graphcore, QuerySearch
 from .rule import Rule, Cardinality
 
+
 def reduce_like_parent_child(call_graph, rule_type, merge_function):
     """Given a call_graph, reduce parent, child nodes of rule_type
     using merge_function.

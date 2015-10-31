@@ -3,6 +3,7 @@ from .call_graph import CallGraph
 
 from .optimize_reduce_like_siblings import reduce_like_siblings
 
+
 def test_reduce_like_siblings():
     # use sets for rule functions, user set.__or__ as merge
     # operation

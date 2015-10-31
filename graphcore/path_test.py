@@ -11,14 +11,18 @@ def test_subpaths():
         Path('a.b.c.d')
     ]
 
+
 def test_add():
     assert Path('a') + Path('b') == Path('a.b')
+
 
 def test_lt():
     assert Path('a') < 'b'
 
+
 def test_repr():
     assert repr(Path('a')) == '<Path a>'
+
 
 def test_init_error():
     with pytest.raises(TypeError):

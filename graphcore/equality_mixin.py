@@ -10,6 +10,7 @@ def freeze(o):
 
 
 class EqualityMixin(object):
+
     def __eq__(self, other):
         """Override the default Equals behavior"""
         if isinstance(other, self.__class__):
@@ -22,9 +23,8 @@ class EqualityMixin(object):
 
 
 class HashMixin(object):
+
     def __hash__(self):
         """Override the default hash behavior (that returns the id or the object)"""
         # TODO: get rid of this ...
         return hash(freeze(self.__dict__))
-
-

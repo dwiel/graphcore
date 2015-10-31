@@ -14,7 +14,7 @@ class CallGraphIterator(object):
         self._call_graph = call_graph
 
         # contains the python object id of nodes which have been grounded
-        self._grounded = set() 
+        self._grounded = set()
 
     def _is_grounded(self, node):
         """ Retursn true if node is in _grounded or if all incoming nodes
@@ -50,15 +50,17 @@ class CallGraphIterator(object):
 
             if not grounded_node:
                 raise ValueError(
-                        ('CallGraphIterator never saw some nodes: {nodes}.  '
-                         'Did see these nodes: {grounded_nodes}').format(
+                    ('CallGraphIterator never saw some nodes: {nodes}.  '
+                     'Did see these nodes: {grounded_nodes}').format(
                         nodes=nodes,
-                        grounded_nodes=set(self._call_graph.nodes.copy()) - nodes,
+                        grounded_nodes=set(
+                            self._call_graph.nodes.copy()) - nodes,
                     )
                 )
 
 
 class QueryPlanner(object):
+
     def __init__(self, call_graph, query):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
