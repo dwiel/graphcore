@@ -44,8 +44,6 @@ class SQLQuery(HashMixin, EqualityMixin):
         else:
             self.input_mapping = {}
 
-        self.flatten()
-
     @property
     def __name__(self):
         return repr(self)

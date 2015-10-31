@@ -13,6 +13,8 @@ def test_simple_query_merge():
         'books.id': book_id
     })
 
+    combined.flatten()
+
     assert combined == SQLQuery(
         'users, books', 'books.name', {
             'users.id': 1,
@@ -50,14 +52,14 @@ def test_hash():
 
 def test_assert_flattenable_table_alias():
     with pytest.raises(ValueError):
-        SQLQuery(['users u'], 'users.id', {})
+        SQLQuery(['users u'], 'users.id', {}).flatten()
 
 
 def test_assert_flattenable_column_with_no_table():
     with pytest.raises(ValueError):
-        SQLQuery(['users'], 'id', {})
+        SQLQuery(['users'], 'id', {}).flatten()
 
 
 def test_assert_flattenable_clause_with_no_table():
     with pytest.raises(ValueError):
-        SQLQuery(['users'], 'users.id', {'id': 1})
+        SQLQuery(['users'], 'users.id', {'id': 1}).flatten()
