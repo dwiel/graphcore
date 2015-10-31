@@ -62,7 +62,8 @@ from .equality_mixin import EqualityMixin
 
 class Node(object):
 
-    def __init__(self, call_graph, incoming_paths, outgoing_paths, rule, filter=None):
+    def __init__(self, call_graph, incoming_paths, outgoing_paths, rule,
+                 filter=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(incoming_paths))
         self.outgoing_paths = tuple(sorted(outgoing_paths))

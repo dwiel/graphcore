@@ -25,6 +25,7 @@ class EqualityMixin(object):
 class HashMixin(object):
 
     def __hash__(self):
-        """Override the default hash behavior (that returns the id or the object)"""
+        """Override the default hash behavior (that returns the id or
+        the object)"""
         # TODO: get rid of this ...
         return hash(freeze(self.__dict__))

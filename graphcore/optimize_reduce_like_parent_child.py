@@ -1,9 +1,5 @@
 from __future__ import print_function
-from functools import reduce
 
-from .path import Path
-from .call_graph import CallGraph, Edge, Node
-from .graphcore import Graphcore, QuerySearch
 from .rule import Rule, Cardinality
 
 

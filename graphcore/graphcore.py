@@ -1,11 +1,8 @@
-import six
-
 from .rule import Rule, Cardinality
 from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
 from .result_set import ResultSet
-from .equality_mixin import EqualityMixin, HashMixin
 
 
 class Var(object):
@@ -140,8 +137,8 @@ class QuerySearch(object):
             else:
                 absolute_path = input
 
-            # self.query.append is conditional on there not already being a clause
-            # with this absolute_path
+            # self.query.append is conditional on there not already
+            # being a clause with this absolute_path
             input_clauses.append(
                 self.query.append(Clause(absolute_path, TempVar()))
             )
@@ -228,7 +225,9 @@ class Graphcore(object):
             Relationship(base_type, 'has_many', property, other_type)
         )
 
-    def register_rule(self, inputs, output, cardinality=Cardinality.one, function=None):
+    def register_rule(self, inputs, output,
+                      cardinality=Cardinality.one,
+                      function=None):
         self.rules.append(Rule(
             function, inputs, output, cardinality
         ))

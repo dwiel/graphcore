@@ -32,7 +32,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             'kwargs_name': 'table_name.column!=',
             ...
         }
-            input_mapping is used to map variables passed in to the 
+            input_mapping is used to map variables passed in to the
             __call__ into where clauses
         """
 
@@ -121,8 +121,8 @@ class SQLQuery(HashMixin, EqualityMixin):
 
                 self.where.update(v.where)
                 if len(v.selects) != 1:
-                    raise ValueError('SQLQuery merging is only possible when the '
-                                     'embedded query has one select')
+                    raise ValueError('SQLQuery merging is only possible when '
+                                     'the embedded query has one select')
                 self.where[k] = mysql_col(list(v.selects)[0])
 
         self.cleanup()
