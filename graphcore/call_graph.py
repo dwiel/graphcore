@@ -65,8 +65,8 @@ class Node(object):
     def __init__(self, call_graph, incoming_paths, outgoing_paths, rule,
                  filter=None):
         self.call_graph = call_graph
-        self.incoming_paths = tuple(sorted(incoming_paths))
-        self.outgoing_paths = tuple(sorted(outgoing_paths))
+        self.incoming_paths = tuple(sorted(map(Path, incoming_paths)))
+        self.outgoing_paths = tuple(sorted(map(Path, outgoing_paths)))
         self.rule = rule
         self.filter = filter
 
