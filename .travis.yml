@@ -15,7 +15,10 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -r requirements_python3.3.txt; fi
   - if [[ $TRAVIS_PYTHON_VERSION > 3.3 && $TRAVIS_PYTHON_VERSION < 4 ]]; then pip install -r requirements_python3.4.txt; fi
   - pip install pytest-cov coveralls
+  - pip install flake8
 # command to run tests
+before_script:
+    flake8 .
 script: py.test --cov=graphcore
 notifications:
   email:
