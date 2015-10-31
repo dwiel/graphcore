@@ -171,6 +171,8 @@ class CallGraph(object):
         for incoming_path in incoming_paths:
             self.edge(incoming_path).getters.add(node)
 
+        return node
+
     def remove_node(self, node):
         self.nodes.remove(node)
 

@@ -9,37 +9,52 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
 
     Returns a modified call_graph
     """
-    for path, edge in call_graph.edges.items():
-        parent = edge.setter
-        if not parent:
-            continue
-        if not isinstance(parent.rule.function, rule_type):
-            continue
+    first_pass = True
+    changes_made = False
+    passes = 0
 
-        children = [
-            child for child in edge.getters
-            if isinstance(child.rule.function, rule_type)
-        ]
-        for child in children:
-            print(child, parent)
+    while changes_made or first_pass:
+        passes += 1
+        if passes > 100:
+            raise ValueError('looks like were in an infinite loop')
+        first_pass = False
+        changes_made = False
 
-            function = merge_function(
-                parent.rule.function, child.rule.function
-            )
+        for path, edge in call_graph.edges.items():
+            parent = edge.setter
+            if not parent:
+                continue
+            if not isinstance(parent.rule.function, rule_type):
+                continue
 
-            inputs = parent.rule.inputs
-            outputs = parent.rule.outputs + child.rule.outputs
+            children = [
+                child for child in edge.getters
+                if isinstance(child.rule.function, rule_type)
+            ]
+            for child in children:
+                print(child, parent)
 
-            rule = Rule(function, inputs, outputs, Cardinality.one)
+                function = merge_function(
+                    parent.rule.function, child.rule.function
+                )
 
-            incoming_paths = parent.incoming_paths
-            outgoing_paths = parent.outgoing_paths + child.outgoing_paths
+                inputs = parent.rule.inputs
+                outputs = parent.rule.outputs + child.rule.outputs
 
-            # TODO: another operation can remove unneeded computation
+                rule = Rule(function, inputs, outputs, Cardinality.one)
 
-            call_graph.remove_node(edge.setter)
-            call_graph.remove_node(child)
+                incoming_paths = parent.incoming_paths
+                outgoing_paths = parent.outgoing_paths + child.outgoing_paths
 
-            call_graph.add_node(incoming_paths, outgoing_paths, rule)
+                # TODO: another operation can remove unneeded computation
+
+                call_graph.remove_node(parent)
+                call_graph.remove_node(child)
+
+                parent = call_graph.add_node(
+                    incoming_paths, outgoing_paths, rule
+                )
+
+                changes_made = True
 
     return call_graph
