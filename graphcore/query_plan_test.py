@@ -26,11 +26,11 @@ def test_query_plan_multiple_outputs():
 def test_query_plan_multiple_outputs_cardinality_many():
     query_plan = QueryPlan({'a.in1': 1}, ['a.out1', 'a.out2'])
     rule = Rule(
-        lambda in1:in1, ['a.in1'], ['a.out1', 'a.out2'], 'many'
+        lambda in1: in1, ['a.in1'], ['a.out1', 'a.out2'], 'many'
     )
     query_plan.append(
         Node(None, ['a.in1'], ['a.out1', 'a.out2'], rule)
     )
 
     with pytest.raises(NotImplementedError):
-        ret = query_plan.execute()
+        query_plan.execute()
