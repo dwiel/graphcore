@@ -1,7 +1,6 @@
 from .query_plan import QueryPlan
 from .rule import Rule
 from .call_graph import Node
-from .path import Path
 
 
 def multiple_outputs(in1):
