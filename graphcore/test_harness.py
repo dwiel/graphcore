@@ -39,3 +39,12 @@ def book_name(id):
     return BOOK_ID_TO_BOOK_NAME[id]
 
 
+BOOK_ID_TO_AUTHOR_ID = {
+    1: 'Louis Lowry',
+    2: 'Neal Stephenson',
+    3: 'Neal Stephenson',
+}
+
+@testgraphcore.rule(['book.id'], 'book.author.id')
+def book_author_id(id):
+    return BOOK_ID_TO_AUTHOR_ID[id]

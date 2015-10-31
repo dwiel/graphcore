@@ -66,6 +66,19 @@ class TestGraphcore(unittest.TestCase):
             ]
         )
 
+    def test_three_deep_relation(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.author.id?': None,
+        })
+        self.assertRetEqual(
+            ret, [
+                {'user.books.author.id': 'Louis Lowry'},
+                {'user.books.author.id': 'Neal Stephenson'},
+                {'user.books.author.id': 'Neal Stephenson'},
+            ]
+        )
+
 
 class TestQuerySearch(unittest.TestCase):
     def __init__(self, *args):
