@@ -38,7 +38,11 @@ class QueryPlan(object):
                 # if the result of the rule is one value, just set the value,
                 # otherwise, if there are many, explode out the result set
                 if node.rule.cardinality == Cardinality.one:
-                    result.set(node.outgoing_paths[0], ret)
+                    if len(node.rule.outputs) > 1:
+                        for path, output in zip(node.outgoing_paths, ret):
+                            result.set(path, output)
+                    else:
+                        result.set(node.outgoing_paths[0], ret)
                 elif node.rule.cardinality == Cardinality.many:
                     self.result_set.explode(
                         result, node.outgoing_paths[0], ret)
