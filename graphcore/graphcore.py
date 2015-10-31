@@ -109,8 +109,6 @@ class QuerySearch(object):
     def __init__(self, graphcore, query):
         # TODO: basic query validation
         self.query = Query(query)
-        self.result_set = ResultSet()
-        self.result_set.extract_from_query(self.query)
 
         self.graphcore = graphcore
 

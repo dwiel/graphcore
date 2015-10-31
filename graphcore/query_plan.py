@@ -9,17 +9,15 @@ from .result_set import ResultSet
 
 class QueryPlan(object):
 
-    def __init__(self, query, output_paths):
+    def __init__(self, initial_bindings, output_paths):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
         """
-        self.query = query
         self.output_paths = output_paths
 
         self.nodes = []
-        self.result_set = ResultSet()
-        self.result_set.extract_from_query(query)
+        self.result_set = ResultSet(initial_bindings)
 
     def append(self, node):
         self.nodes.append(node)

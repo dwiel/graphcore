@@ -67,7 +67,17 @@ class QueryPlanner(object):
         state of the ResultSet object.
         """
         self.call_graph = call_graph
-        self.plan = QueryPlan(query, call_graph.output_paths())
+        self.plan = QueryPlan(
+            self._extract_initial_bindings_rom_query(query),
+            call_graph.output_paths()
+        )
+
+    def _extract_initial_bindings_rom_query(self, query):
+        initial_bindings = {}
+        for clause in query:
+            if clause.value:
+                initial_bindings[clause.lhs] = clause.value
+        return initial_bindings
 
     def plan_query(self):
         for node in CallGraphIterator(self.call_graph):

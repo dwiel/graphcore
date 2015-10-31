@@ -4,6 +4,10 @@ class Result(object):
     def __init__(self, result=None):
         if isinstance(result, Result):
             self.result = result.result.copy()
+        elif isinstance(result, dict):
+            self.result = {}
+            for k, v in result.items():
+                self.set(k, v)
         else:
             self.result = {}
 
@@ -32,8 +36,12 @@ class ResultSet(object):
         # TODO handle more complex result set toplogies
         if isinstance(init, ResultSet):
             self.results = init.results.copy()
+        elif isinstance(init, dict):
+            self.results = {Result(init)}
         else:
             self.results = {Result()}
+
+        print('d', self.results, init)
 
     def set(self, path, value):
         for result in self.results:
@@ -50,11 +58,6 @@ class ResultSet(object):
 
         self.results.remove(existing_result)
         self.results.update(new_results)
-
-    def extract_from_query(self, query):
-        for clause in query:
-            if clause.value:
-                self.set(clause.lhs, clause.value)
 
     def to_json(self):
         return [
