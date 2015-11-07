@@ -1,4 +1,5 @@
 import six
+import sql_query_dict
 
 from .equality_mixin import EqualityMixin, HashMixin
 
@@ -16,7 +17,8 @@ def parse_comma_seperated_set(input):
 
 class SQLQuery(HashMixin, EqualityMixin):
 
-    def __init__(self, tables, selects, where, input_mapping=None):
+    def __init__(self, tables, selects, where,
+                 limit=None, cardinality='many', input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
@@ -34,11 +36,17 @@ class SQLQuery(HashMixin, EqualityMixin):
         }
             input_mapping is used to map variables passed in to the
             __call__ into where clauses
+
+        cardinality: 'one', 'many'
+            if cardinality is one, only a single value will be returned
+            for each row
         """
 
         self.tables = parse_comma_seperated_set(tables)
         self.selects = parse_comma_seperated_set(selects)
         self.where = where.copy()
+        self.limit = limit
+        self.cardinality = cardinality
         if input_mapping:
             self.input_mapping = input_mapping.copy()
         else:
@@ -51,12 +59,15 @@ class SQLQuery(HashMixin, EqualityMixin):
     def __repr__(self):
         return (
             '<SQLQuery tables:{tables}; selects:{selects}; where:{where} '
-            'input_mapping:{input_mapping}'
+            'input_mapping:{input_mapping}; limit:{limit}; '
+            'cardinality:{cardinality}>'
         ).format(
             tables=', '.join(self.tables),
             selects=', '.join(self.selects),
             where=self.where,
             input_mapping=self.input_mapping,
+            limit=self.limit,
+            cardinality=self.cardinality,
         )
 
     def _assert_flattenable(self):
@@ -146,5 +157,28 @@ class SQLQuery(HashMixin, EqualityMixin):
             self.tables.union(other.tables),
             self.selects.union(other.selects),
             where,
-            input_mapping,
+            input_mapping=input_mapping,
         )
+
+    def __call__(self, **kwargs):
+        if set(self.input_mapping.keys()) != set(kwargs.keys()):
+            raise ValueError('input mapping keys != kwargs keys')
+
+        # compose where query
+        where = self.where.copy()
+        for k, v in kwargs.items():
+            where[self.input_mapping[k]] = v
+
+        sql, vals = sql_query_dict.select(
+            self.tables, self.selects, where, limit=self.limit
+        )
+
+        ret = self.driver(sql, vals)
+
+        if self.cardinality == 'one':
+            return [row[0] for row in ret]
+        else:
+            return ret
+
+    def driver(self, sql, vals):
+        raise NotImplementedError()

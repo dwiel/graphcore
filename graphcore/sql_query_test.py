@@ -1,4 +1,8 @@
 import pytest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from .sql_query import SQLQuery, mysql_col
 
@@ -63,3 +67,9 @@ def test_assert_flattenable_column_with_no_table():
 def test_assert_flattenable_clause_with_no_table():
     with pytest.raises(ValueError):
         SQLQuery(['users'], 'users.id', {'id': 1}).flatten()
+
+
+def test_call():
+    sql_query = SQLQuery(['users'], 'users.id', {'users.name': 'John'})
+    sql_query.driver = mock.MagicMock(return_value=3)
+    assert sql_query() == 3
