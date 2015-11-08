@@ -73,3 +73,28 @@ def test_call():
     sql_query = SQLQuery(['users'], 'users.id', {'users.name': 'John'})
     sql_query.driver = mock.MagicMock(return_value=3)
     assert sql_query() == 3
+
+
+def test_call_cardinality_one():
+    sql_query = SQLQuery(
+        ['users'], 'users.id', {'users.name': 'John'}, cardinality='one'
+    )
+    sql_query.driver = mock.MagicMock(return_value=[(3,)])
+    assert sql_query() == [3]
+
+
+def test_call_first_true():
+    sql_query = SQLQuery(
+        ['users'], 'users.id', {'users.name': 'John'}, first=True,
+    )
+    sql_query.driver = mock.MagicMock(return_value=[(3,)])
+    assert sql_query() == (3,)
+
+
+def test_call_cardinality_one_first_true():
+    sql_query = SQLQuery(
+        ['users'], 'users.id', {'users.name': 'John'},
+        cardinality='one', first=True,
+    )
+    sql_query.driver = mock.MagicMock(return_value=[(3,)])
+    assert sql_query() == 3

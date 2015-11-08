@@ -18,7 +18,8 @@ def parse_comma_seperated_set(input):
 class SQLQuery(HashMixin, EqualityMixin):
 
     def __init__(self, tables, selects, where,
-                 limit=None, cardinality='many', input_mapping=None):
+                 limit=None, cardinality='many', first=False,
+                 input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
@@ -40,6 +41,9 @@ class SQLQuery(HashMixin, EqualityMixin):
         cardinality: 'one', 'many'
             if cardinality is one, only a single value will be returned
             for each row
+
+        first: bool
+            if first is True, only returns the first result
         """
 
         self.tables = parse_comma_seperated_set(tables)
@@ -47,6 +51,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         self.where = where.copy()
         self.limit = limit
         self.cardinality = cardinality
+        self.first = first
         if input_mapping:
             self.input_mapping = input_mapping.copy()
         else:
@@ -60,7 +65,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         return (
             '<SQLQuery tables:{tables}; selects:{selects}; where:{where} '
             'input_mapping:{input_mapping}; limit:{limit}; '
-            'cardinality:{cardinality}>'
+            'cardinality:{cardinality}; first:{first}>'
         ).format(
             tables=', '.join(self.tables),
             selects=', '.join(self.selects),
@@ -68,6 +73,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             input_mapping=self.input_mapping,
             limit=self.limit,
             cardinality=self.cardinality,
+            first=self.first,
         )
 
     def _assert_flattenable(self):
@@ -176,9 +182,12 @@ class SQLQuery(HashMixin, EqualityMixin):
         ret = self.driver(sql, vals)
 
         if self.cardinality == 'one':
-            return [row[0] for row in ret]
-        else:
-            return ret
+            ret = [row[0] for row in ret]
+
+        if self.first:
+            ret = ret[0]
+
+        return ret
 
     def driver(self, sql, vals):
         raise NotImplementedError()
