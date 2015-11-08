@@ -193,9 +193,6 @@ class Schema(object):
     def __repr__(self):
         return '<Schema {str}>'.format(str=str(self))
 
-    def __iter__(self):
-        return iter(self.property_types)
-
     def base_type_and_property_of_path(self, path):
         for relation in self.property_types:
             if path[0] == relation.base_type:

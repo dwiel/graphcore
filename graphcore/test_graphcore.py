@@ -23,6 +23,28 @@ def make_ret_comparable(ret):
         return ret
 
 
+def test_query_str():
+    string = str(graphcore.Query({'user.id': 1}))
+    assert 'user.id' in string
+    assert '1' in string
+
+
+def test_property_type_str():
+    string = str(graphcore.PropertyType('user', 'books', 'book'))
+    assert 'user' in string
+    assert 'books' in string
+
+
+def test_schema_str():
+    schema = graphcore.Schema()
+    schema.append(graphcore.PropertyType('user', 'books', 'book'))
+    string = str(schema)
+    assert 'user' in string
+    assert 'books' in string
+    assert 'user' in repr(schema)
+    assert 'books' in repr(schema)
+
+
 class TestGraphcore(unittest.TestCase):
 
     def test_available_rules_string(self):
