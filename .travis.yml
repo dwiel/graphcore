@@ -8,12 +8,7 @@ python:
   - "pypy3"
 # command to install dependencies
 install:
-  - echo $TRAVIS_PYTHON_VERSION
-  - if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then pip install -r requirements_python2.txt; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == pypy3* ]]; then pip install -r requirements_pypy3.txt; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then pip install -r requirements_python2.txt; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -r requirements_python3.3.txt; fi
-  - if [[ $TRAVIS_PYTHON_VERSION > 3.3 && $TRAVIS_PYTHON_VERSION < 4 ]]; then pip install -r requirements_python3.4.txt; fi
+  - pip install -e .
   - pip install pytest-cov coveralls
   - pip install flake8
 # command to run tests
