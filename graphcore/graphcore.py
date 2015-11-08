@@ -167,15 +167,14 @@ class QuerySearch(object):
 
 class Relationship(object):
 
-    def __init__(self, base_type, kind, property, other_type):
+    def __init__(self, base_type, property, other_type):
         self.base_type = base_type
-        self.kind = kind
         self.property = property
         self.other_type = other_type
 
     def __repr__(self):
         return (
-            '<Relationship {base_type} {kind} {property} of '
+            '<Relationship {base_type} has_many/has_one {property} of '
             'type {other_type}>'.format(**self.__dict__)
         )
 
@@ -219,7 +218,7 @@ class Graphcore(object):
 
     def has_many(self, base_type, property, other_type):
         self.schema.append(
-            Relationship(base_type, 'has_many', property, other_type)
+            Relationship(base_type, property, other_type)
         )
 
     def register_rule(self, inputs, output,
