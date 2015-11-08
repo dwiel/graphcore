@@ -11,7 +11,7 @@ if sys.version_info < (3, 4):
 
 setup(
     name='graphcore',
-    version='0.1',
+    version='0.2',
     description='Graphcore is a python library which allows you to query a '
                 'graph structure with a query language similar to MQL, '
                 'Falcor or GraphQL',
@@ -19,6 +19,6 @@ setup(
     author='Zach Dwiel',
     author_email='zdwiel@gmail.com',
     license='Apache',
-    py_modules=['graphcore'],
+    packages=['graphcore'],
     install_requires=install_requires,
 )
