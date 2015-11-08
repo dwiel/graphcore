@@ -1,2 +1,2 @@
 six
-sql_query_dict
+sql_query_dict>=0.4
