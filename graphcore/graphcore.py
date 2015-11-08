@@ -243,14 +243,14 @@ class Graphcore(object):
         )
 
     def lookup_rule_for_clause(self, clause):
-        for path in clause.lhs.subpaths():
+        for prefix, path in clause.lhs.subpaths():
             # TODO: this will almost certainly become a loop looking for
             # possible matches
 
             # first try finding a match direct on the root
             for rule in self.rules:
                 if path in rule.outputs:
-                    return [], rule
+                    return prefix, rule
 
             # then try extracting the base type out and finding a prefix
             prefix, path = self.schema.base_type_and_property_of_path(path)

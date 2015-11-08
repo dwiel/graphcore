@@ -85,6 +85,44 @@ class TestGraphcore(unittest.TestCase):
             ]
         )
 
+    def test_has_many(self):
+        gc = graphcore.Graphcore()
+        gc.has_many('user', 'book', 'book')
+        gc.register_rule(
+            ['user.id'], 'user.book.id',
+            function=lambda id: [id],
+            cardinality='many',
+        )
+        ret = gc.query({
+            'user.id': 1,
+            'user.book.id?': None,
+        })
+
+        self.assertRetEqual(ret, [{
+            'user.book.id': 1,
+        }])
+
+    def test_has_many_and_property(self):
+        gc = graphcore.Graphcore()
+        gc.has_many('user', 'book', 'book')
+        gc.register_rule(
+            ['user.id'], 'user.book.id',
+            function=lambda id: [id],
+            cardinality='many',
+        )
+        gc.register_rule(
+            ['book.id'], 'book.name',
+            function=lambda id: str(id)
+        )
+        ret = gc.query({
+            'user.id': 1,
+            'user.book.name?': None,
+        })
+
+        self.assertRetEqual(ret, [{
+            'user.book.name': '1',
+        }])
+
 
 class TestQuerySearch(unittest.TestCase):
 

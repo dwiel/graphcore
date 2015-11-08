@@ -23,7 +23,7 @@ class Path(object):
 
     def subpaths(self):
         for i in range(-2, -len(self.parts) - 1, -1):
-            yield Path(self.parts[i:])
+            yield self.parts[:i], Path(self.parts[i:])
 
     def __repr__(self):
         return '<Path {str}>'.format(str=str(self))
