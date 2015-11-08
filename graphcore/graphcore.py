@@ -165,7 +165,7 @@ class QuerySearch(object):
             )
 
 
-class Relationship(object):
+class PropertyType(object):
 
     def __init__(self, base_type, property, other_type):
         self.base_type = base_type
@@ -174,7 +174,7 @@ class Relationship(object):
 
     def __repr__(self):
         return (
-            '<Relationship {base_type} has_many/has_one {property} of '
+            '<PropertyType {base_type}.{property} is '
             'type {other_type}>'.format(**self.__dict__)
         )
 
@@ -182,22 +182,22 @@ class Relationship(object):
 class Schema(object):
 
     def __init__(self):
-        self.relationships = []
+        self.property_types = []
 
-    def append(self, relationship):
-        self.relationships.append(relationship)
+    def append(self, property_type):
+        self.property_types.append(property_type)
 
     def __str__(self):
-        return repr(self.relationships)
+        return repr(self.property_types)
 
     def __repr__(self):
         return '<Schema {str}>'.format(str=str(self))
 
     def __iter__(self):
-        return iter(self.relationships)
+        return iter(self.property_types)
 
     def base_type_and_property_of_path(self, path):
-        for relation in self.relationships:
+        for relation in self.property_types:
             if path[0] == relation.base_type:
                 if path[1] == relation.property:
                     # TODO: this return type prefix, rule is kinda nasty ...
@@ -216,9 +216,9 @@ class Graphcore(object):
         self.rules = []
         self.schema = Schema()
 
-    def has_many(self, base_type, property, other_type):
+    def property_type(self, base_type, property, other_type):
         self.schema.append(
-            Relationship(base_type, property, other_type)
+            PropertyType(base_type, property, other_type)
         )
 
     def register_rule(self, inputs, output,

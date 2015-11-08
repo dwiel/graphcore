@@ -18,7 +18,7 @@ def user_name(id):
     return USER_ID_TO_USER_NAME[id]
 
 
-testgraphcore.has_many('user', 'books', 'book')
+testgraphcore.property_type('user', 'books', 'book')
 
 
 @testgraphcore.rule(['user.id'], 'user.books.id', cardinality='many')

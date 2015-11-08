@@ -87,7 +87,7 @@ class TestGraphcore(unittest.TestCase):
 
     def test_has_many(self):
         gc = graphcore.Graphcore()
-        gc.has_many('user', 'book', 'book')
+        gc.property_type('user', 'book', 'book')
         gc.register_rule(
             ['user.id'], 'user.book.id',
             function=lambda id: [id],
@@ -104,7 +104,7 @@ class TestGraphcore(unittest.TestCase):
 
     def test_has_many_and_property(self):
         gc = graphcore.Graphcore()
-        gc.has_many('user', 'book', 'book')
+        gc.property_type('user', 'book', 'book')
         gc.register_rule(
             ['user.id'], 'user.book.id',
             function=lambda id: [id],
