@@ -239,7 +239,7 @@ class Graphcore(object):
 
     def available_rules_string(self):
         return ', '.join(
-            str(rule.output) for rule in self.rules
+            ', '.join(map(str, rule.outputs)) for rule in self.rules
         )
 
     def lookup_rule_for_clause(self, clause):

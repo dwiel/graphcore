@@ -25,6 +25,9 @@ def make_ret_comparable(ret):
 
 class TestGraphcore(unittest.TestCase):
 
+    def test_available_rules_string(self):
+        testgraphcore.available_rules_string()
+
     def assertRetEqual(self, ret1, ret2):
         self.assertEqual(
             make_ret_comparable(ret1),
