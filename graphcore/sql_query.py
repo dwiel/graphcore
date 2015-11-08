@@ -18,7 +18,7 @@ def parse_comma_seperated_set(input):
 class SQLQuery(HashMixin, EqualityMixin):
 
     def __init__(self, tables, selects, where,
-                 limit=None, cardinality='many', first=False,
+                 limit=None, one_column=False, first=False,
                  input_mapping=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
@@ -38,8 +38,8 @@ class SQLQuery(HashMixin, EqualityMixin):
             input_mapping is used to map variables passed in to the
             __call__ into where clauses
 
-        cardinality: 'one', 'many'
-            if cardinality is one, only a single value will be returned
+        one_column: bool
+            if one_column is True, only a single value will be returned
             for each row
 
         first: bool
@@ -50,7 +50,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         self.selects = parse_comma_seperated_set(selects)
         self.where = where.copy()
         self.limit = limit
-        self.cardinality = cardinality
+        self.one_column = one_column
         self.first = first
         if input_mapping:
             self.input_mapping = input_mapping.copy()
@@ -65,14 +65,14 @@ class SQLQuery(HashMixin, EqualityMixin):
         return (
             '<SQLQuery tables:{tables}; selects:{selects}; where:{where} '
             'input_mapping:{input_mapping}; limit:{limit}; '
-            'cardinality:{cardinality}; first:{first}>'
+            'one_column:{one_column}; first:{first}>'
         ).format(
             tables=', '.join(self.tables),
             selects=', '.join(self.selects),
             where=self.where,
             input_mapping=self.input_mapping,
             limit=self.limit,
-            cardinality=self.cardinality,
+            one_column=self.one_column,
             first=self.first,
         )
 
@@ -181,7 +181,7 @@ class SQLQuery(HashMixin, EqualityMixin):
 
         ret = self.driver(sql, vals)
 
-        if self.cardinality == 'one':
+        if self.one_column:
             ret = [row[0] for row in ret]
 
         if self.first:
