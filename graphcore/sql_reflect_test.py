@@ -53,5 +53,5 @@ def test_sql_reflect(gc, engine):
             'books', 'books.user_id', {}, input_mapping={
                 'id': 'books.id',
             }, one_column=True, first=True
-        ), ['book.id'], 'book.user_id', 'one')
+        ), ['book.id'], 'book.user.id', 'one')
     ])

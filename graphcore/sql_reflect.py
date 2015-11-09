@@ -14,9 +14,14 @@ def sql_reflect_column(graphcore, table, column_name):
     plural_table = table
     singular_table = _singular_table(table)
 
+    if column_name[-3:] == '_id':
+        rule_column_name = column_name[:-3]+'.id'
+    else:
+        rule_column_name = column_name
+
     return graphcore.register_rule(
         ['{}.id'.format(singular_table)],
-        '{}.{}'.format(singular_table, column_name),
+        '{}.{}'.format(singular_table, rule_column_name),
         function=SQLQuery(
             [plural_table], '{}.{}'.format(plural_table, column_name), {},
             input_mapping={
