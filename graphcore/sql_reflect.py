@@ -36,7 +36,7 @@ class SQLReflector(object):
         for table in self.metadata.tables.keys():
             self._sql_reflect_table(table)
 
-    def _has_one(self, table, column_name):
+    def _relationship(self, table, column_name):
         type_name = _table_to_type(table)
         property_name = _column_to_property(column_name)
 
@@ -88,7 +88,7 @@ class SQLReflector(object):
 
     def sql_reflect_column(self, table, column_name):
         if column_name[-3:] == '_id':
-            self._has_one(table, column_name)
+            self._relationship(table, column_name)
         else:
             self._property(table, column_name)
 
