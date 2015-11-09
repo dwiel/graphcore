@@ -20,6 +20,7 @@ def _column_to_property(column):
 
 
 class SQLReflector(object):
+
     def __init__(self, graphcore, engine, sql_query_class=SQLQuery):
         """ add rules to graphcore instance based on schema found in SQL db.
 
@@ -65,7 +66,6 @@ class SQLReflector(object):
             cardinality='many'
         )
 
-
     def _property(self, table, column_name):
         type_name = _table_to_type(table)
 
@@ -75,7 +75,6 @@ class SQLReflector(object):
             function=self._sql_query(table, column_name),
         )
 
-
     def _sql_query(self, table, column):
         return self.sql_query_class(
             [table], '{}.{}'.format(table, column), {},
@@ -84,13 +83,11 @@ class SQLReflector(object):
             }, one_column=True, first=True
         )
 
-
     def sql_reflect_column(self, table, column_name):
         if column_name[-3:] == '_id':
             self._has_one(table, column_name)
         else:
             self._property(table, column_name)
-
 
     def _sql_reflect_table(self, table):
         columns = self.metadata.tables[table].columns
@@ -101,10 +98,7 @@ class SQLReflector(object):
 
             self.sql_reflect_column(table, column.name)
 
-
     def _metadata(self, engine):
         metadata = sqlalchemy.schema.MetaData(bind=engine)
         metadata.reflect()
         return metadata
-
-
