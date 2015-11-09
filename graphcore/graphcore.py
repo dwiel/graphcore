@@ -2,6 +2,7 @@ from .rule import Rule, Cardinality
 from .path import Path
 from . import call_graph
 from .query_planner import QueryPlanner
+from .equality_mixin import HashMixin, EqualityMixin
 
 
 class Var(object):
@@ -165,7 +166,7 @@ class QuerySearch(object):
             )
 
 
-class PropertyType(object):
+class PropertyType(HashMixin, EqualityMixin):
 
     def __init__(self, base_type, property, other_type):
         self.base_type = base_type

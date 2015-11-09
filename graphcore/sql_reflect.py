@@ -3,32 +3,58 @@ import sqlalchemy
 from .sql_query import SQLQuery
 
 
-def _singular_table(table):
+def _table_to_type(table):
+    """ given a table name return the graphcore type name """
     if table[-1] == 's':
         return table[:-1]
     else:
         return table
 
 
-def sql_reflect_column(graphcore, table, column_name):
-    plural_table = table
-    singular_table = _singular_table(table)
+def _column_to_property(column):
+    """ assumes the column name has _id postfix """
+    return column[:-3]
 
-    if column_name[-3:] == '_id':
-        rule_column_name = column_name[:-3]+'.id'
-    else:
-        rule_column_name = column_name
+
+def _has_one(graphcore, table, column_name):
+    type_name = _table_to_type(table)
+    property_name = _column_to_property(column_name)
+
+    graphcore.property_type(
+        type_name, property_name, property_name
+    )
 
     return graphcore.register_rule(
-        ['{}.id'.format(singular_table)],
-        '{}.{}'.format(singular_table, rule_column_name),
-        function=SQLQuery(
-            [plural_table], '{}.{}'.format(plural_table, column_name), {},
-            input_mapping={
-                'id': '{}.id'.format(plural_table),
-            }, one_column=True, first=True
-        )
+        ['{}.id'.format(type_name)],
+        '{}.{}.id'.format(type_name, property_name),
+        function=_sql_query(table, column_name),
     )
+
+
+def _property(graphcore, table, column_name):
+    type_name = _table_to_type(table)
+
+    return graphcore.register_rule(
+        ['{}.id'.format(type_name)],
+        '{}.{}'.format(type_name, column_name),
+        function=_sql_query(table, column_name),
+    )
+
+
+def _sql_query(table, column):
+    return SQLQuery(
+        [table], '{}.{}'.format(table, column), {},
+        input_mapping={
+            'id': '{}.id'.format(table),
+        }, one_column=True, first=True
+    )
+
+
+def sql_reflect_column(graphcore, table, column_name):
+    if column_name[-3:] == '_id':
+        _has_one(graphcore, table, column_name)
+    else:
+        _property(graphcore, table, column_name)
 
 
 def _sql_reflect_table(graphcore, metadata, table):
@@ -52,6 +78,8 @@ def sql_reflect(graphcore, engine):
 
     graphcore: Graphcore instance
     engine: sqlalchemy.engine instance
+
+    assumes all tables have a primary key id
     """
     metadata = _metadata(engine)
 

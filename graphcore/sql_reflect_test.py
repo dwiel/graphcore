@@ -1,6 +1,6 @@
 import pytest
 
-from .graphcore import Graphcore
+from .graphcore import Graphcore, PropertyType
 from .rule import Rule
 from .sql_query import SQLQuery
 from .sql_reflect import sql_reflect
@@ -55,3 +55,7 @@ def test_sql_reflect(gc, engine):
             }, one_column=True, first=True
         ), ['book.id'], 'book.user.id', 'one')
     ])
+
+    assert gc.schema.property_types == [
+        PropertyType('book', 'user', 'user')
+    ]
