@@ -1,3 +1,5 @@
+import sqlalchemy
+
 from .sql_query import SQLQuery
 
 
@@ -19,14 +21,24 @@ def sql_reflect_column(graphcore, table, column_name):
     )
 
 
-def sql_reflect_table(graphcore, engine, table):
-    columns = engine.execute('describe {table}'.format(table=table))
+def _sql_reflect_table(graphcore, metadata, table):
+    columns = metadata.tables[table].columns
+
     for column in columns:
-        column_name = column[0]
-        sql_reflect_column(graphcore, table, column_name)
+        if column.name == 'id':
+            continue
+
+        sql_reflect_column(graphcore, table, column.name)
+
+
+def _metadata(engine):
+    metadata = sqlalchemy.schema.MetaData(bind=engine)
+    metadata.reflect()
+    return metadata
 
 
 def sql_reflect(graphcore, engine):
-    tables = engine.execute('show tables')
-    for table in tables:
-        sql_reflect_table(graphcore, engine, table)
+    metadata = _metadata(engine)
+
+    for table in metadata.tables.keys():
+        _sql_reflect_table(graphcore, metadata, table)
