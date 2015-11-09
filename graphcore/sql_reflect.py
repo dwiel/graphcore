@@ -1,6 +1,9 @@
 import sqlalchemy
+import inflect
 
 from .sql_query import SQLQuery
+
+_pluralizer = inflect.engine()
 
 
 def _table_to_type(table):
@@ -24,10 +27,26 @@ def _has_one(graphcore, table, column_name):
         type_name, property_name, property_name
     )
 
-    return graphcore.register_rule(
+    graphcore.register_rule(
         ['{}.id'.format(type_name)],
         '{}.{}.id'.format(type_name, property_name),
         function=_sql_query(table, column_name),
+    )
+
+    # backref
+    graphcore.property_type(
+        property_name, _pluralizer.plural(type_name), type_name
+    )
+    graphcore.register_rule(
+        ['{}.id'.format(property_name)],
+        '{}.{}.id'.format(property_name, _pluralizer.plural(type_name)),
+        function=SQLQuery(
+            [table], '{}.id'.format(table), {},
+            input_mapping={
+                'id': '{}.{}'.format(table, column_name),
+            }, one_column=True,
+        ),
+        cardinality='many'
     )
 
 

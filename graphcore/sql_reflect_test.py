@@ -53,9 +53,15 @@ def test_sql_reflect(gc, engine):
             'books', 'books.user_id', {}, input_mapping={
                 'id': 'books.id',
             }, one_column=True, first=True
-        ), ['book.id'], 'book.user.id', 'one')
+        ), ['book.id'], 'book.user.id', 'one'),
+        Rule(SQLQuery(
+            'books', 'books.id', {}, input_mapping={
+                'id': 'books.user_id',
+            }, one_column=True, first=False
+        ), ['user.id'], 'user.books.id', 'many'),
     ])
 
     assert gc.schema.property_types == [
-        PropertyType('book', 'user', 'user')
+        PropertyType('book', 'user', 'user'),
+        PropertyType('user', 'books', 'book'),
     ]
