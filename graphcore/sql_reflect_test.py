@@ -1,14 +1,10 @@
 import pytest
+import sqlalchemy
 
 from .graphcore import Graphcore, PropertyType
 from .rule import Rule
 from .sql_query import SQLQuery
 from .sql_reflect import SQLReflector
-
-try:
-    import sqlalchemy
-except ImportError:
-    sqlalchemy = None
 
 
 @pytest.fixture
