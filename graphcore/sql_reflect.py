@@ -57,12 +57,7 @@ class SQLReflector(object):
         self.graphcore.register_rule(
             ['{}.id'.format(property_name)],
             '{}.{}.id'.format(property_name, _pluralizer.plural(type_name)),
-            function=self.sql_query_class(
-                [table], '{}.id'.format(table), {},
-                input_mapping={
-                    'id': '{}.{}'.format(table, column_name),
-                }, one_column=True,
-            ),
+            function=self._sql_query_backref(table, column_name),
             cardinality='many'
         )
 
@@ -73,6 +68,14 @@ class SQLReflector(object):
             ['{}.id'.format(type_name)],
             '{}.{}'.format(type_name, column_name),
             function=self._sql_query_property(table, column_name),
+        )
+
+    def _sql_query_backref(self, table, column):
+        return self.sql_query_class(
+            [table], '{}.id'.format(table), {},
+            input_mapping={
+                'id': '{}.{}'.format(table, column),
+            }, one_column=True,
         )
 
     def _sql_query_property(self, table, column):
