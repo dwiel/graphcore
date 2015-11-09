@@ -48,10 +48,10 @@ def test_sql_reflect(gc, engine):
             'users', 'users.name', {}, input_mapping={
                 'id': 'users.id',
             }, one_column=True, first=True
-        ), ['users.id'], 'users.name', 'one'),
+        ), ['user.id'], 'user.name', 'one'),
         Rule(SQLQuery(
             'books', 'books.user_id', {}, input_mapping={
                 'id': 'books.id',
             }, one_column=True, first=True
-        ), ['books.id'], 'books.user_id', 'one')
+        ), ['book.id'], 'book.user_id', 'one')
     ])
