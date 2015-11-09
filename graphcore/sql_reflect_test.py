@@ -3,7 +3,7 @@ import pytest
 from .graphcore import Graphcore, PropertyType
 from .rule import Rule
 from .sql_query import SQLQuery
-from .sql_reflect import sql_reflect
+from .sql_reflect import SQLReflector
 
 try:
     import sqlalchemy
@@ -41,7 +41,7 @@ def gc():
 
 
 def test_sql_reflect(gc, engine):
-    sql_reflect(gc, engine)
+    SQLReflector(gc, engine, SQLQuery)
 
     assert set(gc.rules) == set([
         Rule(SQLQuery(
