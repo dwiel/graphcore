@@ -6,14 +6,6 @@ from .sql_query import SQLQuery
 _pluralizer = inflect.engine()
 
 
-def _table_to_type(table):
-    """ given a table name return the graphcore type name """
-    if table[-1] == 's':
-        return table[:-1]
-    else:
-        return table
-
-
 def _column_to_property(column):
     """ assumes the column name has _id postfix """
     return column[:-3]
@@ -37,7 +29,7 @@ class SQLReflector(object):
             self._sql_reflect_table(table)
 
     def _relationship(self, table, column_name):
-        type_name = _table_to_type(table)
+        type_name = _pluralizer.singular_noun(table)
         property_name = _column_to_property(column_name)
 
         self.graphcore.property_type(
@@ -62,7 +54,7 @@ class SQLReflector(object):
         )
 
     def _property(self, table, column_name):
-        type_name = _table_to_type(table)
+        type_name = _pluralizer.singular_noun(table)
 
         return self.graphcore.register_rule(
             ['{}.id'.format(type_name)],
