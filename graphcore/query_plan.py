@@ -23,7 +23,6 @@ class QueryPlan(object):
         self.nodes.append(node)
 
     def forward(self):
-        # for input_clauses, output_clause, rule in reversed(self.nodes):
         for node in self.nodes:
             # TODO: only copy for cardinality 'many' where result_set size
             # changes.
