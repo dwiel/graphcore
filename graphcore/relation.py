@@ -1,7 +1,7 @@
-from .equality_mixin import EqualityMixin
+from .equality_mixin import EqualityMixin, HashMixin
 
 
-class Relation(EqualityMixin):
+class Relation(HashMixin, EqualityMixin):
 
     def __init__(self, operation, value):
         self.operation = operation
