@@ -6,6 +6,11 @@ def test_repr():
     assert repr(ResultSet()) == '<ResultSet []>'
 
 
+def test_result_set_init():
+    result_set = ResultSet([{'a': a} for a in range(3)])
+    assert result_set == ResultSet(result_set)
+
+
 def test_repr_nonbasic():
     result_set = ResultSet({})
     result_set.set('a', 1)
