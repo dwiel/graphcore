@@ -57,7 +57,6 @@ TODO: out_paths: {key: (Path, Node), ...}
 """
 
 from .path import Path
-from .equality_mixin import EqualityMixin
 
 
 class Node(object):
@@ -113,13 +112,6 @@ class Node(object):
             return self.rule.function.__name__
         else:
             return str(self.rule.function)
-
-
-class Relation(EqualityMixin):
-
-    def __init__(self, operation, value):
-        self.operation = operation
-        self.value = value
 
 
 class Edge(object):

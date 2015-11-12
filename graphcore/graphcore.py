@@ -1,3 +1,4 @@
+from .relation import Relation
 from .rule import Rule, Cardinality
 from .path import Path
 from . import call_graph
@@ -31,20 +32,20 @@ class Clause(object):
 
     def _parse_clause(self, lhs, rhs):
         if str(lhs)[-1] == '?':
-            return Path(lhs[:-1]), OutVar(), '?'
+            return Path(lhs[:-1]), OutVar(), None
         if len(lhs) >= 2:
             if str(lhs)[-2:] == '!=':
-                return Path(lhs[:-2]), rhs, '!='
+                return Path(lhs[:-2]), OutVar(), Relation('!=', rhs)
             elif str(lhs)[-2:] == '<=':
-                return Path(lhs[:-2]), rhs, '<='
+                return Path(lhs[:-2]), OutVar(), Relation('<=', rhs)
             elif str(lhs)[-2:] == '>=':
-                return Path(lhs[:-2]), rhs, '>='
+                return Path(lhs[:-2]), OutVar(), Relation('>=', rhs)
         if str(lhs)[-1] == '<':
-            return Path(lhs[:-1]), rhs, '<'
+            return Path(lhs[:-1]), OutVar(), Relation('<', rhs)
         elif str(lhs)[-1] == '>':
-            return Path(lhs[:-1]), rhs, '>'
+            return Path(lhs[:-1]), OutVar(), Relation('>', rhs)
         else:
-            return Path(lhs), rhs, '=='
+            return Path(lhs), rhs, Relation('==', rhs)
 
     def has_unbound_outvar(self):
         if isinstance(self.rhs, Var):

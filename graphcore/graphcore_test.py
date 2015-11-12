@@ -1,6 +1,7 @@
 import unittest
 
 from . import graphcore
+from .relation import Relation
 from .test_harness import testgraphcore
 
 
@@ -202,5 +203,5 @@ class TestClause(unittest.TestCase):
         relations = ['>', '<', '>=', '<=', '!=']
         for relation in relations:
             clause = graphcore.Clause(lhs+relation, 1)
-            self.assertEquals(clause.relation, relation)
+            self.assertEquals(clause.relation, Relation(relation, 1))
             self.assertEquals(clause.lhs, lhs)
