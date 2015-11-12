@@ -45,7 +45,7 @@ class Clause(object):
         elif str(lhs)[-1] == '>':
             return Path(lhs[:-1]), OutVar(), Relation('>', rhs)
         else:
-            return Path(lhs), rhs, Relation('==', rhs)
+            return Path(lhs), rhs, None
 
     def has_unbound_outvar(self):
         if isinstance(self.rhs, Var):
