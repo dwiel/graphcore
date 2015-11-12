@@ -35,10 +35,10 @@ Node: {
     'incoming_edges': {Edge},
     'outgoing_edges': {Edge},
     'rule': Rule,
-    'filter': Filter
+    'relation': Relation
 }
 
-Filter: {
+Relation: {
     'operation': '<'|'>'|...,
     'value': Any,
 }
@@ -63,12 +63,12 @@ from .equality_mixin import EqualityMixin
 class Node(object):
 
     def __init__(self, call_graph, incoming_paths, outgoing_paths, rule,
-                 filter=None):
+                 relation=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(map(Path, incoming_paths)))
         self.outgoing_paths = tuple(sorted(map(Path, outgoing_paths)))
         self.rule = rule
-        self.filter = filter
+        self.relation = relation
 
         # this is useful for QueryPlanner to iterate over CallGraph
         self._visited = False
@@ -88,7 +88,7 @@ class Node(object):
             self.incoming_paths,
             self.outgoing_paths,
             self.rule,
-            self.filter
+            self.relation
         )
 
     def __eq__(self, other):
@@ -97,13 +97,13 @@ class Node(object):
     def __repr__(self):
         string = '<Node '
         string += '{outgoing_paths} = {name}({incoming_paths}) '
-        string += 'filter={filter}'
+        string += 'relation={relation}'
         string += '>'
         return (string.format(
                 outgoing_paths=', '.join(map(str, self.outgoing_paths)),
                 incoming_paths=', '.join(map(str, self.incoming_paths)),
                 name=self.name,
-                filter=self.filter
+                relation=self.relation
                 )
                 )
 
@@ -115,7 +115,7 @@ class Node(object):
             return str(self.rule.function)
 
 
-class Filter(EqualityMixin):
+class Relation(EqualityMixin):
 
     def __init__(self, operation, value):
         self.operation = operation
@@ -159,9 +159,9 @@ class CallGraph(object):
         self.nodes = []
         self.edges = {}
 
-    def add_node(self, incoming_paths, outgoing_paths, rule, filter=None):
+    def add_node(self, incoming_paths, outgoing_paths, rule, relation=None):
         # build a node
-        node = Node(self, incoming_paths, outgoing_paths, rule, filter)
+        node = Node(self, incoming_paths, outgoing_paths, rule, relation)
         self.nodes.append(node)
 
         # add the node to the edges
