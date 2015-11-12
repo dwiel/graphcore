@@ -87,6 +87,3 @@ class ResultSet(EqualityMixin):
 
     def __iter__(self):
         return iter(self.results)
-
-    def copy(self):
-        return ResultSet(self)
