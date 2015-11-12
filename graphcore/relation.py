@@ -33,6 +33,9 @@ class Relation(object):
         """Define a non-equality test"""
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return hash((self.operation, self.value))
+
     def __call__(self, other):
         return self._function(other)
 
