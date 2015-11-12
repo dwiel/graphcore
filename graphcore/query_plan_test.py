@@ -1,5 +1,6 @@
 import pytest
 
+from .relation import Relation
 from .query_plan import QueryPlan
 from .rule import Rule
 from .call_graph import Node
@@ -34,3 +35,17 @@ def test_query_plan_multiple_outputs_cardinality_many():
 
     with pytest.raises(NotImplementedError):
         query_plan.execute()
+
+
+def test_query_plan_relation():
+    query_plan = QueryPlan({}, ['a.out'])
+    rule = Rule(
+        lambda: [1, 2], [], ['a.out'], 'many'
+    )
+    query_plan.append(
+        Node(None, [], ['a.out'], rule, relation=Relation('>', 1))
+    )
+
+    ret = query_plan.execute()
+
+    assert ret == [{'a.out': 2}]

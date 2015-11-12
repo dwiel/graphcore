@@ -22,34 +22,51 @@ class QueryPlan(object):
     def append(self, node):
         self.nodes.append(node)
 
+    def apply(self, node, result):
+        return node.rule.function(**{
+            path.relative.property: result.get(path)
+            for path in node.incoming_paths
+        })
+
     def forward(self):
         for node in self.nodes:
             # TODO: only copy for cardinality 'many' where result_set size
             # changes.
             # must copy result set iterator since we are mutating it while we
             # iterate and don't want to iterate over the new result_set
-            for result in self.result_set.copy():
-                ret = node.rule.function(**{
-                    path.relative.property: result.get(path)
-                    for path in node.incoming_paths
-                })
 
-                # if the result of the rule is one value, just set the value,
-                # otherwise, if there are many, explode out the result set
-                if node.rule.cardinality == Cardinality.one:
+            # if the result of the rule is one value, just set the value,
+            # otherwise, if there are many, explode out the result set
+            if node.rule.cardinality == Cardinality.one:
+                for result in self.result_set:
+                    ret = self.apply(node, result)
+
                     if len(node.rule.outputs) > 1:
                         for path, output in zip(node.outgoing_paths, ret):
                             result.set(path, output)
                     else:
                         result.set(node.outgoing_paths[0], ret)
-                elif node.rule.cardinality == Cardinality.many:
-                    if len(node.rule.outputs) > 1:
-                        raise NotImplementedError(
-                            'cardinality.many and multiple outputs are'
-                            'not yet supported'
+
+            elif node.rule.cardinality == Cardinality.many:
+                if len(node.rule.outputs) > 1:
+                    raise NotImplementedError(
+                        'cardinality.many and multiple outputs are'
+                        'not yet supported'
+                    )
+
+                new_result_set = ResultSet()
+                for result in self.result_set:
+                    new_result_set.extend(
+                        result.explode(
+                            node.outgoing_paths[0], self.apply(node, result)
                         )
-                    self.result_set.explode(
-                        result, node.outgoing_paths[0], ret)
+                    )
+                self.result_set = new_result_set
+
+            print(self.result_set)
+
+            if node.relation:
+                self.result_set.filter(node.outgoing_paths[0], node.relation)
 
     def outputs(self):
         return self.result_set.extract_json(self.output_paths)

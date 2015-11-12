@@ -1,5 +1,7 @@
+from .equality_mixin import EqualityMixin
 
-class Result(object):
+
+class Result(EqualityMixin):
 
     def __init__(self, result=None):
         if isinstance(result, Result):
@@ -17,6 +19,17 @@ class Result(object):
     def get(self, path):
         return self.result[str(path)]
 
+    def explode(self, path, values):
+        new_results = [
+            Result(self)
+            for _ in range(len(values))
+        ]
+
+        for result, value in zip(new_results, values):
+            result.set(path, value)
+
+        return new_results
+
     def to_json(self):
         return self.result
 
@@ -29,35 +42,23 @@ class Result(object):
         return '<Result {result}>'.format(result=repr(self.result))
 
 
-class ResultSet(object):
+class ResultSet(EqualityMixin):
     """ The ResultSet holds the state of the query as it is executed. """
 
     def __init__(self, init=None):
         # TODO handle more complex result set toplogies
         if isinstance(init, ResultSet):
-            self.results = init.results.copy()
+            self.results = init.results
         elif isinstance(init, dict):
-            self.results = {Result(init)}
+            self.results = [Result(init)]
+        elif isinstance(init, list):
+            self.results = init
         else:
-            self.results = {Result()}
-
-        print('d', self.results, init)
+            self.results = []
 
     def set(self, path, value):
         for result in self.results:
             result.set(path, value)
-
-    def explode(self, existing_result, path, values):
-        new_results = {
-            Result(existing_result)
-            for _ in range(len(values))
-        }
-
-        for result, value in zip(new_results, values):
-            result.set(path, value)
-
-        self.results.remove(existing_result)
-        self.results.update(new_results)
 
     def to_json(self):
         return [
@@ -68,6 +69,15 @@ class ResultSet(object):
         return [
             result.extract_json(paths) for result in self.results
         ]
+
+    def filter(self, path, relation):
+        self.results = [
+            result for result in self.results
+            if relation(result.get(path))
+        ]
+
+    def extend(self, results):
+        self.results.extend(results)
 
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
