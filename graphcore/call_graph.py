@@ -121,8 +121,6 @@ class Relation(EqualityMixin):
         self.operation = operation
         self.value = value
 
-# user.book.id
-
 
 class Edge(object):
     """
