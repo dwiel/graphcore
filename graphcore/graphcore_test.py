@@ -196,3 +196,11 @@ class TestClause(unittest.TestCase):
     def test_has_unbound_outvar(self):
         clause = graphcore.Clause('meter.id', graphcore.OutVar())
         self.assertTrue(clause.has_unbound_outvar())
+
+    def test_relation(self):
+        lhs = 'meter.id'
+        relations = ['>', '<', '>=', '<=', '!=']
+        for relation in relations:
+            clause = graphcore.Clause(lhs+relation, 1)
+            self.assertEquals(clause.relation, relation)
+            self.assertEquals(clause.lhs, lhs)

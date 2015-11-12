@@ -20,7 +20,7 @@ class TempVar(Var):
 class Clause(object):
 
     def __init__(self, key, value):
-        self.lhs, self.rhs = self._parse_clause(key, value)
+        self.lhs, self.rhs, self.relation = self._parse_clause(key, value)
 
         if isinstance(self.rhs, Var):
             self.grounded = False
@@ -31,9 +31,20 @@ class Clause(object):
 
     def _parse_clause(self, lhs, rhs):
         if str(lhs)[-1] == '?':
-            return Path(lhs[:-1]), OutVar()
+            return Path(lhs[:-1]), OutVar(), '?'
+        if len(lhs) >= 2:
+            if str(lhs)[-2:] == '!=':
+                return Path(lhs[:-2]), rhs, '!='
+            elif str(lhs)[-2:] == '<=':
+                return Path(lhs[:-2]), rhs, '<='
+            elif str(lhs)[-2:] == '>=':
+                return Path(lhs[:-2]), rhs, '>='
+        if str(lhs)[-1] == '<':
+            return Path(lhs[:-1]), rhs, '<'
+        elif str(lhs)[-1] == '>':
+            return Path(lhs[:-1]), rhs, '>'
         else:
-            return Path(lhs), rhs
+            return Path(lhs), rhs, '=='
 
     def has_unbound_outvar(self):
         if isinstance(self.rhs, Var):
