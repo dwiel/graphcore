@@ -2,6 +2,10 @@ from .relation import Relation
 from .result_set import ResultSet, Result
 
 
+def test_result_repr():
+    assert repr(Result({'a': 1})) == "<Result {'a': 1}>"
+
+
 def test_repr():
     assert repr(ResultSet()) == '<ResultSet []>'
 
