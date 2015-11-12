@@ -27,7 +27,7 @@ class Relation(object):
         if isinstance(other, self.__class__):
             return self.operation == other.operation and \
                 self.value == other.value
-        return NotImplemented
+        raise TypeError
 
     def __ne__(self, other):
         """Define a non-equality test"""
