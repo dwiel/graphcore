@@ -187,6 +187,19 @@ class TestQuerySearch(unittest.TestCase):
 
         repr(query.call_graph)
 
+    def test_call_graph_relation(self):
+        query = graphcore.QuerySearch(testgraphcore, {
+            'user.id': 1,
+            'user.books.id>': 1,
+            'user.books.name?': None,
+        })
+        query.backward()
+
+        print query.call_graph
+        for node in query.call_graph.nodes:
+            if 'user.books.id' in node.outgoing_paths:
+                self.assertEqual(node.relation, Relation('>', 1))
+
 
 class TestClause(unittest.TestCase):
 

@@ -157,6 +157,7 @@ class QuerySearch(object):
             [clause.lhs for clause in input_clauses],
             [output_clause.lhs],
             rule,
+            relation=output_clause.relation
         )
 
         if isinstance(output_clause.rhs, OutVar):
