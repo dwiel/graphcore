@@ -195,7 +195,6 @@ class TestQuerySearch(unittest.TestCase):
         })
         query.backward()
 
-        print query.call_graph
         for node in query.call_graph.nodes:
             if 'user.books.id' in node.outgoing_paths:
                 self.assertEqual(node.relation, Relation('>', 1))
