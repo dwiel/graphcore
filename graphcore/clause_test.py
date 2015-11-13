@@ -1,7 +1,6 @@
 import pytest
 
 from .graphcore import Clause, OutVar
-from .relation import Relation
 
 
 def test_str():
