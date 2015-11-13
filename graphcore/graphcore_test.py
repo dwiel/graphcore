@@ -1,4 +1,5 @@
 import unittest
+import pytest
 
 from . import graphcore
 from .relation import Relation
@@ -56,6 +57,12 @@ class TestGraphcore(unittest.TestCase):
             make_ret_comparable(ret1),
             make_ret_comparable(ret2),
         )
+
+    def test_missing_rule(self):
+        with pytest.raises(IndexError):
+            testgraphcore.lookup_rule_for_clause(
+                graphcore.Clause('a.x', None)
+            )
 
     def test_basic(self):
         ret = testgraphcore.query({
