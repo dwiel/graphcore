@@ -195,9 +195,29 @@ class TestQuerySearch(unittest.TestCase):
         })
         query.backward()
 
-        for node in query.call_graph.nodes:
-            if 'user.books.id' in node.outgoing_paths:
-                self.assertEqual(node.relation, Relation('>', 1))
+        user_book_id_nodes = [
+            node for node in query.call_graph.nodes
+            if 'user.books.id' in node.outgoing_paths
+        ]
+
+        self.assertEqual(len(user_book_id_nodes), 1)
+        self.assertEqual(user_book_id_nodes[0].relation, Relation('>', 1))
+
+    def test_call_graph_relation_and_outvar(self):
+        query = graphcore.QuerySearch(testgraphcore, {
+            'user.id': 1,
+            'user.books.id?': None,
+            'user.books.id>': 1,
+        })
+        query.backward()
+
+        user_book_id_nodes = [
+            node for node in query.call_graph.nodes
+            if 'user.books.id' in node.outgoing_paths
+        ]
+
+        self.assertEqual(len(user_book_id_nodes), 1)
+        self.assertEqual(user_book_id_nodes[0].relation, Relation('>', 1))
 
 
 class TestClause(unittest.TestCase):
