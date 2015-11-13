@@ -23,44 +23,68 @@ class Clause(object):
     def __init__(self, key, value):
         self.lhs, self.rhs, self.relation = self._parse_clause(key, value)
 
+        # TODO: document what self.value is
         if isinstance(self.rhs, Var):
-            self.grounded = False
             self.value = None
         else:
-            self.grounded = True
             self.value = value
 
     def _parse_clause(self, lhs, rhs):
         if str(lhs)[-1] == '?':
             return Path(lhs[:-1]), OutVar(), None
+
+        # relational clauses get a TempVar rhs to signify that we need to
+        # compute their value, but the consumer of the query isn't interested
+        # in getting the value in the output
         if len(lhs) >= 2:
             if str(lhs)[-2:] == '!=':
-                return Path(lhs[:-2]), OutVar(), Relation('!=', rhs)
+                return Path(lhs[:-2]), TempVar(), Relation('!=', rhs)
             elif str(lhs)[-2:] == '<=':
-                return Path(lhs[:-2]), OutVar(), Relation('<=', rhs)
+                return Path(lhs[:-2]), TempVar(), Relation('<=', rhs)
             elif str(lhs)[-2:] == '>=':
-                return Path(lhs[:-2]), OutVar(), Relation('>=', rhs)
+                return Path(lhs[:-2]), TempVar(), Relation('>=', rhs)
         if str(lhs)[-1] == '<':
-            return Path(lhs[:-1]), OutVar(), Relation('<', rhs)
+            return Path(lhs[:-1]), TempVar(), Relation('<', rhs)
         elif str(lhs)[-1] == '>':
-            return Path(lhs[:-1]), OutVar(), Relation('>', rhs)
+            return Path(lhs[:-1]), TempVar(), Relation('>', rhs)
         else:
             return Path(lhs), rhs, None
 
-    def has_unbound_outvar(self):
-        if isinstance(self.rhs, Var):
-            if not self.grounded:
-                return True
-        return False
+    def merge(self, other):
+        """ Combine other clause into self by mutating self
 
-    def ground(self):
-        self.grounded = True
+        This happens when we get additional constraints in a clause:
+
+            'x?': None,
+            'x>': 1,
+
+        or when a query search is taking place and it wants to ensure
+        that a TempVar is marked on a path that it depends on.  This
+        may happen if there is a relational constraint on a path that
+        another cause depends on as an input.
+        """
+        if self.relation and other.relation:
+            # In theory, this may be possible
+            raise NotImplementedError
+        else:
+            self.relation = self.relation or other.relation
+
+        if isinstance(self.rhs, TempVar):
+            self.rhs = other.rhs
+        else:
+            if not isinstance(other.rhs, TempVar):
+                raise ValueError(
+                    'both clauses cant have a non-TempVar '
+                    'rhs: {rhs}, {other_rhs}'.format(
+                        rhs=self.rhs, other_rhs=other.rhs
+                    )
+                )
 
     def __str__(self):
         return '{lhs} {rhs}'.format(**self.__dict__)
 
     def __repr__(self):
-        return '<Clause ({lhs}) ({rhs}) grounded={grounded}>'.format(
+        return '<Clause ({lhs}) ({rhs}) ({relation})>'.format(
             **self.__dict__
         )
 
@@ -78,6 +102,8 @@ class Query(object):
         if clause.lhs not in self.clause_map:
             self.clauses.append(clause)
             self.clause_map[clause.lhs] = clause
+        else:
+            self.clause_map[clause.lhs].merge(clause)
 
         return self.clause_map[clause.lhs]
 
@@ -126,13 +152,25 @@ class QuerySearch(object):
 
         self.call_graph = call_graph.CallGraph()
 
+        # a set of paths which have been grounded in the course of the query
+        # search
+        self._grounded_paths = set()
+
+    def _grounded(self, clause):
+        return clause.lhs in self._grounded_paths
+
+    def _ground(self, clause):
+        self._grounded_paths.add(clause.lhs)
+
     def clauses_with_unbound_outvar(self):
         return QuerySearchIterator(self)
 
     def clause_with_unbound_outvar(self):
+        """ return a caluse with a variable rhs which hasnt been grounded """
         for clause in self.query:
-            if clause.has_unbound_outvar():
-                return clause
+            if isinstance(clause.rhs, Var):
+                if not self._grounded(clause):
+                    return clause
 
     def apply_rule_backwards(self, output_clause, prefix, rule):
         """bind the output of rule to output_clause from the query"""
@@ -163,7 +201,8 @@ class QuerySearch(object):
         if isinstance(output_clause.rhs, OutVar):
             self.call_graph.edge(output_clause.lhs).out = True
 
-        output_clause.ground()
+        # this output clause is now grounded since it has a value
+        self._ground(output_clause)
 
     def backward(self):
         """apply rules in reverse looking for the call chain that will be

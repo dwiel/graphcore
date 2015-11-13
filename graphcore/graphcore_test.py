@@ -82,6 +82,17 @@ class TestGraphcore(unittest.TestCase):
             {'user.books.id': 3},
         ])
 
+    def test_simple_join_and_relation(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id>': 1,
+            'user.books.id?': None,
+        })
+        self.assertRetEqual(ret, [
+            {'user.books.id': 2},
+            {'user.books.id': 3},
+        ])
+
     def test_simple_join_with_next_step(self):
         ret = testgraphcore.query({
             'user.id': 1,
@@ -90,6 +101,34 @@ class TestGraphcore(unittest.TestCase):
         self.assertRetEqual(
             ret, [
                 {'user.books.name': 'The Giver'},
+                {'user.books.name': 'REAMDE'},
+                {'user.books.name': 'The Diamond Age'},
+            ]
+        )
+
+    def test_simple_join_with_next_step_and_unrelated_relation(self):
+        """
+        the only reason to compute user.books.name is to filter on it
+        """
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id?': None,
+            'user.books.name<': 'S',
+        })
+        self.assertRetEqual(
+            ret, [
+                {'user.books.id': 2},
+            ]
+        )
+
+    def test_simple_join_with_next_step_and_relation(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id>': 1,
+            'user.books.name?': None,
+        })
+        self.assertRetEqual(
+            ret, [
                 {'user.books.name': 'REAMDE'},
                 {'user.books.name': 'The Diamond Age'},
             ]
@@ -160,7 +199,7 @@ class TestQuerySearch(unittest.TestCase):
         unbound_clauses = query.clauses_with_unbound_outvar()
         clauses = []
         for clause in unbound_clauses:
-            clause.ground()
+            query._ground(clause)
             clauses.append(clause)
 
         self.assertEqual(
@@ -219,16 +258,31 @@ class TestQuerySearch(unittest.TestCase):
         self.assertEqual(len(user_book_id_nodes), 1)
         self.assertEqual(user_book_id_nodes[0].relation, Relation('>', 1))
 
+    def test_call_graph_unrelated_relation(self):
+        query = graphcore.QuerySearch(testgraphcore, {
+            'user.id': 1,
+            'user.books.id?': None,
+            'user.books.name<': 'S',
+        })
+        query.backward()
+
+        user_book_name_nodes = [
+            node for node in query.call_graph.nodes
+            if 'user.books.name' in node.outgoing_paths
+        ]
+
+        self.assertEqual(len(user_book_name_nodes), 1)
+
 
 class TestClause(unittest.TestCase):
 
     def test_has_bound_value(self):
         clause = graphcore.Clause('meter.id', 1)
-        self.assertFalse(clause.has_unbound_outvar())
+        self.assertFalse(isinstance(clause.rhs, graphcore.Var))
 
     def test_has_unbound_outvar(self):
         clause = graphcore.Clause('meter.id', graphcore.OutVar())
-        self.assertTrue(clause.has_unbound_outvar())
+        self.assertTrue(isinstance(clause.rhs, graphcore.Var))
 
     def test_relation(self):
         lhs = 'meter.id'
