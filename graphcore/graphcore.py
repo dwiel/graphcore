@@ -322,8 +322,8 @@ class Graphcore(object):
                     return prefix, rule
 
         raise IndexError(
-            '{path} not found in available rules: {rules}'.format(
-                path=path,
+            '{clause} not found in available rules: {rules}'.format(
+                clause=clause,
                 rules=self.available_rules_string(),
             )
         )

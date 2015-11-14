@@ -224,6 +224,14 @@ class TestGraphcore(unittest.TestCase):
                 'book.user.id?': None,
             })
 
+    def test_lookup_rule_for_clause_missing(self):
+        gc = graphcore.Graphcore()
+
+        with pytest.raises(IndexError) as e:
+            gc.lookup_rule_for_clause(graphcore.Clause('a.b.c', 1))
+
+        assert 'a.b.c' in str(e)
+
 
 class TestQuerySearch(unittest.TestCase):
 
