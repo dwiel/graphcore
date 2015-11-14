@@ -324,7 +324,7 @@ class Graphcore(object):
         raise IndexError(
             '{clause} not found in available rules: {rules}'.format(
                 clause=clause,
-                rules=self.available_rules_string(),
+                rules=self.available_rules_string()[:60],
             )
         )
 
