@@ -183,6 +183,19 @@ class CallGraph(object):
     def output_paths(self):
         return [edge.path for edge in self.edges.values() if edge.out]
 
+    def nodes_depending_on_path(self, path):
+        """ return a list of nodes which depend on path.
+
+        This is helpful for debugging when a match isn't found and you
+        want to know where a clase came from.
+        """
+
+        edge = self.edges.get(path)
+        if edge is None:
+            return []
+        else:
+            return edge.getters
+
     def __repr__(self):
         return '<CallGraph nodes=[{nodes}\n] edges={{{edges}\n}}>'.format(
             nodes=''.join('\n  ' + str(node) for node in self.nodes),

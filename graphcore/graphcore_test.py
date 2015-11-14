@@ -59,7 +59,7 @@ class TestGraphcore(unittest.TestCase):
         )
 
     def test_missing_rule(self):
-        with pytest.raises(IndexError):
+        with pytest.raises(graphcore.PathNotFound):
             testgraphcore.lookup_rule_for_clause(
                 graphcore.Clause('a.x', None)
             )
@@ -218,7 +218,7 @@ class TestGraphcore(unittest.TestCase):
         gc.register_rule(
             [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
         )
-        with pytest.raises(IndexError):
+        with pytest.raises(graphcore.PathNotFound):
             gc.query({
                 'book.id': 1,
                 'book.user.id?': None,
@@ -227,10 +227,23 @@ class TestGraphcore(unittest.TestCase):
     def test_lookup_rule_for_clause_missing(self):
         gc = graphcore.Graphcore()
 
-        with pytest.raises(IndexError) as e:
+        with pytest.raises(graphcore.PathNotFound) as e:
             gc.lookup_rule_for_clause(graphcore.Clause('a.b.c', 1))
 
         assert 'a.b.c' in str(e)
+
+    def test_lookup_rule_for_clause_missing_from_node(self):
+        gc = graphcore.Graphcore()
+
+        def a_b_out(x): return x
+
+        gc.register_rule(['a.b.in'], 'a.b.out', function=a_b_out)
+        with pytest.raises(graphcore.PathNotFound) as e:
+            gc.query({
+                'a.b.out?': None,
+            })
+
+        assert 'a_b_out' in str(e)
 
 
 class TestQuerySearch(unittest.TestCase):
@@ -346,7 +359,7 @@ class TestQuerySearch(unittest.TestCase):
             'book.id': 1,
             'book.user.id?': None,
         })
-        with pytest.raises(IndexError):
+        with pytest.raises(graphcore.PathNotFound):
             query.backward()
 
 

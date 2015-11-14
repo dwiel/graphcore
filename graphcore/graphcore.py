@@ -215,10 +215,14 @@ class QuerySearch(object):
         resolved, at this point in the search is unimportant.  We can always
         optimize the call graph later, one we have one.
         """
-        for clause in self.clauses_with_unbound_outvar():
-            self.apply_rule_backwards(
-                clause, *self.graphcore.lookup_rule_for_clause(clause)
-            )
+        try:
+            for clause in self.clauses_with_unbound_outvar():
+                self.apply_rule_backwards(
+                    clause, *self.graphcore.lookup_rule_for_clause(clause)
+                )
+        except PathNotFound as e:
+            e.dependent_nodes = self.call_graph.nodes_depending_on_path(e.path)
+            raise
 
 
 class PropertyType(HashMixin, EqualityMixin):
@@ -260,6 +264,27 @@ class Schema(object):
                     )
 
         return [], path
+
+
+class PathNotFound(Exception):
+    def __init__(self, path):
+        self.path = path
+        self.dependent_nodes = []
+
+    def __str__(self):
+        if self.dependent_nodes:
+            return (
+                '{path} not found.  nodes depending on this path: {nodes}'.format(
+                    path=self.path,
+                    nodes=', '.join(node.name for node in self.dependent_nodes)
+                )
+            )
+        else:
+            return (
+                '{path} not found.  {path} is not depended on by any node'.format(
+                    path=self.path,
+                )
+            )
 
 
 class Graphcore(object):
@@ -321,12 +346,7 @@ class Graphcore(object):
                 if path in rule.outputs:
                     return prefix, rule
 
-        raise IndexError(
-            '{clause} not found in available rules: {rules}'.format(
-                clause=clause,
-                rules=self.available_rules_string()[:60],
-            )
-        )
+        raise PathNotFound(clause.lhs)
 
     def query(self, query):
         query = QuerySearch(self, query)
