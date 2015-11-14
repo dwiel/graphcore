@@ -219,7 +219,7 @@ class TestGraphcore(unittest.TestCase):
             [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
         )
         with pytest.raises(IndexError):
-            ret = gc.query({
+            gc.query({
                 'book.id': 1,
                 'book.user.id?': None,
             })
