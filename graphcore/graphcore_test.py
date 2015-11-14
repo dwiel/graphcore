@@ -280,6 +280,19 @@ class TestQuerySearch(unittest.TestCase):
 
         self.assertEqual(len(user_book_name_nodes), 1)
 
+    def test_call_graph_ungrounded_query(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule([], 'user.id', function=lambda: [1, 2, 3])
+        query = graphcore.QuerySearch(gc, {
+            'user.id?': None,
+        })
+        query.backward()
+
+        assert len(query.call_graph.nodes) == 1
+
+        assert query.call_graph.nodes[0].outgoing_paths == ('user.id',)
+
 
 class TestClause(unittest.TestCase):
 
