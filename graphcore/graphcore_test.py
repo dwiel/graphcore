@@ -235,7 +235,8 @@ class TestGraphcore(unittest.TestCase):
     def test_lookup_rule_for_clause_missing_from_node(self):
         gc = graphcore.Graphcore()
 
-        def a_b_out(x): return x
+        def a_b_out(x):
+            return x
 
         gc.register_rule(['a.b.in'], 'a.b.out', function=a_b_out)
         with pytest.raises(graphcore.PathNotFound) as e:

@@ -274,14 +274,20 @@ class PathNotFound(Exception):
     def __str__(self):
         if self.dependent_nodes:
             return (
-                '{path} not found.  nodes depending on this path: {nodes}'.format(
+                (
+                    '{path} not found.  nodes depending on this '
+                    'path: {nodes}'
+                ).format(
                     path=self.path,
                     nodes=', '.join(node.name for node in self.dependent_nodes)
                 )
             )
         else:
             return (
-                '{path} not found.  {path} is not depended on by any node'.format(
+                (
+                    '{path} not found.  {path} is not depended on by any '
+                    'node'
+                ).format(
                     path=self.path,
                 )
             )
