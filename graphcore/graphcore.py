@@ -295,19 +295,29 @@ class Graphcore(object):
         )
 
     def lookup_rule_for_clause(self, clause):
+        """
+        TODO: better explination for what this function should be doing
+        and likely a cleaner implementation could be found as well
+        """
+
         for prefix, path in clause.lhs.subpaths():
-            # TODO: this will almost certainly become a loop looking for
-            # possible matches
+            # if there is a non empty prefix, only apply rules with more than 0
+            # inputs.  0 input rules can only be applied to the root.  see
+            # https://github.com/dwiel/graphcore/issues/17
+            if len(prefix) != 0:
+                rules = [rule for rule in self.rules if len(rule.inputs) > 0]
+            else:
+                rules = self.rules
 
             # first try finding a match direct on the root
-            for rule in self.rules:
+            for rule in rules:
                 if path in rule.outputs:
                     return prefix, rule
 
             # then try extracting the base type out and finding a prefix
             prefix, path = self.schema.base_type_and_property_of_path(path)
 
-            for rule in self.rules:
+            for rule in rules:
                 if path in rule.outputs:
                     return prefix, rule
 

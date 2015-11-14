@@ -206,6 +206,24 @@ class TestGraphcore(unittest.TestCase):
             {'user.id': i} for i in [1, 2, 3]
         ]
 
+    def test_call_graph_ungrounded_query_non_root(self):
+        """
+        rules with no inputs should only be matched at the root level
+        of the query.  If we try to match book.user.id with user.id in
+        this example, we'll be asserting that every book has every user.
+        """
+
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
+        with pytest.raises(IndexError):
+            ret = gc.query({
+                'book.id': 1,
+                'book.user.id?': None,
+            })
+
 
 class TestQuerySearch(unittest.TestCase):
 
@@ -308,6 +326,20 @@ class TestQuerySearch(unittest.TestCase):
         assert len(query.call_graph.nodes) == 1
 
         assert query.call_graph.nodes[0].outgoing_paths == ('user.id',)
+
+    def test_call_graph_ungrounded_non_root(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
+
+        query = graphcore.QuerySearch(gc, {
+            'book.id': 1,
+            'book.user.id?': None,
+        })
+        with pytest.raises(IndexError):
+            query.backward()
 
 
 class TestClause(unittest.TestCase):
