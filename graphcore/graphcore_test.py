@@ -192,6 +192,20 @@ class TestGraphcore(unittest.TestCase):
             'user.book.name': '1',
         }])
 
+    def test_call_graph_ungrounded_query(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
+        ret = gc.query({
+            'user.id?': None,
+        })
+
+        assert ret == [
+            {'user.id': i} for i in [1, 2, 3]
+        ]
+
 
 class TestQuerySearch(unittest.TestCase):
 
@@ -283,7 +297,9 @@ class TestQuerySearch(unittest.TestCase):
     def test_call_graph_ungrounded_query(self):
         gc = graphcore.Graphcore()
 
-        gc.register_rule([], 'user.id', function=lambda: [1, 2, 3])
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
         query = graphcore.QuerySearch(gc, {
             'user.id?': None,
         })
