@@ -43,6 +43,9 @@ class Clause(object):
                 return Path(lhs[:-2]), TempVar(), Relation('<=', rhs)
             elif str(lhs)[-2:] == '>=':
                 return Path(lhs[:-2]), TempVar(), Relation('>=', rhs)
+            elif str(lhs)[-2:] == '|=':
+                return Path(lhs[:-2]), TempVar(), Relation('|=', rhs)
+
         if str(lhs)[-1] == '<':
             return Path(lhs[:-1]), TempVar(), Relation('<', rhs)
         elif str(lhs)[-1] == '>':

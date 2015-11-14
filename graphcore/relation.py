@@ -7,6 +7,7 @@ OPERATORS = {
     '>=': operator.ge,
     '<=': operator.le,
     '!=': operator.ne,
+    '|=': operator.contains,
 }
 
 
@@ -20,7 +21,13 @@ class Relation(object):
 
     def _build_function(self):
         op = OPERATORS[self.operation]
-        self._function = lambda x: op(x, self.value)
+
+        if op == operator.contains:
+            # contains operator is backwards compared to the rest of the
+            # operators
+            self._function = lambda x: op(self.value, x)
+        else:
+            self._function = lambda x: op(x, self.value)
 
     def __eq__(self, other):
         """Override the default Equals behavior"""
