@@ -246,6 +246,8 @@ class TestGraphcore(unittest.TestCase):
 
         assert 'a_b_out' in str(e)
 
+        assert a_b_out(True)
+
 
 class TestQuerySearch(unittest.TestCase):
 
