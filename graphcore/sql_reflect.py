@@ -28,8 +28,18 @@ class SQLReflector(object):
         for table in self.metadata.tables.keys():
             self._sql_reflect_table(table)
 
-    def _relationship(self, table, column_name):
+    def _type_name_from_table(self, table):
         type_name = _pluralizer.singular_noun(table)
+
+        if type_name is False:
+            # unable to singularize {table}, going to assume it is
+            # alredy singular
+            type_name = table
+
+        return type_name
+
+    def _relationship(self, table, column_name):
+        type_name = self._type_name_from_table(table)
         property_name = _column_to_property(column_name)
 
         self.graphcore.property_type(
@@ -54,7 +64,7 @@ class SQLReflector(object):
         )
 
     def _property(self, table, column_name):
-        type_name = _pluralizer.singular_noun(table)
+        type_name = self._type_name_from_table(table)
 
         return self.graphcore.register_rule(
             ['{}.id'.format(type_name)],

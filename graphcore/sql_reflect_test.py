@@ -32,6 +32,23 @@ def engine():
 
 
 @pytest.fixture
+def singular_table_name_engine():
+    engine = sqlalchemy.create_engine('sqlite://')
+
+    from sqlalchemy import MetaData, Table, Column, Integer, String
+
+    meta = MetaData()
+    things = Table(
+        'thing', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String(255)),
+    )
+    things.create(engine)
+
+    return engine
+
+
+@pytest.fixture
 def gc():
     return Graphcore()
 
@@ -61,3 +78,17 @@ def test_sql_reflect(gc, engine):
         PropertyType('book', 'user', 'user'),
         PropertyType('user', 'books', 'book'),
     ]
+
+
+def test_sql_reflect_relationship(gc, singular_table_name_engine):
+    SQLReflector(gc, singular_table_name_engine, SQLQuery)
+
+    assert set(gc.rules) == set([
+        Rule(SQLQuery(
+            'thing', 'thing.name', {}, input_mapping={
+                'id': 'thing.id',
+            }, one_column=True, first=True
+        ), ['thing.id'], 'thing.name', 'one'),
+    ])
+
+    assert gc.schema.property_types == []
