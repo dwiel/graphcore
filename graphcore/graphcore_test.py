@@ -293,7 +293,7 @@ class TestClause(unittest.TestCase):
 
     def test_relation(self):
         lhs = 'meter.id'
-        relations = ['>', '<', '>=', '<=', '!=']
+        relations = ['>', '<', '>=', '<=', '!=', '|=']
         for relation in relations:
             clause = graphcore.Clause(lhs+relation, 1)
             self.assertEquals(clause.relation, Relation(relation, 1))
