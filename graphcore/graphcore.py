@@ -326,9 +326,13 @@ class Graphcore(object):
         )
 
     def lookup_rule_for_clause(self, clause):
-        """
-        TODO: better explination for what this function should be doing
-        and likely a cleaner implementation could be found as well
+        """ Given a clause, return a prefix and a rule which match the
+        clause.
+
+        The prefix will be a list of parts of the lhs of the clause which
+        the rule is applied to.  For example if there is a rule which maps
+        from book.id to book.name and the query has a user.book.id then
+        this function will return ['user.'], Rule(book.id -> book.name).
         """
 
         for prefix, path in clause.lhs.subpaths():
