@@ -17,10 +17,16 @@ import sys
 
 from recommonmark.parser import CommonMarkParser
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('..'))
+# Get the project root dir, which is the parent dir of this
+cwd = os.getcwd()
+project_root = os.path.dirname(cwd)
+
+# Insert the project root dir as the first element in the PYTHONPATH.
+# This lets us ensure that the source package is imported, and that its
+# version is used.
+sys.path.insert(0, project_root)
+
+import graphcore
 
 # -- General configuration ------------------------------------------------
 
