@@ -11,7 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+.. automodule:: graphcore
 
+.. autoclass:: Graphcore
+    :members:
 
 Indices and tables
 ==================
