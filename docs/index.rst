@@ -13,9 +13,6 @@ Contents:
 
 .. automodule:: graphcore
 
-.. autoclass:: Graphcore
-    :members:
-
 Indices and tables
 ==================
 
