@@ -7,6 +7,7 @@ install_requires.append('six')
 install_requires.append('sql_query_dict>=0.5')
 install_requires.append('sqlalchemy')
 install_requires.append('inflect')
+install_requires.append('pytest')
 if sys.version_info < (3, 4):
     install_requires.append('enum34')
 
