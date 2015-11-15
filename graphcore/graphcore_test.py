@@ -248,7 +248,6 @@ class TestGraphcore(unittest.TestCase):
 
         assert a_b_out(True)
 
-
     def test_long_rule(self):
         gc = graphcore.Graphcore()
 
@@ -256,6 +255,20 @@ class TestGraphcore(unittest.TestCase):
             return in1
 
         gc.register_rule(['a.b.c.d.e.f.in1'], 'a.b.c.d.e.f.out1', function=function)
+        ret =gc.query({
+            'a.b.c.d.e.f.in1': 1,
+            'a.b.c.d.e.f.out1?': None,
+        })
+
+        assert ret == [{'a.b.c.d.e.f.out1': 1}]
+
+    def test_long_prefix(self):
+        gc = graphcore.Graphcore()
+
+        def function(in1):
+            return in1
+
+        gc.register_rule(['f.in1'], 'f.out1', function=function)
         ret =gc.query({
             'a.b.c.d.e.f.in1': 1,
             'a.b.c.d.e.f.out1?': None,
