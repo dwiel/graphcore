@@ -52,14 +52,6 @@ graphcore.equality_mixin_test module
     :undoc-members:
     :show-inheritance:
 
-graphcore.experimental_definition module
-----------------------------------------
-
-.. automodule:: graphcore.experimental_definition
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 graphcore.graphcore module
 --------------------------
 
