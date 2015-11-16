@@ -183,6 +183,7 @@ class QuerySearch(object):
         for input in rule.inputs:
             # TODO: this is almost certainly an edge case handling rather than
             # handling the general case
+
             if len(prefix):
                 absolute_path = prefix + input[1:]
             else:
@@ -218,7 +219,7 @@ class QuerySearch(object):
         try:
             for clause in self.clauses_with_unbound_outvar():
                 self.apply_rule_backwards(
-                    clause, *self.graphcore.lookup_rule_for_clause(clause)
+                    clause, *self.graphcore.lookup_rule(clause.lhs)
                 )
         except PathNotFound as e:
             e.dependent_nodes = self.call_graph.nodes_depending_on_path(e.path)
@@ -325,7 +326,7 @@ class Graphcore(object):
             ', '.join(map(str, rule.outputs)) for rule in self.rules
         )
 
-    def lookup_rule_for_clause(self, clause):
+    def lookup_rule(self, path):
         """ Given a clause, return a prefix and a rule which match the
         clause.
 
@@ -335,28 +336,30 @@ class Graphcore(object):
         this function will return ['user.'], Rule(book.id -> book.name).
         """
 
-        for prefix, path in clause.lhs.subpaths():
+        for prefix, subpath in path.subpaths():
             # if there is a non empty prefix, only apply rules with more than 0
             # inputs.  0 input rules can only be applied to the root.  see
             # https://github.com/dwiel/graphcore/issues/17
-            if len(prefix) != 0:
+            if len(prefix) != 1:
                 rules = [rule for rule in self.rules if len(rule.inputs) > 0]
             else:
                 rules = self.rules
 
             # first try finding a match direct on the root
             for rule in rules:
-                if path in rule.outputs:
+                if subpath in rule.outputs:
                     return prefix, rule
 
             # then try extracting the base type out and finding a prefix
-            prefix, path = self.schema.base_type_and_property_of_path(path)
+            prefix, subpath = self.schema.base_type_and_property_of_path(
+                subpath
+            )
 
             for rule in rules:
-                if path in rule.outputs:
+                if subpath in rule.outputs:
                     return prefix, rule
 
-        raise PathNotFound(clause.lhs)
+        raise PathNotFound(path)
 
     def query(self, query):
         query = QuerySearch(self, query)

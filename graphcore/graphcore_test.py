@@ -2,6 +2,7 @@ import unittest
 import pytest
 
 from . import graphcore
+from .path import Path
 from .relation import Relation
 from .test_harness import testgraphcore
 
@@ -60,9 +61,14 @@ class TestGraphcore(unittest.TestCase):
 
     def test_missing_rule(self):
         with pytest.raises(graphcore.PathNotFound):
-            testgraphcore.lookup_rule_for_clause(
-                graphcore.Clause('a.x', None)
-            )
+            testgraphcore.lookup_rule(Path('a.x'))
+
+    def test_lookup_rule(self):
+        gc = graphcore.Graphcore()
+        gc.register_rule(['b.in1'], 'b.out1', function=lambda in1: in1)
+        prefix, rule = gc.lookup_rule(Path('a.b.out1'))
+
+        assert prefix == ('a', 'b')
 
     def test_basic(self):
         ret = testgraphcore.query({
@@ -224,15 +230,15 @@ class TestGraphcore(unittest.TestCase):
                 'book.user.id?': None,
             })
 
-    def test_lookup_rule_for_clause_missing(self):
+    def test_lookup_rule_missing(self):
         gc = graphcore.Graphcore()
 
         with pytest.raises(graphcore.PathNotFound) as e:
-            gc.lookup_rule_for_clause(graphcore.Clause('a.b.c', 1))
+            gc.lookup_rule(Path('a.b.c'))
 
         assert 'a.b.c' in str(e)
 
-    def test_lookup_rule_for_clause_missing_from_node(self):
+    def test_lookup_rule_missing_from_node(self):
         gc = graphcore.Graphcore()
 
         def a_b_out(x):
@@ -254,8 +260,10 @@ class TestGraphcore(unittest.TestCase):
         def function(in1):
             return in1
 
-        gc.register_rule(['a.b.c.d.e.f.in1'], 'a.b.c.d.e.f.out1', function=function)
-        ret =gc.query({
+        gc.register_rule(
+            ['a.b.c.d.e.f.in1'], 'a.b.c.d.e.f.out1', function=function
+        )
+        ret = gc.query({
             'a.b.c.d.e.f.in1': 1,
             'a.b.c.d.e.f.out1?': None,
         })
@@ -269,7 +277,7 @@ class TestGraphcore(unittest.TestCase):
             return in1
 
         gc.register_rule(['f.in1'], 'f.out1', function=function)
-        ret =gc.query({
+        ret = gc.query({
             'a.b.c.d.e.f.in1': 1,
             'a.b.c.d.e.f.out1?': None,
         })

@@ -6,9 +6,9 @@ from .path import Path
 def test_subpaths():
     path = Path('a.b.c.d')
     assert list(path.subpaths()) == [
-        (('a', 'b'), Path('c.d')),
-        (('a',), Path('b.c.d')),
-        ((), Path('a.b.c.d')),
+        (('a', 'b', 'c'), Path('c.d')),
+        (('a', 'b'), Path('b.c.d')),
+        (('a',), Path('a.b.c.d')),
     ]
 
 

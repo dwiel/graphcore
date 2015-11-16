@@ -22,8 +22,17 @@ class Path(object):
         return self.parts[-1]
 
     def subpaths(self):
+        """ return all possible prefix/subpath paris.
+
+        path = Path('a.b.c.d')
+        path.subpaths() == [
+            (('a', 'b', 'c'), Path('c.d'))
+            (('a', 'b'), Path('b.c.d'))
+            (('a'), Path('a.b.c.d'))
+        ]
+        """
         for i in range(-2, -len(self.parts) - 1, -1):
-            yield self.parts[:i], Path(self.parts[i:])
+            yield self.parts[:i+1], Path(self.parts[i:])
 
     def __repr__(self):
         return '<Path {str}>'.format(str=str(self))
