@@ -123,7 +123,6 @@ class ResultSet(EqualityMixin):
     def shape_paths(self, paths):
         return [self.shape_path(path) for path in paths]
 
-
     def shape_path(self, path):
         """ return a tuple of subpaths which add together to path, but are split
         in the same way as the data result_set.
@@ -134,9 +133,8 @@ class ResultSet(EqualityMixin):
         return self.results[0].shape_path(path)
 
 
-
 def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
-                               scope=None):
+                          scope=None):
     if scope is None:
         scope = {}
 

@@ -59,11 +59,14 @@ def test_shape_path_short():
 
 
 def test_shape_path_no_match():
-    assert build_result_set([{'a': [{'b': [{}]}]}]).shape_path('x.y.z') == ('x.y.z',)
+    ret = build_result_set([{'a': [{'b': [{}]}]}]).shape_path('x.y.z')
+    assert == ('x.y.z',)
 
 
 def test_shape_path_double_dot():
-    assert build_result_set([{'a.x': [{}]}]).shape_path('a.x.y.z') == ('a.x', 'y.z')
+    ret = build_result_set([{'a.x': [{}]}]).shape_path('a.x.y.z')
+    assert ret == ('a.x', 'y.z')
+
     assert build_result_set([{'a.x': [{}]}]).shape_path('x.y.z') == ('x.y.z',)
 
 

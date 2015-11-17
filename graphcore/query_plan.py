@@ -3,7 +3,6 @@ The query plan is a sequential list of rules to apply.  Other QueryPlans may in
 the future also handle parallel execution.
 """
 
-from .rule import Cardinality
 from .result_set import ResultSet, result_set_apply_rule
 
 
