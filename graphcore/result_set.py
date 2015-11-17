@@ -94,12 +94,6 @@ class ResultSet(EqualityMixin):
             if relation(result.get(path))
         ]
 
-    def append(self, result):
-        self.results.append(result)
-
-    def extend(self, results):
-        self.results.extend(results)
-
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
 
@@ -108,9 +102,6 @@ class ResultSet(EqualityMixin):
 
     def __iter__(self):
         return iter(self.results)
-
-    def __getitem__(self, index):
-        return self.results[index]
 
     def __eq__(self, other):
         """Override the default Equals behavior"""
@@ -148,10 +139,7 @@ def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
     return ResultSet(new_data)
 
 
-def result_apply_rule(data, fn, inputs, outputs, cardinality, scope=None):
-    if scope is None:
-        scope = {}
-
+def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
     # collect inputs at this level
     for input in inputs:
         if len(input) == 1:

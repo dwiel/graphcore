@@ -16,6 +16,16 @@ def test_repr():
     assert repr(ResultSet()) == '<ResultSet []>'
 
 
+def test_result_eq():
+    # excersize __eq__ other type
+    assert Result() != None
+
+
+def test_result_set_eq():
+    # excersize __eq__ other type
+    assert not (ResultSet() == 1)
+
+
 def test_result_set_init():
     result_set = ResultSet([{'a': a} for a in range(3)])
     assert result_set == ResultSet(result_set)
@@ -64,7 +74,7 @@ def test_shape_path_no_match():
 
 
 def test_shape_path_double_dot():
-    ret = build_result_set([{'a.x': [{}]}]).shape_path('a.x.y.z')
+    ret = build_result_set([{'a.x': [{'_': 1}]}]).shape_path('a.x.y.z')
     assert ret == ('a.x', 'y.z')
 
     assert build_result_set([{'a.x': [{}]}]).shape_path('x.y.z') == ('x.y.z',)
