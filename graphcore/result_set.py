@@ -1,3 +1,5 @@
+from six.moves import zip
+
 from .equality_mixin import EqualityMixin
 
 
@@ -87,3 +89,103 @@ class ResultSet(EqualityMixin):
 
     def __iter__(self):
         return iter(self.results)
+
+    def apply_transform(self, input_paths, output_path, transform, cardinality):
+        # TODO: multiple output_paths
+        parent, subpath, result_set = self.deepest_result_set_parent(
+            output_path
+        )
+
+        parent[subpath] = ResultSet([
+            result.immutible_set(
+                output_path, transform(result.get(input_paths)), cardinality
+            ) for result in result_set
+        ])
+
+
+def next_sub_path(inputs):
+    # NOTE: only handles inputs along one lineage in the tree. no sisters
+    # or cousins allowed
+    sub_path = set([input[0] for input in inputs])
+    if len(sub_path) > 1:
+        raise ValueError('no sisters!')
+    elif len(sub_path) == 1:
+        return sub_path.pop()
+
+
+def apply_transform(*args, **kwargs):
+    if isinstance(args[0], list):
+        return result_set_apply_transform(*args, **kwargs)
+    else:
+        return result_apply_transform(*args, **kwargs)
+
+
+def result_set_apply_transform(data, fn, inputs, outputs, cardinality,
+                               scope={}):
+    new_data = []
+    for result in data:
+        new_data.extend(
+            result_apply_transform(
+                result, fn, inputs, outputs, cardinality, scope
+            )
+        )
+    return new_data
+
+
+def apply_function(data, fn, outputs, cardinality, scope):
+    ret = fn(**scope)
+
+    if cardinality == 'one':
+        if len(outputs) == 1:
+            values = [ret]
+        else:
+            values = ret
+
+        for output, value in zip(outputs, values):
+            data[output[0]] = value
+
+        return [data]
+    elif cardinality == 'many':
+        if len(outputs) == 1:
+            values_set = [(value,) for value in ret]
+        else:
+            values_set = ret
+
+        new_datas = []
+        for values in values_set:
+            new_data = data.copy()
+            for output, value in zip(outputs, values):
+                new_data[output[0]] = value
+            new_datas.append(new_data)
+
+        return new_datas
+    else:
+        raise ValueError('cardinality must be one or many')
+
+
+def result_apply_transform(data, fn, inputs, outputs, cardinality, scope={}):
+    # collect inputs at this level
+    for input in inputs:
+        if len(input) == 1:
+            scope[input[0]] = data[input[0]]
+
+    # outputs must all be at the same depth and must not depend on inputs which
+    # are deeper
+    if len(outputs[0]) == 1:
+        return apply_function(data, fn, outputs, cardinality, scope)
+    else:
+        # recur down to the next level of the data
+        inputs = [input for input in inputs if len(input) > 1]
+
+        sub_path = next_sub_path(inputs)
+
+        # remove left most part from input and output
+        new_inputs = [input[1:] for input in inputs]
+        new_outputs = [output[1:] for output in outputs]
+
+        # a copy may not be strictly necessary ...
+        data[sub_path] = apply_transform(
+            data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
+        )
+
+        return [data]

@@ -1,5 +1,7 @@
+import pytest
+
 from .relation import Relation
-from .result_set import ResultSet, Result
+from .result_set import ResultSet, Result, apply_transform
 
 
 def test_result_init():
@@ -41,3 +43,101 @@ def test_result_set_filter():
     result_set.filter('a', Relation('>', 1))
 
     assert result_set.results == [{'a': 2}, {'a': 3}]
+
+
+@pytest.fixture
+def data():
+    return [{
+        'a': [{
+            'b': 10,
+        }, {
+            'b': 20,
+        }],
+        'c': 100,
+    }]
+
+
+def test_apply_transform_single_output(data):
+    ret = apply_transform(
+        data, lambda c, b: c + b,
+        inputs=[('c',), ('a', 'b')],
+        outputs=[('a', 'd')],
+        cardinality='one',
+    )
+
+    assert ret == [{
+        'a': [{
+            'b': 10,
+            'd': 110,
+        }, {
+            'b': 20,
+            'd': 120,
+        }],
+        'c': 100,
+    }]
+
+
+def test_apply_transform_many_outputs(data):
+    ret = apply_transform(
+        data, lambda c, b: (c + b, -1 * (b + c)),
+        inputs=[('c',), ('a', 'b')],
+        outputs=[('a', 'd'), ('a', 'e')],
+        cardinality='one',
+    )
+
+    assert ret == [{
+        'a': [{
+            'b': 10,
+            'd': 110,
+            'e': -110,
+        }, {
+            'b': 20,
+            'd': 120,
+            'e': -120,
+        }],
+        'c': 100,
+    }]
+
+
+def test_apply_transform_cardinality_many(data):
+    ret = apply_transform(
+        data, lambda c, b: [c + b + i for i in [1, 2, 3]],
+        inputs=[('c',), ('a', 'b')],
+        outputs=[('a', 'd')],
+        cardinality='many',
+    )
+
+    assert ret == [{
+        'a': [
+            {'b': 10, 'd': 111},
+            {'b': 10, 'd': 112},
+            {'b': 10, 'd': 113},
+            {'b': 20, 'd': 121},
+            {'b': 20, 'd': 122},
+            {'b': 20, 'd': 123},
+        ],
+        'c': 100,
+    }]
+
+
+def test_apply_transform_cardinality_many_many_outputs(data):
+    ret = apply_transform(
+        data, lambda c, b: [
+            (c + b + i, -1 * (c + b + i)) for i in [1, 2, 3]
+        ],
+        inputs=[('c',), ('a', 'b')],
+        outputs=[('a', 'd'), ('a', 'e')],
+        cardinality='many',
+    )
+
+    assert ret == [{
+        'a': [
+            {'b': 10, 'd': 111, 'e': -111},
+            {'b': 10, 'd': 112, 'e': -112},
+            {'b': 10, 'd': 113, 'e': -113},
+            {'b': 20, 'd': 121, 'e': -121},
+            {'b': 20, 'd': 122, 'e': -122},
+            {'b': 20, 'd': 123, 'e': -123},
+        ],
+        'c': 100,
+    }]
