@@ -1,7 +1,7 @@
 import pytest
 
 from .relation import Relation
-from .result_set import ResultSet, Result, apply_transform
+from .result_set import ResultSet, Result, result_set_apply_transform
 
 
 def test_result_init():
@@ -58,7 +58,7 @@ def data():
 
 
 def test_apply_transform_single_output(data):
-    ret = apply_transform(
+    ret = result_set_apply_transform(
         data, lambda c, b: c + b,
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
@@ -78,7 +78,7 @@ def test_apply_transform_single_output(data):
 
 
 def test_apply_transform_many_outputs(data):
-    ret = apply_transform(
+    ret = result_set_apply_transform(
         data, lambda c, b: (c + b, -1 * (b + c)),
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd'), ('a', 'e')],
@@ -100,7 +100,7 @@ def test_apply_transform_many_outputs(data):
 
 
 def test_apply_transform_cardinality_many(data):
-    ret = apply_transform(
+    ret = result_set_apply_transform(
         data, lambda c, b: [c + b + i for i in [1, 2, 3]],
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
@@ -121,7 +121,7 @@ def test_apply_transform_cardinality_many(data):
 
 
 def test_apply_transform_cardinality_many_many_outputs(data):
-    ret = apply_transform(
+    ret = result_set_apply_transform(
         data, lambda c, b: [
             (c + b + i, -1 * (c + b + i)) for i in [1, 2, 3]
         ],

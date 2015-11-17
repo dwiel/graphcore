@@ -101,13 +101,6 @@ def next_sub_path(inputs):
         return sub_path.pop()
 
 
-def apply_transform(*args, **kwargs):
-    if isinstance(args[0], list):
-        return result_set_apply_transform(*args, **kwargs)
-    else:
-        return result_apply_transform(*args, **kwargs)
-
-
 def result_set_apply_transform(data, fn, inputs, outputs, cardinality,
                                scope={}):
     new_data = []
@@ -172,7 +165,7 @@ def result_apply_transform(data, fn, inputs, outputs, cardinality, scope={}):
         new_outputs = [output[1:] for output in outputs]
 
         # a copy may not be strictly necessary ...
-        data[sub_path] = apply_transform(
+        data[sub_path] = result_set_apply_transform(
             data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
         )
 
