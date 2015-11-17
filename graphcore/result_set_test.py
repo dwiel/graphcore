@@ -16,9 +16,9 @@ def test_repr():
     assert repr(ResultSet()) == '<ResultSet []>'
 
 
-def test_result_eq():
+def test_result_not_eq():
     # excersize __eq__ other type
-    assert Result() != None
+    assert not (Result() == None)
 
 
 def test_result_set_eq():
