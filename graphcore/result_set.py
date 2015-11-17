@@ -90,18 +90,6 @@ class ResultSet(EqualityMixin):
     def __iter__(self):
         return iter(self.results)
 
-    def apply_transform(self, input_paths, output_path, transform, cardinality):
-        # TODO: multiple output_paths
-        parent, subpath, result_set = self.deepest_result_set_parent(
-            output_path
-        )
-
-        parent[subpath] = ResultSet([
-            result.immutible_set(
-                output_path, transform(result.get(input_paths)), cardinality
-            ) for result in result_set
-        ])
-
 
 def next_sub_path(inputs):
     # NOTE: only handles inputs along one lineage in the tree. no sisters
