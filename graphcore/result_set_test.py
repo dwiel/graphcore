@@ -18,7 +18,7 @@ def test_repr():
 
 def test_result_not_eq():
     # excersize __eq__ other type
-    assert not (Result() == None)
+    assert not (Result() == 1)
 
 
 def test_result_set_eq():
