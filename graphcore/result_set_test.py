@@ -60,7 +60,7 @@ def test_shape_path_short():
 
 def test_shape_path_no_match():
     ret = build_result_set([{'a': [{'b': [{}]}]}]).shape_path('x.y.z')
-    assert == ('x.y.z',)
+    assert ret == ('x.y.z',)
 
 
 def test_shape_path_double_dot():
