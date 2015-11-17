@@ -1,8 +1,7 @@
 import pytest
 
 from .relation import Relation
-from .result_set import ResultSet, Result, result_set_apply_transform
-from .result_set import shape_path
+from .result_set import ResultSet, Result, result_set_apply_rule
 
 
 def test_result_init():
@@ -23,19 +22,12 @@ def test_result_set_init():
 
 
 def test_repr_nonbasic():
-    result_set = ResultSet({})
-    result_set.set('a', 1)
+    result_set = ResultSet({'a': 1})
     assert repr(result_set) == "<ResultSet [{'a': 1}]>"
 
 
 def test_result_eq():
     assert Result({'a': 1}) == Result({'a': 1})
-
-
-def test_result_explode():
-    assert Result({'a': 1}).explode('b', [1, 2, 3]) == [
-        Result({'a': 1, 'b': b}) for b in [1, 2, 3]
-    ]
 
 
 def test_result_set_filter():
@@ -46,39 +38,49 @@ def test_result_set_filter():
     assert result_set.results == [{'a': 2}, {'a': 3}]
 
 
+def build_result_set(data):
+    if isinstance(data, list):
+        return ResultSet([build_result_set(e) for e in data])
+    elif isinstance(data, dict):
+        return Result({k: build_result_set(v) for k, v in data.items()})
+    else:
+        return data
+
+
 def test_shape_path():
-    assert shape_path([{'a': [{'b': [{}]}]}], 'a.b.c') == (
+    assert build_result_set([{'a': [{'b': [{}]}]}]).shape_path('a.b.c') == (
         'a', 'b', 'c'
     )
 
 
 def test_shape_path_short():
-    assert shape_path([{'a': [{'b': [{}]}]}], 'a.x.y') == ('a', 'x.y')
+    ret = build_result_set([{'a': [{'b': [{}]}]}]).shape_path('a.x.y')
+    assert ret == ('a', 'x.y')
 
 
 def test_shape_path_no_match():
-    assert shape_path([{'a': [{'b': [{}]}]}], 'x.y.z') == ('x.y.z',)
+    assert build_result_set([{'a': [{'b': [{}]}]}]).shape_path('x.y.z') == ('x.y.z',)
 
 
 def test_shape_path_double_dot():
-    assert shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
-    assert shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
+    assert build_result_set([{'a.x': [{}]}]).shape_path('a.x.y.z') == ('a.x', 'y.z')
+    assert build_result_set([{'a.x': [{}]}]).shape_path('x.y.z') == ('x.y.z',)
 
 
 @pytest.fixture
 def data():
-    return [{
-        'a': [{
+    return ResultSet([Result({
+        'a': ResultSet([Result({
             'b': 10,
-        }, {
+        }), Result({
             'b': 20,
-        }],
+        })]),
         'c': 100,
-    }]
+    })])
 
 
-def test_apply_transform_single_output(data):
-    ret = result_set_apply_transform(
+def test_apply_rule_single_output(data):
+    ret = result_set_apply_rule(
         data, lambda c, b: c + b,
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
@@ -97,8 +99,8 @@ def test_apply_transform_single_output(data):
     }]
 
 
-def test_apply_transform_many_outputs(data):
-    ret = result_set_apply_transform(
+def test_apply_rule_many_outputs(data):
+    ret = result_set_apply_rule(
         data, lambda c, b: (c + b, -1 * (b + c)),
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd'), ('a', 'e')],
@@ -119,8 +121,8 @@ def test_apply_transform_many_outputs(data):
     }]
 
 
-def test_apply_transform_cardinality_many(data):
-    ret = result_set_apply_transform(
+def test_apply_rule_cardinality_many(data):
+    ret = result_set_apply_rule(
         data, lambda c, b: [c + b + i for i in [1, 2, 3]],
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
@@ -140,8 +142,8 @@ def test_apply_transform_cardinality_many(data):
     }]
 
 
-def test_apply_transform_cardinality_many_many_outputs(data):
-    ret = result_set_apply_transform(
+def test_apply_rule_cardinality_many_many_outputs(data):
+    ret = result_set_apply_rule(
         data, lambda c, b: [
             (c + b + i, -1 * (c + b + i)) for i in [1, 2, 3]
         ],

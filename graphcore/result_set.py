@@ -2,6 +2,7 @@ from six.moves import zip
 
 from .equality_mixin import EqualityMixin
 from .path import Path
+from .rule import Cardinality
 
 
 class Result(EqualityMixin):
@@ -10,28 +11,15 @@ class Result(EqualityMixin):
         if isinstance(result, Result):
             self.result = result.result.copy()
         elif isinstance(result, dict):
+            # set each individually to ensure keys are mapped to strings
             self.result = {}
             for k, v in result.items():
-                self.set(k, v)
+                self[k] = v
         else:
             self.result = {}
 
-    def set(self, path, value):
-        self.result[str(path)] = value
-
     def get(self, path):
-        return self.result[str(path)]
-
-    def explode(self, path, values):
-        new_results = [
-            Result(self)
-            for _ in range(len(values))
-        ]
-
-        for result, value in zip(new_results, values):
-            result.set(path, value)
-
-        return new_results
+        return self.result.get(str(path))
 
     def to_json(self):
         return self.result
@@ -41,8 +29,39 @@ class Result(EqualityMixin):
             str(path): self.get(path) for path in paths
         }
 
+    def copy(self):
+        return Result(self)
+
+    def __getitem__(self, k):
+        return self.result[str(k)]
+
+    def __setitem__(self, k, v):
+        self.result[str(k)] = v
+
     def __repr__(self):
         return '<Result {result}>'.format(result=repr(self.result))
+
+    def __eq__(self, other):
+        """Override the default Equals behavior"""
+        if isinstance(other, Result):
+            return self.result == other.result
+        elif isinstance(other, dict):
+            return self.result == other
+        return NotImplemented
+
+    def _subpaths(self, path):
+        path = Path(path)
+
+        for i in range(len(path.parts)):
+            yield Path(path.parts[:i]), Path(path.parts[i:])
+
+    def shape_path(self, path):
+        for prefix, subpath in self._subpaths(path):
+            sub_data = self.get(str(prefix))
+            if sub_data:
+                return (prefix,) + sub_data.shape_path(subpath)
+
+        return (path,)
 
 
 class ResultSet(EqualityMixin):
@@ -58,10 +77,6 @@ class ResultSet(EqualityMixin):
             self.results = init
         else:
             self.results = []
-
-    def set(self, path, value):
-        for result in self.results:
-            result.set(path, value)
 
     def to_json(self):
         return [
@@ -79,6 +94,9 @@ class ResultSet(EqualityMixin):
             if relation(result.get(path))
         ]
 
+    def append(self, result):
+        self.results.append(result)
+
     def extend(self, results):
         self.results.extend(results)
 
@@ -91,29 +109,79 @@ class ResultSet(EqualityMixin):
     def __iter__(self):
         return iter(self.results)
 
+    def __getitem__(self, index):
+        return self.results[index]
 
-def _subpaths(path):
-    for i in range(len(path.parts)):
-        yield Path(path.parts[:i]), Path(path.parts[i:])
+    def __eq__(self, other):
+        """Override the default Equals behavior"""
+        if isinstance(other, ResultSet):
+            return self.results == other.results
+        elif isinstance(other, list):
+            return self.results == other
+        return NotImplemented
+
+    def shape_paths(self, paths):
+        return [self.shape_path(path) for path in paths]
 
 
-def shape_path(data, path):
-    """ return a tuple of subpaths which add together to path, but are split
-    in the same way as the data result_set.
+    def shape_path(self, path):
+        """ return a tuple of subpaths which add together to path, but are split
+        in the same way as the data result_set.
 
-    shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
-    shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
-    """
-    if isinstance(data, list):
-        return shape_path(data[0], path)
+        shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
+        shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
+        """
+        return self.results[0].shape_path(path)
 
-    for prefix, subpath in _subpaths(Path(path)):
-        prefix = Path(prefix)
-        sub_data = data.get(str(prefix))
-        if sub_data:
-            return (prefix,) + shape_path(sub_data, subpath)
 
-    return (path,)
+
+def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
+                               scope=None):
+    if scope is None:
+        scope = {}
+
+    new_data = []
+    for result in data:
+        new_data.extend(
+            result_apply_rule(
+                result, fn, inputs, outputs, cardinality, scope
+            )
+        )
+    return ResultSet(new_data)
+
+
+def result_apply_rule(data, fn, inputs, outputs, cardinality, scope=None):
+    if scope is None:
+        scope = {}
+
+    # collect inputs at this level
+    for input in inputs:
+        if len(input) == 1:
+            # TODO: dont require casting here
+            scope[Path(input[0]).relative.property] = data[input[0]]
+
+    # outputs must all be at the same depth and must not depend on inputs which
+    # are deeper
+    if len(outputs[0]) == 1:
+        return apply_rule(data, fn, outputs, cardinality, scope)
+    else:
+        # recur down to the next level of the data
+        inputs = [input for input in inputs if len(input) > 1]
+
+        sub_path = next_sub_path(inputs)
+
+        # remove left most part from input and output
+        new_inputs = [input[1:] for input in inputs]
+        new_outputs = [output[1:] for output in outputs]
+
+        # a copy may not be strictly necessary ...
+        data[sub_path] = result_set_apply_rule(
+            data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
+        )
+
+        # return a list boxing the data so the return value is the same as
+        # cardinality many
+        return ResultSet([data])
 
 
 def next_sub_path(inputs):
@@ -126,22 +194,12 @@ def next_sub_path(inputs):
         return sub_path.pop()
 
 
-def result_set_apply_transform(data, fn, inputs, outputs, cardinality,
-                               scope={}):
-    new_data = []
-    for result in data:
-        new_data.extend(
-            result_apply_transform(
-                result, fn, inputs, outputs, cardinality, scope
-            )
-        )
-    return new_data
+def apply_rule(data, fn, outputs, cardinality, scope):
+    cardinality = Cardinality.cast(cardinality)
 
-
-def apply_function(data, fn, outputs, cardinality, scope):
     ret = fn(**scope)
 
-    if cardinality == 'one':
+    if cardinality == Cardinality.one:
         if len(outputs) == 1:
             values = [ret]
         else:
@@ -150,8 +208,8 @@ def apply_function(data, fn, outputs, cardinality, scope):
         for output, value in zip(outputs, values):
             data[output[0]] = value
 
-        return [data]
-    elif cardinality == 'many':
+        return ResultSet([data])
+    elif cardinality == Cardinality.many:
         if len(outputs) == 1:
             values_set = [(value,) for value in ret]
         else:
@@ -164,36 +222,6 @@ def apply_function(data, fn, outputs, cardinality, scope):
                 new_data[output[0]] = value
             new_datas.append(new_data)
 
-        return new_datas
+        return ResultSet(new_datas)
     else:
         raise ValueError('cardinality must be one or many')
-
-
-def result_apply_transform(data, fn, inputs, outputs, cardinality, scope={}):
-    # collect inputs at this level
-    for input in inputs:
-        if len(input) == 1:
-            scope[input[0]] = data[input[0]]
-
-    # outputs must all be at the same depth and must not depend on inputs which
-    # are deeper
-    if len(outputs[0]) == 1:
-        return apply_function(data, fn, outputs, cardinality, scope)
-    else:
-        # recur down to the next level of the data
-        inputs = [input for input in inputs if len(input) > 1]
-
-        sub_path = next_sub_path(inputs)
-
-        # remove left most part from input and output
-        new_inputs = [input[1:] for input in inputs]
-        new_outputs = [output[1:] for output in outputs]
-
-        # a copy may not be strictly necessary ...
-        data[sub_path] = result_set_apply_transform(
-            data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
-        )
-
-        # return a list boxing the data so the return value is the same as
-        # cardinality many
-        return [data]

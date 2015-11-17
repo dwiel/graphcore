@@ -1,5 +1,3 @@
-import pytest
-
 from .relation import Relation
 from .query_plan import QueryPlan
 from .rule import Rule
@@ -27,14 +25,19 @@ def test_query_plan_multiple_outputs():
 def test_query_plan_multiple_outputs_cardinality_many():
     query_plan = QueryPlan({'a.in1': 1}, ['a.out1', 'a.out2'])
     rule = Rule(
-        lambda in1: in1, ['a.in1'], ['a.out1', 'a.out2'], 'many'
+        lambda in1: [[in1, in1+1], [10+in1, 10+in1+1]],
+        ['a.in1'], ['a.out1', 'a.out2'], 'many'
     )
     query_plan.append(
         Node(None, ['a.in1'], ['a.out1', 'a.out2'], rule)
     )
 
-    with pytest.raises(NotImplementedError):
-        query_plan.execute()
+    ret = query_plan.execute()
+
+    assert ret == [
+        {'a.out1': 1, 'a.out2': 2},
+        {'a.out1': 11, 'a.out2': 12},
+    ]
 
 
 def test_query_plan_relation():

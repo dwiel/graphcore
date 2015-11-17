@@ -316,6 +316,19 @@ class TestQuerySearch(unittest.TestCase):
             query.query[0],
         )
 
+    """
+    def test_query_search_nested(self):
+        query = graphcore.QuerySearch(testgraphcore, {
+            'user.id': 1,
+            'user.books': [{
+                'id?': None,
+            }],
+        })
+        query.backward()
+        print repr(query.call_graph)
+        assert False
+    """
+
     def test_call_graph_repr(self):
         query = graphcore.QuerySearch(testgraphcore, {
             'user.id': 1,
