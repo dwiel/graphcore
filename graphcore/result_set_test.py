@@ -2,6 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, result_set_apply_transform
+from .result_set import shape_path
 
 
 def test_result_init():
@@ -43,6 +44,25 @@ def test_result_set_filter():
     result_set.filter('a', Relation('>', 1))
 
     assert result_set.results == [{'a': 2}, {'a': 3}]
+
+
+def test_shape_path():
+    assert shape_path([{'a': [{'b': [{}]}]}], 'a.b.c') == (
+        'a', 'b', 'c'
+    )
+
+
+def test_shape_path_short():
+    assert shape_path([{'a': [{'b': [{}]}]}], 'a.x.y') == ('a', 'x.y')
+
+
+def test_shape_path_no_match():
+    assert shape_path([{'a': [{'b': [{}]}]}], 'x.y.z') == ('x.y.z',)
+
+
+def test_shape_path_double_dot():
+    assert shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
+    assert shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
 
 
 @pytest.fixture

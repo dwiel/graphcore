@@ -1,6 +1,7 @@
 from six.moves import zip
 
 from .equality_mixin import EqualityMixin
+from .path import Path
 
 
 class Result(EqualityMixin):
@@ -89,6 +90,30 @@ class ResultSet(EqualityMixin):
 
     def __iter__(self):
         return iter(self.results)
+
+
+def _subpaths(path):
+    for i in range(len(path.parts)):
+        yield Path(path.parts[:i]), Path(path.parts[i:])
+
+
+def shape_path(data, path):
+    """ return a tuple of subpaths which add together to path, but are split
+    in the same way as the data result_set.
+
+    shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
+    shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
+    """
+    if isinstance(data, list):
+        return shape_path(data[0], path)
+
+    for prefix, subpath in _subpaths(Path(path)):
+        prefix = Path(prefix)
+        sub_data = data.get(str(prefix))
+        if sub_data:
+            return (prefix,) + shape_path(sub_data, subpath)
+
+    return (path,)
 
 
 def next_sub_path(inputs):
