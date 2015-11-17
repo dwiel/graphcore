@@ -176,4 +176,6 @@ def result_apply_transform(data, fn, inputs, outputs, cardinality, scope={}):
             data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
         )
 
+        # return a list boxing the data so the return value is the same as
+        # cardinality many
         return [data]
