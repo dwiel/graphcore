@@ -57,8 +57,10 @@ def test_query_nested():
     })
 
     assert len(query.clauses) == 2
-    assert len([1 for clause in query.clauses if clause.lhs == 'user.id'])
-    assert len([1 for clause in query.clauses if clause.lhs == 'user.books.id'])
+    assert len([1 for clause in query.clauses if clause.lhs == 'user.id']) == 1
+    assert len(
+        [1 for clause in query.clauses if clause.lhs == 'user.books.id']
+    ) == 1
 
 
 class TestGraphcore(unittest.TestCase):
