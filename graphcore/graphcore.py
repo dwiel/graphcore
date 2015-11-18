@@ -98,8 +98,20 @@ class Query(object):
         self.clauses = []
         self.clause_map = {}
 
+        self.extend(query)
+
+    def extend(self, query, prefix=''):
+        """ extend this Query with the query parameter type dict
+
+        if a prefix is provided, it will be prepended to all key names
+        """
+
         for key, value in query.items():
-            self.append(Clause(key, value))
+            if isinstance(value, list):
+                # TODO: check if value should be list
+                self.extend(value[0], prefix=key+'.')
+            else:
+                self.append(Clause(prefix+key, value))
 
     def append(self, clause):
         if clause.lhs not in self.clause_map:

@@ -48,6 +48,19 @@ def test_schema_str():
     assert 'books' in repr(schema)
 
 
+def test_query_nested():
+    query = graphcore.Query({
+        'user.id': 1,
+        'user.books': [{
+            'id?': None,
+        }],
+    })
+
+    assert len(query.clauses) == 2
+    assert len([1 for clause in query.clauses if clause.lhs == 'user.id'])
+    assert len([1 for clause in query.clauses if clause.lhs == 'user.books.id'])
+
+
 class TestGraphcore(unittest.TestCase):
 
     def test_available_rules_string(self):
@@ -316,7 +329,6 @@ class TestQuerySearch(unittest.TestCase):
             query.query[0],
         )
 
-    """
     def test_query_search_nested(self):
         query = graphcore.QuerySearch(testgraphcore, {
             'user.id': 1,
@@ -325,9 +337,14 @@ class TestQuerySearch(unittest.TestCase):
             }],
         })
         query.backward()
-        print repr(query.call_graph)
-        assert False
-    """
+
+        user_book_id_nodes = [
+            node for node in query.call_graph.nodes
+            if 'user.books.id' in node.outgoing_paths
+        ]
+
+        assert len(query.call_graph.nodes) == 1
+        assert len(user_book_id_nodes) == 1
 
     def test_call_graph_repr(self):
         query = graphcore.QuerySearch(testgraphcore, {
