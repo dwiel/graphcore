@@ -299,6 +299,21 @@ class TestGraphcore(unittest.TestCase):
 
         assert ret == [{'a.b.c.d.e.f.out1': 1}]
 
+    def test_nested_property_type(self):
+        gc = graphcore.Graphcore()
+
+        def function(id):
+            return str(id)
+
+        gc.property_type('d', 'es', 'e')
+        gc.register_rule(['e.id'], 'e.name', function=function)
+        ret = gc.query({
+            'c.d.es.id': 1,
+            'c.d.es.name?': None,
+        })
+
+        assert ret == [{'c.d.es.name': '1'}]
+
 
 class TestQuerySearch(unittest.TestCase):
 

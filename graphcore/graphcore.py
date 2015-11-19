@@ -276,7 +276,7 @@ class Schema(object):
                         Path((relation.other_type,) + path[2:]),
                     )
 
-        return [], path
+        return Path([]), path
 
 
 class PathNotFound(Exception):
@@ -363,9 +363,15 @@ class Graphcore(object):
                     return prefix, rule
 
             # then try extracting the base type out and finding a prefix
-            prefix, subpath = self.schema.base_type_and_property_of_path(
+            subprefix, subpath = self.schema.base_type_and_property_of_path(
                 subpath
             )
+
+            # because prefix and subpath overlap where they meet, remove the
+            # last part from prefix so that this addition doesnt duplicate that
+            # part.
+            # TODO: dont require casting to Path here
+            prefix = Path(prefix[:-1]) + subprefix
 
             for rule in rules:
                 if subpath in rule.outputs:
