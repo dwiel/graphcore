@@ -99,7 +99,7 @@ class SQLReflector(object):
     def _sql_query_unground_property(self, table, column):
         return self.sql_query_class(
             [table], '{}.{}'.format(table, column), {},
-            one_column=True, first=True
+            one_column=True
         )
 
     def sql_reflect_column(self, table, column_name):
