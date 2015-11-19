@@ -121,7 +121,10 @@ class ResultSet(EqualityMixin):
         shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
         shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
         """
-        return self.results[0].shape_path(path)
+        if self.results:
+            return self.results[0].shape_path(path)
+        else:
+            return (path,)
 
 
 def result_set_apply_rule(data, fn, inputs, outputs, cardinality,

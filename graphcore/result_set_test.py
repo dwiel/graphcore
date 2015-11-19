@@ -80,6 +80,10 @@ def test_shape_path_double_dot():
     assert build_result_set([{'a.x': [{}]}]).shape_path('x.y.z') == ('x.y.z',)
 
 
+def test_shape_paths_empty_result_set():
+    assert ResultSet([]).shape_path('x') == ('x',)
+
+
 @pytest.fixture
 def data():
     return ResultSet([Result({
