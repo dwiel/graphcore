@@ -272,8 +272,8 @@ class Schema(object):
                 if path[1] == relation.property:
                     # TODO: this return type prefix, rule is kinda nasty ...
                     return (
-                        Path(path[:2]),
-                        Path((relation.other_type,) + path[2:]),
+                        path[:2],
+                        relation.other_type + path[2:],
                     )
 
         return Path([]), path
@@ -370,8 +370,7 @@ class Graphcore(object):
             # because prefix and subpath overlap where they meet, remove the
             # last part from prefix so that this addition doesnt duplicate that
             # part.
-            # TODO: dont require casting to Path here
-            prefix = Path(prefix[:-1]) + subprefix
+            prefix = prefix[:-1] + subprefix
 
             for rule in rules:
                 if subpath in rule.outputs:

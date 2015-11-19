@@ -32,7 +32,7 @@ class Path(object):
         ]
         """
         for i in range(-2, -len(self.parts) - 1, -1):
-            yield self.parts[:i+1], Path(self.parts[i:])
+            yield Path(self.parts[:i+1]), Path(self.parts[i:])
 
     def __repr__(self):
         return '<Path {str}>'.format(str=str(self))
@@ -54,10 +54,15 @@ class Path(object):
         return self.parts < other.parts
 
     def __getitem__(self, index):
-        return self.parts[index]
+        return Path(self.parts[index])
 
     def __len__(self):
         return len(self.parts)
+
+    def __radd__(self, other):
+        if isinstance(other, six.string_types):
+            return Path(Path(other).parts + self.parts)
+        return NotImplemented
 
     def __add__(self, other):
         if isinstance(other, tuple):
