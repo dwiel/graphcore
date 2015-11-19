@@ -1,4 +1,5 @@
 import unittest
+import six
 import pytest
 
 from . import graphcore
@@ -447,6 +448,10 @@ class TestQuerySearch(unittest.TestCase):
         })
         with pytest.raises(graphcore.PathNotFound):
             query.backward()
+
+    def test_explain(self):
+        gc = graphcore.Graphcore()
+        assert isinstance(gc.explain({}), six.string_types)
 
 
 class TestClause(unittest.TestCase):

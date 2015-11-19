@@ -389,3 +389,10 @@ class Graphcore(object):
         query_plan = query_planner.plan_query()
 
         return query_plan.execute()
+
+    def explain(self, query):
+        query = QuerySearch(self, query)
+
+        query.backward()
+
+        return repr(query.call_graph)
