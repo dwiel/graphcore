@@ -72,6 +72,14 @@ class SQLReflector(object):
             function=self._sql_query_property(table, column_name),
         )
 
+    def _unground_property(self, table, column_name):
+        type_name = self._type_name_from_table(table)
+
+        return self.graphcore.register_rule(
+            [], '{}.{}'.format(type_name, column_name),
+            function=self._sql_query_unground_property(table, column_name),
+        )
+
     def _sql_query_backref(self, table, column):
         return self.sql_query_class(
             [table], '{}.id'.format(table), {},
@@ -88,6 +96,12 @@ class SQLReflector(object):
             }, one_column=True, first=True
         )
 
+    def _sql_query_unground_property(self, table, column):
+        return self.sql_query_class(
+            [table], '{}.{}'.format(table, column), {},
+            one_column=True, first=True
+        )
+
     def sql_reflect_column(self, table, column_name):
         if column_name[-3:] == '_id':
             self._relationship(table, column_name)
@@ -99,9 +113,9 @@ class SQLReflector(object):
 
         for column in columns:
             if column.name == 'id':
-                continue
-
-            self.sql_reflect_column(table, column.name)
+                self._unground_property(table, column.name)
+            else:
+                self.sql_reflect_column(table, column.name)
 
     def _metadata(self, engine):
         metadata = sqlalchemy.schema.MetaData(bind=engine)

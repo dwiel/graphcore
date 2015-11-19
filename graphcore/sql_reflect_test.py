@@ -58,6 +58,9 @@ def test_sql_reflect(gc, engine):
 
     assert set(gc.rules) == set([
         Rule(SQLQuery(
+            'users', 'users.id', {}, one_column=True, first=True
+        ), [], 'user.id', 'one'),
+        Rule(SQLQuery(
             'users', 'users.name', {}, input_mapping={
                 'id': 'users.id',
             }, one_column=True, first=True
@@ -72,6 +75,9 @@ def test_sql_reflect(gc, engine):
                 'id': 'books.user_id',
             }, one_column=True, first=False
         ), ['user.id'], 'user.books.id', 'many'),
+        Rule(SQLQuery(
+            'books', 'books.id', {}, one_column=True, first=True
+        ), [], 'book.id', 'one'),
     ])
 
     assert gc.schema.property_types == [
@@ -84,6 +90,9 @@ def test_sql_reflect_relationship(gc, singular_table_name_engine):
     SQLReflector(gc, singular_table_name_engine, SQLQuery)
 
     assert set(gc.rules) == set([
+        Rule(SQLQuery(
+            'thing', 'thing.id', {}, one_column=True, first=True
+        ), [], 'thing.id', 'one'),
         Rule(SQLQuery(
             'thing', 'thing.name', {}, input_mapping={
                 'id': 'thing.id',
