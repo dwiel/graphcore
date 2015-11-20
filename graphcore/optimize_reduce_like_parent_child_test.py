@@ -1,4 +1,5 @@
 from .rule import Rule, Cardinality
+from .path import Path
 from .call_graph import CallGraph
 
 from .optimize_reduce_like_parent_child import reduce_like_parent_child
@@ -89,12 +90,7 @@ def test_reduce_like_parent_child_with_two_children():
         call_graph_in, set, set_merge
     )
 
-    call_graph_expected = CallGraph()
-    call_graph_expected.add_node(
-        ['a.x'], ['a.w', 'a.z', 'a.y'],
-        Rule(set([1, 2, 3]), ['a.x'], ['a.y', 'a.z', 'a.w'], 'one')
-    )
-
+    # setting these as variables makes assert print nicer when it breaks
     ay = call_graph_out.edge('a.y')
     az = call_graph_out.edge('a.z')
     aw = call_graph_out.edge('a.w')
@@ -104,8 +100,20 @@ def test_reduce_like_parent_child_with_two_children():
 
     assert len(ay.getters) == 0
 
-    assert call_graph_expected == call_graph_out
+    assert len(call_graph_out.nodes) == 1
+    node = call_graph_out.nodes[0]
 
+    assert set(node.outgoing_paths) == set(map(Path, ['a.w', 'a.z', 'a.y']))
+    assert set(node.incoming_paths) == set([Path('a.x')])
+
+    assert node.rule.function == set([1, 2, 3])
+
+    assert set(node.rule.outputs) == set(map(Path, ['a.w', 'a.z', 'a.y']))
+    assert set(node.rule.inputs) == set([Path('a.x')])
+
+    # I think this should be true, but I'm not sure
+    # assert node.outgoing_paths == tuple(node.rule.outputs)
+    # assert node.incoming_paths == tuple(node.rule.inputs)
 
 def test_reduce_like_parent_child_with_diffent_type():
     call_graph_in = CallGraph()
