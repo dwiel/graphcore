@@ -51,7 +51,7 @@ def test_reduce_like_parent_child():
 
     call_graph_expected = CallGraph()
     call_graph_expected.add_node(
-        ['a.x'], ['a.y', 'a.z'],
+        ['a.x'], ['a.z', 'a.y'],
         Rule(set([1, 2]), ['a.x'], ['a.y', 'a.z'], 'one')
     )
 
@@ -91,7 +91,7 @@ def test_reduce_like_parent_child_with_two_children():
 
     call_graph_expected = CallGraph()
     call_graph_expected.add_node(
-        ['a.x'], ['a.y', 'a.z', 'a.w'],
+        ['a.x'], ['a.w', 'a.z', 'a.y'],
         Rule(set([1, 2, 3]), ['a.x'], ['a.y', 'a.z', 'a.w'], 'one')
     )
 
