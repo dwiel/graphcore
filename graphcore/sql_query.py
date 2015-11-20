@@ -212,7 +212,8 @@ class SQLQuery(HashMixin, EqualityMixin):
         assert len(parent.function.input_mapping) == 1
 
         function = parent.function.copy()
-        function.where[next(function.input_mapping.values())] = child.function
+        k = next(iter(function.input_mapping.values()))
+        function.where[k] = child.function
         function.input_mapping = child.function.input_mapping
         function.flatten(keep_child_selects=True)
 
