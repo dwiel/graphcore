@@ -142,7 +142,7 @@ class SQLQuery(HashMixin, EqualityMixin):
                 if len(v.selects) != 1:
                     raise ValueError('SQLQuery merging is only possible when '
                                      'the embedded query has one select')
-                self.where[k] = sql_query_dict.mysql_col(list(v.selects)[0])
+                self.where[k] = sql_query_dict.mysql_col(v.selects[0])
                 if keep_child_selects:
                     self.selects += v.selects
 
