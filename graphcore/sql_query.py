@@ -48,7 +48,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         """
 
         self.tables = parse_comma_seperated_set(tables)
-        self.selects = list(parse_comma_seperated_set(selects))
+        self.selects = parse_comma_seperated_list(selects)
         self.where = where.copy()
         self.limit = limit
         self.one_column = one_column
