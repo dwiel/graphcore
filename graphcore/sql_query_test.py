@@ -61,7 +61,7 @@ def test_merge_unbound_primary_key_and_property():
     # on the query
     users_all_names = Rule(
         SQLQuery(
-            ['users'], ['users.id', 'users.name'], {}
+            ['users'], ['users.name', 'users.id'], {}
         ), [], ['user.name'], 'many',
     )
 
