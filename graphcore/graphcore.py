@@ -384,6 +384,13 @@ class Graphcore(object):
         query.backward()
 
         # optimize query.call_graph here
+        from .optimize_reduce_like_parent_child import reduce_like_parent_child
+        from .sql_query import SQLQuery
+        query.call_graph = reduce_like_parent_child(
+            query.call_graph, SQLQuery, SQLQuery.merge_parent_child
+        )
+
+        print('post optimizer call graph:', query.call_graph)
 
         query_planner = QueryPlanner(query.call_graph, query.query)
         query_plan = query_planner.plan_query()

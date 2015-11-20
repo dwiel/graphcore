@@ -65,7 +65,7 @@ class Node(object):
                  relation=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(map(Path, incoming_paths)))
-        self.outgoing_paths = tuple(sorted(map(Path, outgoing_paths)))
+        self.outgoing_paths = tuple(map(Path, outgoing_paths))
         self.rule = rule
         self.relation = relation
 

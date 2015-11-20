@@ -2,10 +2,7 @@ import six
 import sql_query_dict
 
 from .equality_mixin import EqualityMixin, HashMixin
-
-
-class mysql_col(str):
-    pass
+from .rule import Rule, Cardinality
 
 
 def parse_comma_seperated_set(input):
@@ -47,7 +44,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         """
 
         self.tables = parse_comma_seperated_set(tables)
-        self.selects = parse_comma_seperated_set(selects)
+        self.selects = list(parse_comma_seperated_set(selects))
         self.where = where.copy()
         self.limit = limit
         self.one_column = one_column
@@ -74,6 +71,13 @@ class SQLQuery(HashMixin, EqualityMixin):
             limit=self.limit,
             one_column=self.one_column,
             first=self.first,
+        )
+
+    def copy(self):
+        return self.__class__(
+            self.tables, self.selects, self.where,
+            limit=self.limit, one_column=self.one_column, first=self.first,
+            input_mapping=self.input_mapping,
         )
 
     def _assert_flattenable(self):
@@ -119,7 +123,7 @@ class SQLQuery(HashMixin, EqualityMixin):
                 )
             )
 
-    def flatten(self):
+    def flatten(self, keep_child_selects=False):
         """ merge any SQLQuery objects on the rhs of a where clause
         into self. """
 
@@ -132,13 +136,18 @@ class SQLQuery(HashMixin, EqualityMixin):
                 self.tables.update(v.tables)
 
                 self._assert_no_overlapping_where(v.where)
-                self._assert_no_overlapping_input_mapping(v.input_mapping)
+                # self._assert_no_overlapping_input_mapping(v.input_mapping)
 
                 self.where.update(v.where)
                 if len(v.selects) != 1:
                     raise ValueError('SQLQuery merging is only possible when '
                                      'the embedded query has one select')
-                self.where[k] = mysql_col(list(v.selects)[0])
+                self.where[k] = sql_query_dict.mysql_col(list(v.selects)[0])
+                if keep_child_selects:
+                    self.selects += v.selects
+
+                # we just did a join, so definitely not just the first
+                self.first = False
 
         self.cleanup()
 
@@ -146,7 +155,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         """ remove clauses like 'users.id': mysql_col('users.id') """
 
         for k, v in self.where.copy().items():
-            if isinstance(v, mysql_col):
+            if isinstance(v, sql_query_dict.mysql_col):
                 if k == v:
                     del self.where[k]
 
@@ -159,16 +168,18 @@ class SQLQuery(HashMixin, EqualityMixin):
         input_mapping.update(self.input_mapping)
         input_mapping.update(other.input_mapping)
 
-        return SQLQuery(
+        return self.__class__(
             self.tables.union(other.tables),
-            self.selects.union(other.selects),
+            self.selects + other.selects,
             where,
             input_mapping=input_mapping,
         )
 
     def __call__(self, **kwargs):
         if set(self.input_mapping.keys()) != set(kwargs.keys()):
-            raise ValueError('input mapping keys != kwargs keys')
+            raise ValueError('input mapping keys {} != kwargs keys {}'.format(
+                self.input_mapping.keys(), kwargs.keys()
+            ))
 
         # compose where query
         where = self.where.copy()
@@ -191,3 +202,30 @@ class SQLQuery(HashMixin, EqualityMixin):
 
     def driver(self, sql, vals):
         raise NotImplementedError()
+
+    @staticmethod
+    def merge_parent_child(child, parent):
+        """ NOTE: child and parent are switched here, it makes more sense """
+        print('parent', parent)
+        print('child', child)
+
+        assert len(parent.function.input_mapping) == 1
+
+        function = parent.function.copy()
+        function.where[function.input_mapping.values()[0]] = child.function
+        function.input_mapping = child.function.input_mapping
+        function.flatten(keep_child_selects=True)
+
+        # even if there is just one column, this also works so long as
+        # Cardinality.many
+        function.one_column = False
+
+        print('merged', function)
+
+        inputs = child.inputs
+        # TODO: dont always merge outputs, if they aren't out nodes,
+        # and they dont have any other dependencies, we dont need to
+        # keep them
+        outputs = parent.outputs
+
+        return Rule(function, inputs, outputs, Cardinality.many)

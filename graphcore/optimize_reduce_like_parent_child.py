@@ -1,7 +1,5 @@
 from __future__ import print_function
 
-from .rule import Rule, Cardinality
-
 
 def reduce_like_parent_child(call_graph, rule_type, merge_function):
     """Given a call_graph, reduce parent, child nodes of rule_type
@@ -32,25 +30,21 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
                 if isinstance(child.rule.function, rule_type)
             ]
             for child in children:
-                print(child, parent)
-
-                function = merge_function(
-                    parent.rule.function, child.rule.function
+                rule = merge_function(
+                    parent.rule, child.rule
                 )
 
-                inputs = parent.rule.inputs
-                outputs = parent.rule.outputs + child.rule.outputs
-
-                rule = Rule(function, inputs, outputs, Cardinality.one)
-
+                # TODO: outgoing_paths needs to check if they are out nodes
                 incoming_paths = parent.incoming_paths
-                outgoing_paths = parent.outgoing_paths + child.outgoing_paths
 
-                # TODO: another operation can remove unneeded computation
+                # NOTE: it is important that this order is the same as in
+                # merge_function
+                outgoing_paths = child.outgoing_paths + parent.outgoing_paths
 
                 call_graph.remove_node(parent)
                 call_graph.remove_node(child)
 
+                # TODO: handle merging relations
                 parent = call_graph.add_node(
                     incoming_paths, outgoing_paths, rule
                 )

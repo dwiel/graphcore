@@ -1,7 +1,33 @@
-from .rule import Rule
+from .rule import Rule, Cardinality
 from .call_graph import CallGraph
 
 from .optimize_reduce_like_parent_child import reduce_like_parent_child
+
+
+def set_merge(parent, child):
+    return merge(parent, child, set.__or__)
+
+
+def list_merge(parent, child):
+    return merge(parent, child, list.__add__)
+
+
+def merge(parent, child, function_merge):
+    function = function_merge(parent.function, child.function)
+
+    inputs = parent.inputs
+    # TODO: dont always merge outputs, if they aren't out nodes,
+    # and they dont have any other dependencies, we dont need to
+    # keep them
+    outputs = parent.outputs + child.outputs
+
+    if parent.cardinality == Cardinality.many and \
+            child.cardinality == Cardinality.many:
+        cardinality = Cardinality.many
+    else:
+        cardinality = Cardinality.one
+
+    return Rule(function, inputs, outputs, cardinality)
 
 
 def test_reduce_like_parent_child():
@@ -20,7 +46,7 @@ def test_reduce_like_parent_child():
     call_graph_in.edge('a.z').out = True
 
     call_graph_out = reduce_like_parent_child(
-        call_graph_in, set, set.__or__
+        call_graph_in, set, set_merge
     )
 
     call_graph_expected = CallGraph()
@@ -60,7 +86,7 @@ def test_reduce_like_parent_child_with_two_children():
     call_graph_in.edge('a.w').out = True
 
     call_graph_out = reduce_like_parent_child(
-        call_graph_in, set, set.__or__
+        call_graph_in, set, set_merge
     )
 
     call_graph_expected = CallGraph()
@@ -94,7 +120,7 @@ def test_reduce_like_parent_child_with_diffent_type():
     call_graph_in.edge('a.z').out = True
 
     call_graph_out = reduce_like_parent_child(
-        call_graph_in, list, list.__add__
+        call_graph_in, list, list_merge
     )
 
     call_graph_expected = CallGraph()

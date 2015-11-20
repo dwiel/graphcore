@@ -1,16 +1,19 @@
 import pytest
+import sql_query_dict
+
 try:
     from unittest import mock
 except ImportError:
     import mock
 
-from .sql_query import SQLQuery, mysql_col
+from .sql_query import SQLQuery
+from .rule import Rule
 
 
 def test_simple_query_merge():
     book_id = SQLQuery(['users', 'books'], 'books.id', {
         'users.id': 1,
-        'books.user_id': mysql_col('user.id'),
+        'books.user_id': sql_query_dict.mysql_col('user.id'),
     })
 
     combined = SQLQuery(['books'], 'books.name', {
@@ -22,7 +25,7 @@ def test_simple_query_merge():
     assert combined == SQLQuery(
         'users, books', 'books.name', {
             'users.id': 1,
-            'books.user_id': mysql_col('user.id'),
+            'books.user_id': sql_query_dict.mysql_col('user.id'),
         })
 
 
@@ -41,6 +44,61 @@ def test_simple_add():
     )
 
     assert first_name + last_name == first_and_last_name
+
+
+def test_merge_unbound_primary_key_and_property():
+    users_all_ids = Rule(
+        SQLQuery(['users'], 'users.id', {}),
+        [], ['user.id'], 'many',
+    )
+    users_name = Rule(
+        SQLQuery(['users'], 'users.name', {}, input_mapping={
+            'id': 'users.id',
+        }), ['user.id'], ['user.name'], 'one'
+    )
+
+    # TODO: this assumes that we didnt also want users.id, which will depend
+    # on the query
+    users_all_names = Rule(
+        SQLQuery(
+            ['users'], ['users.name', 'users.id'], {}
+        ), [], ['user.name'], 'many',
+    )
+
+    merged = SQLQuery.merge_parent_child(
+        users_all_ids, users_name
+    )
+
+    assert merged == users_all_names
+
+
+def test_merge_parent_and_property():
+    users_id_from_last_name = Rule(
+        SQLQuery(['users'], 'users.id', {}, input_mapping={
+            'last_name': 'users.last_name',
+        }), ['user.last_name'], ['user.id'], 'many'
+    )
+    users_first_name_from_id = Rule(
+        SQLQuery(['users'], 'users.first_name', {}, input_mapping={
+            'id': 'users.id',
+        }, first=True), ['user.id'], ['user.first_name'], 'one'
+    )
+
+    # TODO: this assumes that we didnt also want users.id, which will depend
+    # on the query
+    users_first_name_from_last_name = Rule(
+        SQLQuery(
+            ['users'], ['users.first_name', 'users.id'], {}, input_mapping={
+                'last_name': 'users.last_name',
+            }
+        ), ['user.last_name'], ['user.first_name'], 'many'
+    )
+
+    merged = SQLQuery.merge_parent_child(
+        users_id_from_last_name, users_first_name_from_id
+    )
+
+    assert merged == users_first_name_from_last_name
 
 
 def test_hash():
