@@ -115,6 +115,7 @@ def test_reduce_like_parent_child_with_two_children():
     # assert node.outgoing_paths == tuple(node.rule.outputs)
     # assert node.incoming_paths == tuple(node.rule.inputs)
 
+
 def test_reduce_like_parent_child_with_diffent_type():
     call_graph_in = CallGraph()
     call_graph_in.add_node(
