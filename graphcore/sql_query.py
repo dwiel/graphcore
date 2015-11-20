@@ -6,10 +6,14 @@ from .rule import Rule, Cardinality
 
 
 def parse_comma_seperated_set(input):
+    return set(parse_comma_seperated_list(input))
+
+
+def parse_comma_seperated_list(input):
     if isinstance(input, six.string_types):
-        return set(map(str.strip, input.split(',')))
+        return map(str.strip, input.split(','))
     else:
-        return set(input)
+        return input
 
 
 class SQLQuery(HashMixin, EqualityMixin):
