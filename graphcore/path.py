@@ -9,6 +9,17 @@ class Path(object):
         elif isinstance(init, Path):
             self.parts = tuple(init.parts)
         elif isinstance(init, (tuple, list)):
+            all_string_elements = all(
+                isinstance(e, six.string_types)
+                for e in init
+            )
+            if not all_string_elements:
+                raise TypeError((
+                    'if init is a list or tupele, its elements should'
+                    'all be type string.  Instead, it'
+                    'had types: {} and values {}'
+                ).format(map(str, map(type, init)), init))
+
             self.parts = tuple(init)
         else:
             raise TypeError()

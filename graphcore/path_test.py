@@ -27,3 +27,8 @@ def test_repr():
 def test_init_error():
     with pytest.raises(TypeError):
         Path(1)
+
+
+def test_init_list_element_type_error():
+    with pytest.raises(TypeError):
+        Path([1])
