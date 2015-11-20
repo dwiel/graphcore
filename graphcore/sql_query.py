@@ -11,7 +11,7 @@ def parse_comma_seperated_set(input):
 
 def parse_comma_seperated_list(input):
     if isinstance(input, six.string_types):
-        return map(str.strip, input.split(','))
+        return list(map(str.strip, input.split(',')))
     else:
         return input
 
