@@ -79,9 +79,9 @@ class SQLQuery(HashMixin, EqualityMixin):
 
     def copy(self):
         return self.__class__(
-            self.tables, self.selects, self.where,
+            set(self.tables), list(self.selects), dict(self.where),
             limit=self.limit, one_column=self.one_column, first=self.first,
-            input_mapping=self.input_mapping,
+            input_mapping=dict(self.input_mapping),
         )
 
     def _assert_flattenable(self):

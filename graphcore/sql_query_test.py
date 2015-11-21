@@ -98,6 +98,12 @@ def test_merge_parent_and_property():
         users_id_from_last_name, users_first_name_from_id
     )
 
+    # assert that the merged query isn't the same object as one of the oringal.
+    assert id(merged.function) not in (
+        id(users_id_from_last_name.function),
+        id(users_first_name_from_id.function),
+    )
+
     assert merged == users_first_name_from_last_name
 
 
@@ -156,3 +162,17 @@ def test_call_one_column_first_true():
     )
     sql_query.driver = mock.MagicMock(return_value=[(3,)])
     assert sql_query() == 3
+
+def test_copy():
+    sql_query = SQLQuery(['x'], ['x.a'], {'x.b': 2}, input_mapping={'x_c': 'x.c'})
+    sql_query_copy = sql_query.copy()
+
+    sql_query.tables.add('y')
+    sql_query.selects.append('y.a')
+    sql_query.where['y.b'] = 2
+    sql_query.input_mapping['y_c'] = 'y.c'
+
+    assert len(sql_query_copy.tables) == 1
+    assert len(sql_query_copy.selects) == 1
+    assert len(sql_query_copy.where) == 1
+    assert len(sql_query_copy.input_mapping) == 1
