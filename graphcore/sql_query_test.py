@@ -163,6 +163,7 @@ def test_call_one_column_first_true():
     sql_query.driver = mock.MagicMock(return_value=[(3,)])
     assert sql_query() == 3
 
+
 def test_copy():
     sql_query = SQLQuery(['x'], ['x.a'], {'x.b': 2}, input_mapping={'x_c': 'x.c'})
     sql_query_copy = sql_query.copy()
