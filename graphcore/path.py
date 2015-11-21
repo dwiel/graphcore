@@ -59,6 +59,9 @@ class Path(object):
             other = Path(other)
         return self.parts == other.parts
 
+    def __ne__(self, other):
+        return not self == other
+
     def __lt__(self, other):
         if not isinstance(other, Path):
             other = Path(other)

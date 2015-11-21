@@ -6,6 +6,7 @@ OPERATORS = {
     '<': operator.lt,
     '>=': operator.ge,
     '<=': operator.le,
+    '==': operator.eq,
     '!=': operator.ne,
     '|=': operator.contains,
 }

@@ -315,6 +315,25 @@ class TestGraphcore(unittest.TestCase):
 
         assert ret == [{'c.d.es.name': '1'}]
 
+    def test_constraint_on_missing_property(self):
+        """
+        ensure that even if a constraint, or fact isn't required to compute
+        the output directly, it is still used to constrain the values.
+        """
+        gc = graphcore.Graphcore()
+
+        def function(id):
+            return str(id)
+
+        gc.register_rule(['x.id'], 'x.name', function=function)
+
+        with pytest.raises(graphcore.PathNotFound):
+            gc.query({
+                'x.missing': 1,
+                'x.id': 1,
+                'x.name?': None
+            })
+
 
 class TestQuerySearch(unittest.TestCase):
 
@@ -471,3 +490,8 @@ class TestClause(unittest.TestCase):
             clause = graphcore.Clause(lhs+relation, 1)
             self.assertEquals(clause.relation, Relation(relation, 1))
             self.assertEquals(clause.lhs, lhs)
+
+    def test_convert_to_constraint(self):
+        clause = graphcore.Clause('x', 1)
+        clause.convert_to_constraint()
+        assert clause == graphcore.Clause('x==', 1)

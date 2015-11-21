@@ -37,7 +37,9 @@ class Clause(object):
         # compute their value, but the consumer of the query isn't interested
         # in getting the value in the output
         if len(lhs) >= 2:
-            if str(lhs)[-2:] == '!=':
+            if str(lhs)[-2:] == '==':
+                return Path(lhs[:-2]), TempVar(), Relation('==', rhs)
+            elif str(lhs)[-2:] == '!=':
                 return Path(lhs[:-2]), TempVar(), Relation('!=', rhs)
             elif str(lhs)[-2:] == '<=':
                 return Path(lhs[:-2]), TempVar(), Relation('<=', rhs)
@@ -83,6 +85,12 @@ class Clause(object):
                     )
                 )
 
+    def convert_to_constraint(self):
+        """ converts self from a ground clause with a value to an unground
+        clause with a == relation """
+        self.relation = Relation('==', self.rhs)
+        self.rhs = TempVar()
+
     def __str__(self):
         return '{lhs} {rhs}'.format(**self.__dict__)
 
@@ -90,6 +98,25 @@ class Clause(object):
         return '<Clause ({lhs}) ({rhs}) ({relation})>'.format(
             **self.__dict__
         )
+
+    def __eq__(self, other):
+        if self.lhs != other.lhs:
+            return False
+
+        if isinstance(self.rhs, Var):
+            if type(self.rhs) != type(other.rhs):
+                return False
+        else:
+            if self.rhs != other.rhs:
+                return False
+
+        if self.relation != other.relation:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Query(object):
@@ -121,6 +148,9 @@ class Query(object):
             self.clause_map[clause.lhs].merge(clause)
 
         return self.clause_map[clause.lhs]
+
+    def __len__(self):
+        return len(self.clauses)
 
     def __iter__(self):
         return iter(self.clauses)
@@ -171,11 +201,18 @@ class QuerySearch(object):
         # search
         self._grounded_paths = set()
 
+        # a set of visited paths so that at the end of the search we can ensure
+        # that all of the clauses were used to inform or constrain the query
+        self._visited_paths = set()
+
     def _grounded(self, clause):
         return clause.lhs in self._grounded_paths
 
     def _ground(self, clause):
         self._grounded_paths.add(clause.lhs)
+
+    def _visit(self, clause):
+        self._visited_paths.add(clause.lhs)
 
     def clauses_with_unbound_outvar(self):
         return QuerySearchIterator(self)
@@ -220,6 +257,9 @@ class QuerySearch(object):
         # this output clause is now grounded since it has a value
         self._ground(output_clause)
 
+        for input_clause in input_clauses:
+            self._visit(input_clause)
+
     def backward(self):
         """apply rules in reverse looking for the call chain that will be
         necessary to complete the query.
@@ -236,6 +276,19 @@ class QuerySearch(object):
         except PathNotFound as e:
             e.dependent_nodes = self.call_graph.nodes_depending_on_path(e.path)
             raise
+
+        # all nodes should be either ground, or visited
+        used_paths = self._grounded_paths | self._visited_paths
+        if len(used_paths) != len(self.query):
+            # find clauses which aren't in these sets and convert them to a
+            # relation, instead of a ground value
+            for clause in self.query:
+                if clause.lhs not in used_paths:
+                    print('unused clause:', clause)
+                    clause.convert_to_constraint()
+
+            # rerun with new constraints
+            self.backward()
 
 
 class PropertyType(HashMixin, EqualityMixin):
