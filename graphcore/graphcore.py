@@ -106,7 +106,7 @@ class Clause(object):
         if isinstance(self.rhs, Var):
             # I truly don't want to do isinstance here, the types need to
             # match
-            if type(self.rhs) is not type(other.rhs):  # NOQA
+            if self.rhs.__class__ != other.rhs.__class__:
                 return False
         else:
             if self.rhs != other.rhs:
