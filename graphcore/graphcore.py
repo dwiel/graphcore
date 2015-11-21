@@ -104,7 +104,9 @@ class Clause(object):
             return False
 
         if isinstance(self.rhs, Var):
-            if type(self.rhs) != type(other.rhs):
+            # I truly don't want to do isinstance here, the types need to
+            # match
+            if type(self.rhs) != type(other.rhs):  # NOQA
                 return False
         else:
             if self.rhs != other.rhs:
