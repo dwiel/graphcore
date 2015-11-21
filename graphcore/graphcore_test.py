@@ -322,10 +322,7 @@ class TestGraphcore(unittest.TestCase):
         """
         gc = graphcore.Graphcore()
 
-        def function(id):
-            return str(id)
-
-        gc.register_rule(['x.id'], 'x.name', function=function)
+        gc.register_rule(['x.id'], 'x.name', function=None)
 
         with pytest.raises(graphcore.PathNotFound):
             gc.query({
@@ -495,3 +492,11 @@ class TestClause(unittest.TestCase):
         clause = graphcore.Clause('x', 1)
         clause.convert_to_constraint()
         assert clause == graphcore.Clause('x==', 1)
+
+    def test_clause_eq(self):
+        assert not graphcore.Clause('x', 1) == graphcore.Clause('y', 1)
+        assert not graphcore.Clause('x', 1) == graphcore.Clause('x', 2)
+        assert not graphcore.Clause('x>', 1) == graphcore.Clause('x<', 1)
+        assert not graphcore.Clause('x?', None) == graphcore.Clause('x>', 1)
+
+        assert not graphcore.Clause('x', 1) != graphcore.Clause('x', 1)
