@@ -140,7 +140,6 @@ class SQLQuery(HashMixin, EqualityMixin):
                 self.tables.update(v.tables)
 
                 self._assert_no_overlapping_where(v.where)
-                # self._assert_no_overlapping_input_mapping(v.input_mapping)
 
                 self.where.update(v.where)
                 if len(v.selects) != 1:
@@ -164,6 +163,8 @@ class SQLQuery(HashMixin, EqualityMixin):
                     del self.where[k]
 
     def __add__(self, other):
+        self._assert_no_overlapping_input_mapping(other.input_mapping)
+
         where = {}
         where.update(self.where)
         where.update(other.where)
