@@ -181,7 +181,7 @@ class QuerySearch(object):
         return QuerySearchIterator(self)
 
     def clause_with_unbound_outvar(self):
-        """ return a caluse with a variable rhs which hasnt been grounded """
+        """ return a clause with a variable rhs which hasnt been grounded """
         for clause in self.query:
             if isinstance(clause.rhs, Var):
                 if not self._grounded(clause):
