@@ -235,10 +235,7 @@ class QuerySearch(object):
             # TODO: this is almost certainly an edge case handling rather than
             # handling the general case
 
-            if len(prefix):
-                absolute_path = prefix + input[1:]
-            else:
-                absolute_path = input
+            absolute_path = prefix + input[1:]
 
             # self.query.append is conditional on there not already
             # being a clause with this absolute_path
