@@ -10,6 +10,21 @@ from .sql_query import SQLQuery
 from .call_graph import Node
 
 
+def test_unqualified_select():
+    # ensure first node is checked
+    with pytest.raises(ValueError):
+        SQLQuery.merge_parent_child(
+            Node(None, [], [], SQLQuery(['users'], 'id', {}), 'one'),
+            Node(None, [], [], SQLQuery(['users'], 'users.id', {}), 'one'),
+        )
+
+    # ensure second node is checked
+    with pytest.raises(ValueError):
+        SQLQuery.merge_parent_child(
+            Node(None, [], [], SQLQuery(['users'], 'users.id', {}), 'one'),
+            Node(None, [], [], SQLQuery(['users'], 'id', {}), 'one'),
+        )
+
 def test_simple_query_merge():
     book_id = SQLQuery(['users', 'books'], 'books.id', {
         'users.id': 1,

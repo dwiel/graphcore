@@ -214,6 +214,9 @@ class SQLQuery(HashMixin, EqualityMixin):
     @staticmethod
     def merge_parent_child(child, parent):
         """ NOTE: child and parent are switched here, it makes more sense """
+        parent.function._assert_flattenable()
+        child.function._assert_flattenable()
+
         function = parent.function.copy()
         for k, v in function.input_mapping.items():
             child_function = child.function.copy()
