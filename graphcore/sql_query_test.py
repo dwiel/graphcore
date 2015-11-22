@@ -223,6 +223,19 @@ def test_call_one_column_first_true():
     assert sql_query() == 3
 
 
+def test_call_with_input_mapping():
+    sql_query = SQLQuery(['users'], 'users.id', {}, input_mapping={
+        'name': 'users.name'
+    })
+
+    # a weird driver whose return value is the length of the first value passed
+    # in
+    sql_query.driver = lambda SQL, vals: len(vals[0])
+
+    assert sql_query(name='bob') == 3
+    assert sql_query(name='john') == 4
+
+
 def test_copy():
     sql_query = SQLQuery(
         ['x'], ['x.a'], {'x.b': 2}, input_mapping={'x_c': 'x.c'}
