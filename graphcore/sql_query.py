@@ -230,6 +230,6 @@ class SQLQuery(HashMixin, EqualityMixin):
         print('merged', function)
 
         inputs = child.incoming_paths
-        outputs = parent.outgoing_paths
+        outputs = parent.outgoing_paths + child.outgoing_paths
 
         return Node(None, inputs, outputs, function, Cardinality.many)
