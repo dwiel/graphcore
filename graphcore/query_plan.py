@@ -24,10 +24,10 @@ class QueryPlan(object):
     def forward(self):
         for node in self.nodes:
             self.result_set = result_set_apply_rule(
-                self.result_set, node.rule.function,
+                self.result_set, node.function,
                 self.result_set.shape_paths(node.incoming_paths),
                 self.result_set.shape_paths(node.outgoing_paths),
-                node.rule.cardinality
+                node.cardinality
             )
 
             if node.relation:

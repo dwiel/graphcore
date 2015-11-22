@@ -1,12 +1,16 @@
-from .rule import Rule, Cardinality
+from .rule import Cardinality
 from .path import Path
-from .call_graph import CallGraph
+from .call_graph import CallGraph, Node
 
 from .optimize_reduce_like_parent_child import reduce_like_parent_child
 
 
 def set_merge(parent, child):
-    return merge(parent, child, set.__or__)
+    return merge(parent, child, frozenset.__or__)
+
+
+def tuple_merge(parent, child):
+    return merge(parent, child, tuple.__add__)
 
 
 def list_merge(parent, child):
@@ -16,11 +20,11 @@ def list_merge(parent, child):
 def merge(parent, child, function_merge):
     function = function_merge(parent.function, child.function)
 
-    inputs = parent.inputs
-    # TODO: dont always merge outputs, if they aren't out nodes,
+    incoming_paths = parent.incoming_paths
+    # TODO: dont always merge outgoing_paths, if they aren't out nodes,
     # and they dont have any other dependencies, we dont need to
     # keep them
-    outputs = parent.outputs + child.outputs
+    outgoing_paths = parent.outgoing_paths + child.outgoing_paths
 
     if parent.cardinality == Cardinality.many and \
             child.cardinality == Cardinality.many:
@@ -28,7 +32,7 @@ def merge(parent, child, function_merge):
     else:
         cardinality = Cardinality.one
 
-    return Rule(function, inputs, outputs, cardinality)
+    return Node(None, incoming_paths, outgoing_paths, function, cardinality)
 
 
 def test_reduce_like_parent_child():
@@ -36,24 +40,17 @@ def test_reduce_like_parent_child():
     # operation
 
     call_graph_in = CallGraph()
-    call_graph_in.add_node(
-        ['a.x'], ['a.y'],
-        Rule(set([1]), ['a.x'], ['a.y'], 'one'),
-    )
-    call_graph_in.add_node(
-        ['a.y'], ['a.z'],
-        Rule(set([2]), ['a.y'], ['a.z'], 'one'),
-    )
+    call_graph_in.add_node(['a.x'], ['a.y'], tuple([1]), 'one')
+    call_graph_in.add_node(['a.y'], ['a.z'], tuple([2]), 'one')
     call_graph_in.edge('a.z').out = True
 
     call_graph_out = reduce_like_parent_child(
-        call_graph_in, set, set_merge
+        call_graph_in, tuple, tuple_merge
     )
 
     call_graph_expected = CallGraph()
     call_graph_expected.add_node(
-        ['a.x'], ['a.z', 'a.y'],
-        Rule(set([1, 2]), ['a.x'], ['a.y', 'a.z'], 'one')
+        ['a.x'], ['a.y', 'a.z'], tuple([1, 2]), 'one'
     )
 
     ay = call_graph_out.edge('a.y')
@@ -71,23 +68,14 @@ def test_reduce_like_parent_child_with_two_children():
     # operation
 
     call_graph_in = CallGraph()
-    call_graph_in.add_node(
-        ['a.x'], ['a.y'],
-        Rule(set([1]), ['a.x'], ['a.y'], 'one'),
-    )
-    call_graph_in.add_node(
-        ['a.y'], ['a.z'],
-        Rule(set([2]), ['a.y'], ['a.z'], 'one'),
-    )
-    call_graph_in.add_node(
-        ['a.y'], ['a.w'],
-        Rule(set([3]), ['a.y'], ['a.w'], 'one'),
-    )
+    call_graph_in.add_node(['a.x'], ['a.y'], frozenset([1]), 'one')
+    call_graph_in.add_node(['a.y'], ['a.z'], frozenset([2]), 'one')
+    call_graph_in.add_node(['a.y'], ['a.w'], frozenset([3]), 'one')
     call_graph_in.edge('a.z').out = True
     call_graph_in.edge('a.w').out = True
 
     call_graph_out = reduce_like_parent_child(
-        call_graph_in, set, set_merge
+        call_graph_in, frozenset, set_merge
     )
 
     # setting these as variables makes assert print nicer when it breaks
@@ -106,10 +94,7 @@ def test_reduce_like_parent_child_with_two_children():
     assert set(node.outgoing_paths) == set(map(Path, ['a.w', 'a.z', 'a.y']))
     assert set(node.incoming_paths) == set([Path('a.x')])
 
-    assert node.rule.function == set([1, 2, 3])
-
-    assert set(node.rule.outputs) == set(map(Path, ['a.w', 'a.z', 'a.y']))
-    assert set(node.rule.inputs) == set([Path('a.x')])
+    assert node.function == frozenset([1, 2, 3])
 
     # I think this should be true, but I'm not sure
     # assert node.outgoing_paths == tuple(node.rule.outputs)
@@ -118,14 +103,8 @@ def test_reduce_like_parent_child_with_two_children():
 
 def test_reduce_like_parent_child_with_diffent_type():
     call_graph_in = CallGraph()
-    call_graph_in.add_node(
-        ['a.x'], ['a.y'],
-        Rule(set([1]), ['a.x'], ['a.y'], 'one'),
-    )
-    call_graph_in.add_node(
-        ['a.y'], ['a.z'],
-        Rule(set([2]), ['a.y'], ['a.z'], 'one'),
-    )
+    call_graph_in.add_node(['a.x'], ['a.y'], frozenset([1]), 'one')
+    call_graph_in.add_node(['a.y'], ['a.z'], frozenset([2]), 'one')
     call_graph_in.edge('a.z').out = True
 
     call_graph_out = reduce_like_parent_child(
@@ -133,14 +112,8 @@ def test_reduce_like_parent_child_with_diffent_type():
     )
 
     call_graph_expected = CallGraph()
-    call_graph_expected.add_node(
-        ['a.x'], ['a.y'],
-        Rule(set([1]), ['a.x'], ['a.y'], 'one'),
-    )
-    call_graph_expected.add_node(
-        ['a.y'], ['a.z'],
-        Rule(set([2]), ['a.y'], ['a.z'], 'one'),
-    )
+    call_graph_expected.add_node(['a.x'], ['a.y'], frozenset([1]), 'one')
+    call_graph_expected.add_node(['a.y'], ['a.z'], frozenset([2]), 'one')
 
     ay = call_graph_out.edge('a.y')
     az = call_graph_out.edge('a.z')

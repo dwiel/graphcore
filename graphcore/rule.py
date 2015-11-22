@@ -15,7 +15,11 @@ class Cardinality(Enum):
         elif isinstance(init, six.string_types):
             return Cardinality[init]
         else:
-            raise TypeError('must be int, str or Cardinality')
+            raise TypeError(
+                'must be int, str or Cardinality, got {}'.format(
+                    type(init).__name__
+                )
+            )
 
 
 class Rule(HashMixin, EqualityMixin):

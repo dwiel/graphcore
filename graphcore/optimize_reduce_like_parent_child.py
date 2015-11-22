@@ -22,31 +22,26 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
             parent = edge.setter
             if not parent:
                 continue
-            if not isinstance(parent.rule.function, rule_type):
+            if not isinstance(parent.function, rule_type):
                 continue
 
             children = [
                 child for child in edge.getters
-                if isinstance(child.rule.function, rule_type)
+                if isinstance(child.function, rule_type)
             ]
             for child in children:
-                rule = merge_function(
-                    parent.rule, child.rule
+                node = merge_function(
+                    parent, child
                 )
-
-                # TODO: outgoing_paths needs to check if they are out nodes
-                incoming_paths = parent.incoming_paths
-
-                # NOTE: it is important that this order is the same as in
-                # merge_function
-                outgoing_paths = child.outgoing_paths + parent.outgoing_paths
 
                 call_graph.remove_node(parent)
                 call_graph.remove_node(child)
 
                 # TODO: handle merging relations
+                # TODO: less awkward insert pattern
                 parent = call_graph.add_node(
-                    incoming_paths, outgoing_paths, rule
+                    node.incoming_paths, node.outgoing_paths, node.function,
+                    node.cardinality, node.relation
                 )
 
                 changes_made = True

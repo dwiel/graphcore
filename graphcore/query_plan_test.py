@@ -1,6 +1,5 @@
 from .relation import Relation
 from .query_plan import QueryPlan
-from .rule import Rule
 from .call_graph import Node
 
 
@@ -10,12 +9,9 @@ def multiple_outputs(in1):
 
 def test_query_plan_multiple_outputs():
     query_plan = QueryPlan({'a.in1': 1}, ['a.out1', 'a.out2'])
-    rule = Rule(
-        multiple_outputs, ['a.in1'], ['a.out1', 'a.out2'], 'one'
-    )
-    query_plan.append(
-        Node(None, ['a.in1'], ['a.out1', 'a.out2'], rule)
-    )
+    query_plan.append(Node(
+        None, ['a.in1'], ['a.out1', 'a.out2'], multiple_outputs, 'one'
+    ))
 
     ret = query_plan.execute()
 
@@ -24,13 +20,11 @@ def test_query_plan_multiple_outputs():
 
 def test_query_plan_multiple_outputs_cardinality_many():
     query_plan = QueryPlan({'a.in1': 1}, ['a.out1', 'a.out2'])
-    rule = Rule(
+    query_plan.append(Node(
+        None, ['a.in1'], ['a.out1', 'a.out2'],
         lambda in1: [[in1, in1+1], [10+in1, 10+in1+1]],
-        ['a.in1'], ['a.out1', 'a.out2'], 'many'
-    )
-    query_plan.append(
-        Node(None, ['a.in1'], ['a.out1', 'a.out2'], rule)
-    )
+        'many'
+    ))
 
     ret = query_plan.execute()
 
@@ -42,11 +36,8 @@ def test_query_plan_multiple_outputs_cardinality_many():
 
 def test_query_plan_relation():
     query_plan = QueryPlan({}, ['a.out'])
-    rule = Rule(
-        lambda: [1, 2], [], ['a.out'], 'many'
-    )
-    query_plan.append(
-        Node(None, [], ['a.out'], rule, relation=Relation('>', 1))
+    query_plan.append(Node(
+        None, [], ['a.out'], lambda: [1, 2], 'many', relation=Relation('>', 1))
     )
 
     ret = query_plan.execute()

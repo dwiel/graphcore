@@ -34,7 +34,7 @@ def test_pytest_assertrepr_compare_call_graph():
     call_graph1 = CallGraph()
     call_graph2 = CallGraph()
 
-    call_graph2.add_node(['a'], [], None, None)
+    call_graph2.add_node(['a'], [], None, 'one')
 
     with mock.patch('graphcore.conftest.call_graph_repr_compare') as fn:
         with pytest.raises(Exception):

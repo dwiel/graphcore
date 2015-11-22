@@ -246,7 +246,8 @@ class QuerySearch(object):
         self.call_graph.add_node(
             [clause.lhs for clause in input_clauses],
             [output_clause.lhs],
-            rule,
+            rule.function,
+            rule.cardinality,
             relation=output_clause.relation
         )
 

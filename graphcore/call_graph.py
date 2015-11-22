@@ -34,8 +34,9 @@ and you don't want a large number of round trips.
 Node: {
     'incoming_edges': {Edge},
     'outgoing_edges': {Edge},
-    'rule': Rule,
-    'relation': Relation
+    'function': function,
+    'cardinality': One|Many,
+    'relation': Relation,
 }
 
 Relation: {
@@ -57,16 +58,18 @@ TODO: out_paths: {key: (Path, Node), ...}
 """
 
 from .path import Path
+from .rule import Cardinality
 
 
 class Node(object):
 
-    def __init__(self, call_graph, incoming_paths, outgoing_paths, rule,
-                 relation=None):
+    def __init__(self, call_graph, incoming_paths, outgoing_paths, function,
+                 cardinality, relation=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(map(Path, incoming_paths)))
         self.outgoing_paths = tuple(map(Path, outgoing_paths))
-        self.rule = rule
+        self.function = function
+        self.cardinality = Cardinality.cast(cardinality)
         self.relation = relation
 
         # this is useful for QueryPlanner to iterate over CallGraph
@@ -86,7 +89,8 @@ class Node(object):
         return (
             self.incoming_paths,
             self.outgoing_paths,
-            self.rule,
+            self.function,
+            self.cardinality,
             self.relation
         )
 
@@ -96,22 +100,24 @@ class Node(object):
     def __repr__(self):
         string = '<Node '
         string += '{outgoing_paths} = {name}({incoming_paths}) '
+        string += 'cardinality={cardinality} '
         string += 'relation={relation}'
         string += '>'
         return (string.format(
                 outgoing_paths=', '.join(map(str, self.outgoing_paths)),
                 incoming_paths=', '.join(map(str, self.incoming_paths)),
                 name=self.name,
+                cardinality=self.cardinality,
                 relation=self.relation
                 )
                 )
 
     @property
     def name(self):
-        if hasattr(self.rule.function, '__name__'):
-            return self.rule.function.__name__
+        if hasattr(self.function, '__name__'):
+            return self.function.__name__
         else:
-            return str(self.rule.function)
+            return str(self.function)
 
 
 class Edge(object):
@@ -149,9 +155,13 @@ class CallGraph(object):
         self.nodes = []
         self.edges = {}
 
-    def add_node(self, incoming_paths, outgoing_paths, rule, relation=None):
+    def add_node(self, incoming_paths, outgoing_paths, function, cardinality,
+                 relation=None):
         # build a node
-        node = Node(self, incoming_paths, outgoing_paths, rule, relation)
+        node = Node(
+            self, incoming_paths, outgoing_paths, function, cardinality,
+            relation
+        )
         self.nodes.append(node)
 
         # add the node to the edges

@@ -10,42 +10,28 @@ def test_reduce_like_siblings():
 
     call_graph_in = CallGraph()
     call_graph_in.add_node(
-        ['user.id'],
-        ['user.first_name'],
-        Rule(set([1]), ['user.id'], ['user.first_name'], 'one'),
+        ['user.id'], ['user.first_name'], frozenset([1]), 'one'
     )
     call_graph_in.add_node(
-        ['user.id'],
-        ['user.last_name'],
-        Rule(set([2]), ['user.id'], ['user.last_name'], 'one'),
+        ['user.id'], ['user.last_name'], frozenset([2]), 'one'
     )
 
-    call_graph_out = reduce_like_siblings(call_graph_in, set, set.__or__)
+    call_graph_out = reduce_like_siblings(
+        call_graph_in, frozenset, frozenset.__or__
+    )
 
     call_graph_expected1 = CallGraph()
     call_graph_expected1.add_node(
-        ['user.id'],
-        ['user.first_name', 'user.last_name'],
-        Rule(
-            set([1, 2]),
-            ['user.id'],
-            ['user.first_name', 'user.last_name'],
-            'one'
-        )
+        ['user.id'], ['user.first_name', 'user.last_name'],
+        frozenset([1, 2]), 'one'
     )
     call_graph_expected1.edge('user.first_name').out = True
     call_graph_expected1.edge('user.last_name').out = True
 
     call_graph_expected2 = CallGraph()
     call_graph_expected2.add_node(
-        ['user.id'],
-        ['user.last_name', 'user.first_name'],
-        Rule(
-            set([1, 2]),
-            ['user.id'],
-            ['user.last_name', 'user.first_name'],
-            'one'
-        )
+        ['user.id'], ['user.last_name', 'user.first_name'],
+        frozenset([1, 2]), 'one'
     )
     call_graph_expected2.edge('user.first_name').out = True
     call_graph_expected2.edge('user.last_name').out = True
