@@ -25,6 +25,7 @@ def test_unqualified_select():
             Node(None, [], [], SQLQuery(['users'], 'id', {}), 'one'),
         )
 
+
 def test_simple_query_merge():
     book_id = SQLQuery(['users', 'books'], 'books.id', {
         'users.id': 1,
