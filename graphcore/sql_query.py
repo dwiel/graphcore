@@ -92,13 +92,25 @@ class SQLQuery(HashMixin, EqualityMixin):
         which is why we need to check manually
         """
 
-        if any(' ' in table for table in self.tables):
-            raise ValueError('no table names can have aliases')
-        if not all('.' in select for select in self.selects):
-            raise ValueError('all selects must be of form table.column')
-        if not all('.' in key for key in self.where.keys()):
-            raise ValueError('all left hand sides of where clauses must '
-                             'be of form table.column')
+        for table in self.tables:
+            if ' ' in table:
+                raise ValueError(
+                    'no table names can have aliases, found {}'.format(table)
+                )
+
+        for select in self.selects:
+            if '.' not in select:
+                raise ValueError((
+                    'all selects must be of form table.column,'
+                    'found {}'
+                ).format(select))
+
+        for key in self.where.keys():
+            if '.' not in key:
+                raise ValueError((
+                    'all left hand sides of where clauses must '
+                    'be of form table.column, found {}'
+                ).format(key))
 
     def _assert_no_overlapping_where(self, where):
         overlap = set(self.where.keys()).intersection(where.keys())
