@@ -7,7 +7,7 @@ except ImportError:
     import mock
 
 from .sql_query import SQLQuery
-from .rule import Rule
+from .call_graph import Node
 
 
 def test_simple_query_merge():
@@ -47,22 +47,23 @@ def test_simple_add():
 
 
 def test_merge_unbound_primary_key_and_property():
-    users_all_ids = Rule(
-        SQLQuery(['users'], 'users.id', {}),
-        [], ['user.id'], 'many',
+    users_all_ids = Node(
+        None, [], ['user.id'], SQLQuery(['users'], 'users.id', {}), 'many'
     )
-    users_name = Rule(
-        SQLQuery(['users'], 'users.name', {}, input_mapping={
-            'id': 'users.id',
-        }), ['user.id'], ['user.name'], 'one'
+    users_name = Node(
+        None, ['user.id'], ['user.name'], SQLQuery(
+            ['users'], 'users.name', {}, input_mapping={
+                'id': 'users.id',
+            }),
+        'one'
     )
 
     # TODO: this assumes that we didnt also want users.id, which will depend
     # on the query
-    users_all_names = Rule(
-        SQLQuery(
+    users_all_names = Node(
+        None, [], ['user.name'], SQLQuery(
             ['users'], ['users.name', 'users.id'], {}
-        ), [], ['user.name'], 'many',
+        ), 'many',
     )
 
     merged = SQLQuery.merge_parent_child(
@@ -73,25 +74,29 @@ def test_merge_unbound_primary_key_and_property():
 
 
 def test_merge_parent_and_property():
-    users_id_from_last_name = Rule(
-        SQLQuery(['users'], 'users.id', {}, input_mapping={
-            'last_name': 'users.last_name',
-        }), ['user.last_name'], ['user.id'], 'many'
+    users_id_from_last_name = Node(
+        None, ['user.last_name'], ['user.id'], SQLQuery(
+            ['users'], 'users.id', {}, input_mapping={
+                'last_name': 'users.last_name',
+            }),
+        'many'
     )
-    users_first_name_from_id = Rule(
-        SQLQuery(['users'], 'users.first_name', {}, input_mapping={
-            'id': 'users.id',
-        }, first=True), ['user.id'], ['user.first_name'], 'one'
+    users_first_name_from_id = Node(
+        None, ['user.id'], ['user.first_name'], SQLQuery(
+            ['users'], 'users.first_name', {}, input_mapping={
+                'id': 'users.id',
+            }, first=True),
+        'one'
     )
 
     # TODO: this assumes that we didnt also want users.id, which will depend
     # on the query
-    users_first_name_from_last_name = Rule(
-        SQLQuery(
+    users_first_name_from_last_name = Node(
+        None, ['user.last_name'], ['user.first_name'], SQLQuery(
             ['users'], ['users.first_name', 'users.id'], {}, input_mapping={
                 'last_name': 'users.last_name',
             }
-        ), ['user.last_name'], ['user.first_name'], 'many'
+        ), 'many'
     )
 
     merged = SQLQuery.merge_parent_child(

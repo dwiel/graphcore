@@ -2,7 +2,8 @@ import six
 import sql_query_dict
 
 from .equality_mixin import EqualityMixin, HashMixin
-from .rule import Rule, Cardinality
+from .rule import Cardinality
+from .call_graph import Node
 
 
 def parse_comma_seperated_set(input):
@@ -228,10 +229,7 @@ class SQLQuery(HashMixin, EqualityMixin):
 
         print('merged', function)
 
-        inputs = child.inputs
-        # TODO: dont always merge outputs, if they aren't out nodes,
-        # and they dont have any other dependencies, we dont need to
-        # keep them
-        outputs = parent.outputs
+        inputs = child.incoming_paths
+        outputs = parent.outgoing_paths
 
-        return Rule(function, inputs, outputs, Cardinality.many)
+        return Node(None, inputs, outputs, function, Cardinality.many)
