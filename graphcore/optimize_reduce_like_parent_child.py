@@ -30,14 +30,11 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
                 if isinstance(child.function, rule_type)
             ]
             for child in children:
-                node = merge_function(
-                    parent, child
-                )
+                node = merge_function(parent, child)
 
                 call_graph.remove_node(parent)
                 call_graph.remove_node(child)
 
-                # TODO: handle merging relations
                 # TODO: less awkward insert pattern
                 parent = call_graph.add_node(
                     node.incoming_paths, node.outgoing_paths, node.function,
