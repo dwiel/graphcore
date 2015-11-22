@@ -82,6 +82,11 @@ class Node(object):
         return [edge.setter for edge in self.incoming_edges()
                 if edge.setter is not None]
 
+    def input_path_by_property(self, property):
+        for path in self.incoming_paths:
+            if path.property == property:
+                return path
+
     def __hash__(self):
         return hash(self.__key())
 

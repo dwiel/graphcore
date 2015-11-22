@@ -70,7 +70,44 @@ def test_merge_unbound_primary_key_and_property():
         users_all_ids, users_name
     )
 
+    print(merged)
+    print(users_all_names)
     assert merged == users_all_names
+
+
+def test_merge_parent_and_property_multi_output():
+    users_id_from_last_name = Node(
+        None, ['user.last_name'], ['user.id', 'user.phone'], SQLQuery(
+            ['users'], ['users.id', 'users.phone'], {}, input_mapping={
+                'last_name': 'users.last_name',
+            }
+        ), 'many'
+    )
+    users_first_name_from_id = Node(
+        None, ['user.id'], ['user.first_name'], SQLQuery(
+            ['users'], 'users.first_name', {}, input_mapping={
+                'id': 'users.id',
+            }, first=True
+        ), 'one'
+    )
+
+    # TODO: this assumes that we didnt also want users.id, which will depend
+    # on the query
+    users_first_name_from_last_name = Node(
+        None, ['user.last_name'], ['user.first_name', 'user.id', 'user.phone'],
+        SQLQuery(
+            ['users'], ['users.first_name', 'users.id', 'users.phone'], {},
+            input_mapping={'last_name': 'users.last_name'}
+        ), 'many'
+    )
+
+    merged = SQLQuery.merge_parent_child(
+        users_id_from_last_name, users_first_name_from_id
+    )
+
+    print(merged)
+    print(users_first_name_from_last_name)
+    assert merged == users_first_name_from_last_name
 
 
 def test_merge_parent_and_property():

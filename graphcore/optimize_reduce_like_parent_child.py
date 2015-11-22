@@ -43,4 +43,6 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
 
                 changes_made = True
 
+                print('new call_graph', call_graph)
+
     return call_graph

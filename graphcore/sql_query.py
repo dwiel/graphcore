@@ -144,8 +144,10 @@ class SQLQuery(HashMixin, EqualityMixin):
 
                 self.where.update(v.where)
                 if len(v.selects) != 1:
-                    raise ValueError('SQLQuery merging is only possible when '
-                                     'the embedded query has one select')
+                    raise ValueError((
+                        'SQLQuery merging is only possible when '
+                        'the embedded query has one select.  has: {}'
+                    ).format(', '.join(v.selects)))
                 self.where[k] = sql_query_dict.mysql_col(v.selects[0])
                 if keep_child_selects:
                     self.selects += v.selects
@@ -212,20 +214,38 @@ class SQLQuery(HashMixin, EqualityMixin):
     @staticmethod
     def merge_parent_child(child, parent):
         """ NOTE: child and parent are switched here, it makes more sense """
-        print('parent', parent)
-        print('child', child)
-
-        assert len(parent.function.input_mapping) == 1
-
         function = parent.function.copy()
-        k = next(iter(function.input_mapping.values()))
-        function.where[k] = child.function
+        for k, v in function.input_mapping.items():
+            child_function = child.function.copy()
+
+            # simply merge these parts of the SQLQuery
+            function.tables.update(child_function.tables)
+            function.where.update(child_function.where)
+            function.selects.extend(child_function.selects)
+
+            # join where clause and selects
+            # the connecting path is the path which is set by the child and
+            # read by the parent
+            connecting_path = parent.input_path_by_property(k)
+            # lookup the order that this path occurrs in the outputs so we can
+            # match it up with the correct select
+            i = child.outgoing_paths.index(connecting_path)
+
+            # join in the where clause
+            function.where[v] = sql_query_dict.mysql_col(
+                child_function.selects[i]
+            )
+
+        # remove unnecessary complexity
+        function.cleanup()
+
+        # TODO: assumes that all inputs were from SQLQuery objects
         function.input_mapping = child.function.input_mapping
-        function.flatten(keep_child_selects=True)
 
         # even if there is just one column, this also works so long as
         # Cardinality.many
         function.one_column = False
+        function.first = False
 
         print('merged', function)
 
