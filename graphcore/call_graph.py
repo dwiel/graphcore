@@ -104,13 +104,12 @@ class Node(object):
         string += 'relation={relation}'
         string += '>'
         return (string.format(
-                outgoing_paths=', '.join(map(str, self.outgoing_paths)),
-                incoming_paths=', '.join(map(str, self.incoming_paths)),
-                name=self.name,
-                cardinality=self.cardinality,
-                relation=self.relation
-                )
-                )
+            outgoing_paths=', '.join(map(str, self.outgoing_paths)),
+            incoming_paths=', '.join(map(str, self.incoming_paths)),
+            name=self.name,
+            cardinality=self.cardinality,
+            relation=self.relation
+        ))
 
     @property
     def name(self):
