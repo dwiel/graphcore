@@ -7,6 +7,10 @@ from .result_set import ResultSet, result_set_apply_rule
 
 
 class QueryPlan(object):
+    """ Execute call graph.
+
+    TODO: the interface is odd and the name is too
+    """
 
     def __init__(self, initial_bindings, output_paths):
         """
