@@ -267,4 +267,8 @@ class SQLQuery(HashMixin, EqualityMixin):
         inputs = child.incoming_paths
         outputs = parent.outgoing_paths + child.outgoing_paths
 
-        return Node(None, inputs, outputs, function, Cardinality.many)
+        relations = parent.relations + child.relations
+
+        return Node(
+            None, inputs, outputs, function, Cardinality.many, relations
+        )

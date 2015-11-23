@@ -22,6 +22,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    age = Column(Integer)
 
 
 class Book(Base):
@@ -71,5 +72,30 @@ def test(gc, session):
         'user.name': 'Fred',
         'user.id?': None,
     })
+
+    assert len(ret) == 1
+
+
+def test_query_and_filter(gc, session):
+    """ query and filter on the same property """
+
+    fred = User()
+    fred.name = 'Fred'
+    fred.age = 10
+
+    bob = User()
+    bob.name = 'Bob'
+    bob.age = 3
+
+    session.add_all([fred, bob])
+    session.commit()
+
+    query = {
+        'user.age?': None,
+        'user.age>': 5,
+    }
+
+    ret = gc.query(query)
+    print(gc.explain(query))
 
     assert len(ret) == 1
