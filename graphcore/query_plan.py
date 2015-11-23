@@ -7,10 +7,7 @@ from .result_set import ResultSet, result_set_apply_rule
 
 
 class QueryPlan(object):
-    """ Execute call graph.
-
-    TODO: the interface is odd and the name is too
-    """
+    """ Execute a sequential list of nodes. """
 
     def __init__(self, initial_bindings, output_paths):
         """
