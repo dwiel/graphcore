@@ -31,8 +31,11 @@ class QueryPlan(object):
                 node.cardinality
             )
 
-            if node.relation:
-                self.result_set.filter(node.outgoing_paths[0], node.relation)
+            for outgoing_path, relation in zip(
+                node.outgoing_paths, node.relations
+            ):
+                if relation:
+                    self.result_set.filter(outgoing_path, relation)
 
     def outputs(self):
         return self.result_set.extract_json(self.output_paths)

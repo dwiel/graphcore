@@ -248,7 +248,7 @@ class QuerySearch(object):
             [output_clause.lhs],
             rule.function,
             rule.cardinality,
-            relation=output_clause.relation
+            relations=[output_clause.relation],
         )
 
         if isinstance(output_clause.rhs, OutVar):

@@ -38,7 +38,7 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
                 # TODO: less awkward insert pattern
                 parent = call_graph.add_node(
                     node.incoming_paths, node.outgoing_paths, node.function,
-                    node.cardinality, node.relation
+                    node.cardinality, node.relations
                 )
 
                 changes_made = True

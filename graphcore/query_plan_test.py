@@ -37,9 +37,22 @@ def test_query_plan_multiple_outputs_cardinality_many():
 def test_query_plan_relation():
     query_plan = QueryPlan({}, ['a.out'])
     query_plan.append(Node(
-        None, [], ['a.out'], lambda: [1, 2], 'many', relation=Relation('>', 1))
+        None, [], ['a.out'], lambda: [1, 2], 'many',
+        relations=[Relation('>', 1)])
     )
 
     ret = query_plan.execute()
 
     assert ret == [{'a.out': 2}]
+
+
+def test_query_plan_multi_relation():
+    query_plan = QueryPlan({}, ['a.out1', 'a.out2'])
+    query_plan.append(Node(
+        None, [], ['a.out1', 'a.out2'], lambda: [[1, 1], [2, 2], [3, 3]],
+        'many', relations=[Relation('>', 1), Relation('<', 3)])
+    )
+
+    ret = query_plan.execute()
+
+    assert ret == [{'a.out1': 2, 'a.out2': 2}]

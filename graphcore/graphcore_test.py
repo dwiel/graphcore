@@ -403,7 +403,7 @@ class TestQuerySearch(unittest.TestCase):
         ]
 
         self.assertEqual(len(user_book_id_nodes), 1)
-        self.assertEqual(user_book_id_nodes[0].relation, Relation('>', 1))
+        self.assertEqual(user_book_id_nodes[0].relations, (Relation('>', 1),))
 
     def test_call_graph_relation_and_outvar(self):
         query = graphcore.QuerySearch(testgraphcore, {
@@ -419,7 +419,7 @@ class TestQuerySearch(unittest.TestCase):
         ]
 
         self.assertEqual(len(user_book_id_nodes), 1)
-        self.assertEqual(user_book_id_nodes[0].relation, Relation('>', 1))
+        self.assertEqual(user_book_id_nodes[0].relations, (Relation('>', 1),))
 
     def test_call_graph_unrelated_relation(self):
         query = graphcore.QuerySearch(testgraphcore, {

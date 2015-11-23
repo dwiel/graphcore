@@ -36,7 +36,7 @@ Node: {
     'outgoing_edges': {Edge},
     'function': function,
     'cardinality': One|Many,
-    'relation': Relation,
+    'realtions': Relation,
 }
 
 Relation: {
@@ -64,13 +64,17 @@ from .rule import Cardinality
 class Node(object):
 
     def __init__(self, call_graph, incoming_paths, outgoing_paths, function,
-                 cardinality, relation=None):
+                 cardinality, relations=None):
         self.call_graph = call_graph
         self.incoming_paths = tuple(sorted(map(Path, incoming_paths)))
         self.outgoing_paths = tuple(map(Path, outgoing_paths))
         self.function = function
         self.cardinality = Cardinality.cast(cardinality)
-        self.relation = relation
+        if relations is None:
+            self.relations = tuple([None for _ in outgoing_paths])
+        else:
+            assert len(relations) == len(outgoing_paths)
+            self.relations = tuple(relations)
 
         # this is useful for QueryPlanner to iterate over CallGraph
         self._visited = False
@@ -96,7 +100,7 @@ class Node(object):
             self.outgoing_paths,
             self.function,
             self.cardinality,
-            self.relation
+            self.relations
         )
 
     def __eq__(self, other):
@@ -106,14 +110,14 @@ class Node(object):
         string = '<Node '
         string += '{outgoing_paths} = {name}({incoming_paths}) '
         string += 'cardinality={cardinality} '
-        string += 'relation={relation}'
+        string += 'realtions={realtions}'
         string += '>'
         return (string.format(
             outgoing_paths=', '.join(map(str, self.outgoing_paths)),
             incoming_paths=', '.join(map(str, self.incoming_paths)),
             name=self.name,
             cardinality=self.cardinality,
-            relation=self.relation
+            realtions=self.relations
         ))
 
     @property
@@ -160,11 +164,11 @@ class CallGraph(object):
         self.edges = {}
 
     def add_node(self, incoming_paths, outgoing_paths, function, cardinality,
-                 relation=None):
+                 relations=None):
         # build a node
         node = Node(
             self, incoming_paths, outgoing_paths, function, cardinality,
-            relation
+            relations
         )
         self.nodes.append(node)
 
