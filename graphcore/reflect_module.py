@@ -29,8 +29,6 @@ class ModuleReflector(object):
             if callable(value):
                 arg_names, _, __, ___ = inspect.getargspec(value)
 
-                print name, arg_names
-
                 input_paths = [
                     self._input_name(arg_name) for arg_name in arg_names
                 ]
@@ -39,8 +37,6 @@ class ModuleReflector(object):
                     self._canonical_property_name(arg_name): arg_name
                     for arg_name in arg_names
                 }
-
-                print(input_mapping)
 
                 self.graphcore.register_rule(
                     input_paths,
