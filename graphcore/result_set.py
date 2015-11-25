@@ -109,6 +109,9 @@ class ResultSet(EqualityMixin):
             [{'x': [{'y': None}], 'z': None}]
 
         in the case of a dictionary, the value doesn't matter
+
+        NOTE: requiring a query_shape here doesn't feel clean, but as it
+        stands, I'm not sure where else this transformation should go.
         """
 
         # TODO handle more complex result set toplogies
