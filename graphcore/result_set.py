@@ -78,7 +78,7 @@ class Result(EqualityMixin):
         paths must already shaped like the ResultSet"""
 
         # group paths by their first part.  If there are multiple
-        # paths with the same sub_path, we only need to make one 
+        # paths with the same sub_path, we only need to make one
         # recursive call
         sub_paths = defaultdict(list)
         for path in paths:
