@@ -27,6 +27,7 @@ def shape_path(path, query_shape):
     else:
         return (path,)
 
+
 def _subpaths(path):
     path = Path(path)
 
