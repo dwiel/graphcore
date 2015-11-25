@@ -451,7 +451,7 @@ class Graphcore(object):
         print('post optimizer call graph:', query_search.call_graph)
 
         query_planner = QueryPlanner(
-            query_search.call_graph, query_search.query
+            query_search.call_graph, query_search.query, query
         )
         query_plan = query_planner.plan_query()
 

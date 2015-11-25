@@ -9,7 +9,7 @@ from .result_set import ResultSet, result_set_apply_rule
 class QueryPlan(object):
     """ Execute a sequential list of nodes. """
 
-    def __init__(self, initial_bindings, output_paths):
+    def __init__(self, initial_bindings, output_paths, query_shape):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
@@ -17,7 +17,7 @@ class QueryPlan(object):
         self.output_paths = output_paths
 
         self.nodes = []
-        self.result_set = ResultSet(initial_bindings)
+        self.result_set = ResultSet(initial_bindings, query_shape)
 
     def append(self, node):
         self.nodes.append(node)

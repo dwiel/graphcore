@@ -61,18 +61,19 @@ class CallGraphIterator(object):
 
 class QueryPlanner(object):
 
-    def __init__(self, call_graph, query):
+    def __init__(self, call_graph, query, query_shape):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
         """
         self.call_graph = call_graph
         self.plan = QueryPlan(
-            self._extract_initial_bindings_rom_query(query),
-            call_graph.output_paths()
+            self._extract_initial_bindings_from_query(query),
+            call_graph.output_paths(),
+            query_shape
         )
 
-    def _extract_initial_bindings_rom_query(self, query):
+    def _extract_initial_bindings_from_query(self, query):
         initial_bindings = {}
         for clause in query:
             if clause.value:

@@ -5,6 +5,35 @@ from .path import Path
 from .rule import Cardinality
 
 
+def shape_path(path, query_shape):
+    """ return a tuple of subpaths which add together to path, but are split
+    in the same way as the data result_set.
+
+    shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
+    shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
+    """
+    if isinstance(query_shape, (list, tuple)):
+        if len(query_shape) == 0:
+            return (path,)
+        else:
+            return shape_path(path, query_shape[0])
+    elif isinstance(query_shape, dict):
+        for prefix, subpath in _subpaths(path):
+            sub_data = query_shape.get(str(prefix))
+            if sub_data:
+                return (prefix,) + shape_path(subpath, sub_data)
+
+        return (path,)
+    else:
+        return (path,)
+
+def _subpaths(path):
+    path = Path(path)
+
+    for i in range(len(path.parts)):
+        yield Path(path.parts[:i]), Path(path.parts[i:])
+
+
 class Result(EqualityMixin):
 
     def __init__(self, result=None):
@@ -18,15 +47,33 @@ class Result(EqualityMixin):
         else:
             self.result = {}
 
-    def get(self, path):
-        return self.result.get(str(path))
+    def get(self, path, default=None):
+        return self.result.get(str(path), default)
 
     def to_json(self):
         return self.result
 
+    def _extract_json_value(self, path):
+        """ return the json value at path.
+
+        recursively call extract_json if the value is a ResultSet
+        """
+
+        value = self.get(path[0])
+
+        # recursively vall extract_json
+        if isinstance(value, ResultSet):
+            return value.extract_json(path[1:])
+        else:
+            return value
+
     def extract_json(self, paths):
+        """ return the json representing paths.
+
+        paths must already shaped like the ResultSet"""
+
         return {
-            str(path): self.get(path) for path in paths
+            str(path[0]): self._extract_json_value(path) for path in paths
         }
 
     def copy(self):
@@ -49,25 +96,20 @@ class Result(EqualityMixin):
             return self.result == other
         return NotImplemented
 
-    def _subpaths(self, path):
-        path = Path(path)
-
-        for i in range(len(path.parts)):
-            yield Path(path.parts[:i]), Path(path.parts[i:])
-
-    def shape_path(self, path):
-        for prefix, subpath in self._subpaths(path):
-            sub_data = self.get(str(prefix))
-            if sub_data:
-                return (prefix,) + sub_data.shape_path(subpath)
-
-        return (path,)
-
 
 class ResultSet(EqualityMixin):
     """ The ResultSet holds the state of the query as it is executed. """
 
-    def __init__(self, init=None):
+    def __init__(self, init=None, query_shape=None):
+        """
+        query_shape should be a json object with the same shape as the desired
+        ResultSet.  for example:
+
+            [{'x': [{'y': None}], 'z': None}]
+
+        in the case of a dictionary, the value doesn't matter
+        """
+
         # TODO handle more complex result set toplogies
         if isinstance(init, ResultSet):
             self.results = init.results
@@ -78,12 +120,18 @@ class ResultSet(EqualityMixin):
         else:
             self.results = []
 
+        if query_shape is None:
+            self.query_shape = [{}]
+        else:
+            self.query_shape = query_shape
+
     def to_json(self):
         return [
             result.to_json() for result in self.results
         ]
 
     def extract_json(self, paths):
+        paths = self.shape_paths(paths)
         return [
             result.extract_json(paths) for result in self.results
         ]
@@ -112,19 +160,7 @@ class ResultSet(EqualityMixin):
         return NotImplemented
 
     def shape_paths(self, paths):
-        return [self.shape_path(path) for path in paths]
-
-    def shape_path(self, path):
-        """ return a tuple of subpaths which add together to path, but are split
-        in the same way as the data result_set.
-
-        shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
-        shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
-        """
-        if self.results:
-            return self.results[0].shape_path(path)
-        else:
-            return (path,)
+        return [shape_path(path, self.query_shape) for path in paths]
 
 
 def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
@@ -139,7 +175,10 @@ def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
                 result, fn, inputs, outputs, cardinality, scope
             )
         )
-    return ResultSet(new_data)
+
+    # odd to be concerned with preserving the query_shape here, but
+    # this value needs to be present in the new result_set
+    return ResultSet(new_data, data.query_shape)
 
 
 def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
@@ -157,7 +196,7 @@ def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
         # recur down to the next level of the data
         inputs = [input for input in inputs if len(input) > 1]
 
-        sub_path = next_sub_path(inputs)
+        sub_path = next_sub_path(inputs + outputs)
 
         # remove left most part from input and output
         new_inputs = [input[1:] for input in inputs]
@@ -165,7 +204,8 @@ def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
 
         # a copy may not be strictly necessary ...
         data[sub_path] = result_set_apply_rule(
-            data[sub_path], fn, new_inputs, new_outputs, cardinality, scope
+            data.get(sub_path, ResultSet([Result()])),
+            fn, new_inputs, new_outputs, cardinality, scope
         )
 
         # return a list boxing the data so the return value is the same as

@@ -1,7 +1,7 @@
 import pytest
 
 from .relation import Relation
-from .result_set import ResultSet, Result, result_set_apply_rule
+from .result_set import ResultSet, Result, result_set_apply_rule, shape_path
 
 
 def test_result_init():
@@ -58,30 +58,29 @@ def build_result_set(data):
 
 
 def test_shape_path():
-    assert build_result_set([{'a': [{'b': [{}]}]}]).shape_path('a.b.c') == (
-        'a', 'b', 'c'
-    )
+    assert shape_path('a.b.c', [{'a': [{'b': [{}]}]}]) == ('a', 'b', 'c')
 
 
 def test_shape_path_short():
-    ret = build_result_set([{'a': [{'b': [{}]}]}]).shape_path('a.x.y')
+    ret = shape_path('a.x.y', [{'a': [{'b': [{}]}]}])
     assert ret == ('a', 'x.y')
 
 
 def test_shape_path_no_match():
-    ret = build_result_set([{'a': [{'b': [{}]}]}]).shape_path('x.y.z')
+    ret = shape_path('x.y.z', [{'a': [{'b': [{}]}]}])
     assert ret == ('x.y.z',)
 
 
 def test_shape_path_double_dot():
-    ret = build_result_set([{'a.x': [{'_': 1}]}]).shape_path('a.x.y.z')
+    ret = shape_path('a.x.y.z', [{'a.x': [{'_': 1}]}])
     assert ret == ('a.x', 'y.z')
 
-    assert build_result_set([{'a.x': [{}]}]).shape_path('x.y.z') == ('x.y.z',)
+    assert shape_path('x.y.z', [{'a.x': [{}]}]) == ('x.y.z',)
 
 
 def test_shape_paths_empty_result_set():
-    assert ResultSet([]).shape_path('x') == ('x',)
+    assert shape_path('x', [{}])
+    assert shape_path('x', [])
 
 
 @pytest.fixture
@@ -93,7 +92,20 @@ def data():
             'b': 20,
         })]),
         'c': 100,
-    })])
+    })], [{
+        'a': [{'b': None}], 'c': None
+    }])
+
+
+def test_extract_json(data):
+    assert data.extract_json(['a.b', 'c']) == [{
+        'a': [{
+            'b': 10,
+        }, {
+            'b': 20,
+        }],
+        'c': 100,
+    }]
 
 
 def test_apply_rule_single_output(data):
