@@ -88,8 +88,10 @@ def data():
     return ResultSet([Result({
         'a': ResultSet([Result({
             'b': 10,
+            'd': 10,
         }), Result({
             'b': 20,
+            'd': 20,
         })]),
         'c': 100,
     })], [{
@@ -98,11 +100,13 @@ def data():
 
 
 def test_extract_json(data):
-    assert data.extract_json(['a.b', 'c']) == [{
+    assert data.extract_json(['a.b', 'a.d', 'c']) == [{
         'a': [{
             'b': 10,
+            'd': 10,
         }, {
             'b': 20,
+            'd': 20,
         }],
         'c': 100,
     }]

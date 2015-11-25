@@ -1,4 +1,5 @@
 from six.moves import zip
+from collections import defaultdict
 
 from .equality_mixin import EqualityMixin
 from .path import Path
@@ -12,6 +13,9 @@ def shape_path(path, query_shape):
     shape_path([{'a.x': [{}]}], 'a.x.y.z') == ('a.x', 'y.z')
     shape_path([{'a.x': [{}]}], 'x.y.z') == ('x.y.z',)
     """
+    if isinstance(path, tuple):
+        return path
+
     if isinstance(query_shape, (list, tuple)):
         if len(query_shape) == 0:
             return (path,)
@@ -73,9 +77,24 @@ class Result(EqualityMixin):
 
         paths must already shaped like the ResultSet"""
 
-        return {
-            str(path[0]): self._extract_json_value(path) for path in paths
-        }
+        # group paths by their first part.  If there are multiple
+        # paths with the same sub_path, we only need to make one 
+        # recursive call
+        sub_paths = defaultdict(list)
+        for path in paths:
+            sub_paths[str(path[0])].append(path[1:])
+
+        ret = {}
+        for sub_path, paths in sub_paths.items():
+            value = self.get(sub_path)
+
+            if isinstance(value, ResultSet):
+                ret[sub_path] = value.extract_json(paths)
+            else:
+                assert paths == [()]
+                ret[sub_path] = value
+
+        return ret
 
     def copy(self):
         return Result(self)
@@ -135,7 +154,9 @@ class ResultSet(EqualityMixin):
         ]
 
     def extract_json(self, paths):
+        print('rs.extract_json', self, paths)
         paths = self.shape_paths(paths)
+        print('rs.extract_json', self, paths)
         return [
             result.extract_json(paths) for result in self.results
         ]
