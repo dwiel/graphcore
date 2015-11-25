@@ -138,6 +138,8 @@ class Query(object):
         for key, value in query.items():
             if isinstance(value, list):
                 # TODO: check if value should be list
+                # Right now, this assumes that if value is a list, it is a
+                # subquery like [{'x>': 1}] and so makes a recursive call
                 self.extend(value[0], prefix=key+'.')
             else:
                 self.append(Clause(prefix+key, value))
@@ -164,6 +166,9 @@ class Query(object):
         return '[\n%s]' % ''.join(
             '  ' + str(clause) + '\n' for clause in self.clauses
         )
+
+    def __repr__(self):
+        return '<Query {}>'.format(str(self))
 
 
 class QuerySearchIterator(object):
