@@ -18,7 +18,7 @@ class hashabledict(dict):
 def make_ret_comparable(ret):
     """ convert lists to sets and dicts in them to frozen dicts """
     if isinstance(ret, list):
-        return set(make_ret_comparable(e) for e in ret)
+        return frozenset(make_ret_comparable(e) for e in ret)
     elif isinstance(ret, dict):
         return hashabledict(
             (k, make_ret_comparable(v)) for k, v in ret.items()
