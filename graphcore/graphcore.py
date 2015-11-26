@@ -139,7 +139,7 @@ class Query(object):
                 # TODO: check if value should be list
                 # Right now, this assumes that if value is a list, it is a
                 # subquery like [{'x>': 1}] and so makes a recursive call
-                self.extend(value[0], prefix=key+'.')
+                self.extend(value[0], prefix=prefix+key+'.')
             else:
                 self.append(Clause(prefix+key, value))
 

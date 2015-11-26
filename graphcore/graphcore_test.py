@@ -70,6 +70,28 @@ def test_query_nested():
     ) == 1
 
 
+def test_query_nested_twice():
+    query = graphcore.Query({
+        'user.id': 1,
+        'user.books': [{
+            'id?': None,
+            'author': [{
+                'name?': None,
+            }]
+        }],
+    })
+
+    print('query', query)
+    assert len(query.clauses) == 3
+    assert len([1 for clause in query.clauses if clause.lhs == 'user.id']) == 1
+    assert len(
+        [1 for clause in query.clauses if clause.lhs == 'user.books.id']
+    ) == 1
+    assert len(
+        [1 for clause in query.clauses if clause.lhs == 'user.books.author.name']
+    ) == 1
+
+
 class TestGraphcore(unittest.TestCase):
 
     def test_available_rules_string(self):
