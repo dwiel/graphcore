@@ -33,6 +33,12 @@ def test_query_str():
     assert '1' in string
 
 
+def test_query_repr():
+    string = repr(graphcore.Query({'user.id': 1}))
+    assert 'user.id' in string
+    assert '1' in string
+
+
 def test_property_type_str():
     string = str(graphcore.PropertyType('user', 'books', 'book'))
     assert 'user' in string
