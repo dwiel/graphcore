@@ -140,7 +140,7 @@ class SQLQuery(HashMixin, EqualityMixin):
                 )
             )
 
-    def flatten(self, keep_child_selects=False):
+    def flatten(self):
         """ merge any SQLQuery objects on the rhs of a where clause
         into self. """
 
@@ -161,8 +161,6 @@ class SQLQuery(HashMixin, EqualityMixin):
                         'the embedded query has one select.  has: {}'
                     ).format(', '.join(v.selects)))
                 self.where[k] = sql_query_dict.mysql_col(v.selects[0])
-                if keep_child_selects:
-                    self.selects += v.selects
 
                 # we just did a join, so definitely not just the first
                 self.first = False
