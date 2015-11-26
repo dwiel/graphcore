@@ -24,9 +24,9 @@ def test_relation_contains():
 def test_multi_relation():
     relation = Relation(('>', '<'), (1, 3))
 
-    assert relation(1) == False
-    assert relation(2) == True
-    assert relation(3) == False
+    assert relation(1) is False
+    assert relation(2) is True
+    assert relation(3) is False
 
 
 def test_relation_merge():
