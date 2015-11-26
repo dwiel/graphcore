@@ -16,6 +16,11 @@ def test_add():
     assert Path('a') + Path('b') == Path('a.b')
 
 
+def test_radd_fail():
+    with pytest.raises(TypeError):
+        1 + Path('a')
+
+
 def test_lt():
     assert Path('a') < 'b'
 

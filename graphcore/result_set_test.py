@@ -48,15 +48,6 @@ def test_result_set_filter():
     assert result_set.results == [{'a': 2}, {'a': 3}]
 
 
-def build_result_set(data):
-    if isinstance(data, list):
-        return ResultSet([build_result_set(e) for e in data])
-    elif isinstance(data, dict):
-        return Result({k: build_result_set(v) for k, v in data.items()})
-    else:
-        return data
-
-
 def test_shape_path():
     assert shape_path('a.b.c', [{'a': [{'b': [{}]}]}]) == ('a', 'b', 'c')
 
