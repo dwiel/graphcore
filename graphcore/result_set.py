@@ -58,20 +58,6 @@ class Result(EqualityMixin):
     def to_json(self):
         return self.result
 
-    def _extract_json_value(self, path):
-        """ return the json value at path.
-
-        recursively call extract_json if the value is a ResultSet
-        """
-
-        value = self.get(path[0])
-
-        # recursively vall extract_json
-        if isinstance(value, ResultSet):
-            return value.extract_json(path[1:])
-        else:
-            return value
-
     def extract_json(self, paths):
         """ return the json representing paths.
 
