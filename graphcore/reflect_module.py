@@ -6,7 +6,6 @@ def input_mapping_decorator(function, input_mapping):
         new_kwargs = {
             input_mapping[k]: v for k, v in kwargs.items()
         }
-        print('call', function, kwargs, new_kwargs)
         return function(**new_kwargs)
 
     _input_mapping_decorator.__name__ = function.__name__
