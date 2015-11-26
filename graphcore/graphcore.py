@@ -69,8 +69,7 @@ class Clause(object):
         another cause depends on as an input.
         """
         if self.relation and other.relation:
-            # In theory, this may be possible
-            raise NotImplementedError
+            self.relation = self.relation.merge(other.relation)
         else:
             self.relation = self.relation or other.relation
 

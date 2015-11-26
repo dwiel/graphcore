@@ -117,6 +117,17 @@ class TestGraphcore(unittest.TestCase):
             {'user.books.id': 3},
         ])
 
+    def test_multiple_relations(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id?': None,
+            'user.books.id>': 1,
+            'user.books.id<': 3,
+        })
+        self.assertRetEqual(ret, [
+            {'user.books.id': 2},
+        ])
+
     def test_simple_nested_join(self):
         ret = testgraphcore.query({
             'user.id': 1,

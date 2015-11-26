@@ -8,7 +8,7 @@ OPERATORS = {
     '<=': operator.le,
     '==': operator.eq,
     '!=': operator.ne,
-    '|=': operator.contains,
+    '|=': lambda x, y: operator.contains(y, x),
 }
 
 
@@ -21,13 +21,15 @@ class Relation(object):
         self._build_function()
 
     def _build_function(self):
-        op = OPERATORS[self.operation]
+        if isinstance(self.operation, tuple):
+            ops = [OPERATORS[operation] for operation in self.operation]
 
-        if op == operator.contains:
-            # contains operator is backwards compared to the rest of the
-            # operators
-            self._function = lambda x: op(self.value, x)
+            self._function = lambda x: all(
+                op(x, value) for op, value in zip(ops, self.value)
+            )
         else:
+            op = OPERATORS[self.operation]
+
             self._function = lambda x: op(x, self.value)
 
     def __eq__(self, other):
@@ -46,6 +48,22 @@ class Relation(object):
 
     def __call__(self, other):
         return self._function(other)
+
+    @staticmethod
+    def _tuplify(relation):
+        if isinstance(relation.operation, tuple):
+            return relation.operation, relation.value
+        else:
+            return (relation.operation,), (relation.value,)
+
+    def merge(self, other):
+        self_operation, self_value = Relation._tuplify(self)
+        other_operation, other_value = Relation._tuplify(other)
+
+        return Relation(
+            self_operation + other_operation,
+            self_value + other_value,
+        )
 
     def __repr__(self):
         return "<Relation '{operation}' {value}>".format(**self.__dict__)

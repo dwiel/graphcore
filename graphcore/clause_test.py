@@ -11,11 +11,6 @@ def test_repr():
     assert repr(Clause('a', 1))
 
 
-def test_clause_merge_relation_conflict():
-    with pytest.raises(NotImplementedError):
-        Clause('a>', 1).merge(Clause('a>', 2))
-
-
 def test_clause_merge_rhs_conflict():
     with pytest.raises(ValueError):
         Clause('a', 1).merge(Clause('a', 2))
