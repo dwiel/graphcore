@@ -26,11 +26,11 @@ class Rule(HashMixin, EqualityMixin):
 
     def __init__(self, function, inputs, outputs, cardinality):
         self.function = function
-        self.inputs = sorted([Path(input) for input in inputs])
+        self.inputs = [Path(input) for input in inputs]
         if isinstance(outputs, (Path, six.string_types)):
             self.outputs = [outputs]
         else:
-            self.outputs = sorted([Path(output) for output in outputs])
+            self.outputs = [Path(output) for output in outputs]
         self.cardinality = Cardinality.cast(cardinality)
 
     def __repr__(self):
