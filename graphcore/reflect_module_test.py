@@ -50,8 +50,6 @@ def test_skip_complex(gc):
 
 
 def test_join(gc):
-    print gc.rules
-
     ret = gc.query({
         'user.id': 1,
         'user.book.id?': None,
