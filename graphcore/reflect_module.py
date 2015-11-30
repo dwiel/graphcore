@@ -26,7 +26,11 @@ class ModuleReflector(object):
     def _reflect(self):
         for name, value in self.module.__dict__.items():
             if inspect.isfunction(value):
-                arg_names, _, __, ___ = inspect.getargspec(value)
+                arg_names, _, __, defaults = inspect.getargspec(value)
+
+                # dont map arguments with defaults to inputs
+                if defaults:
+                    arg_names = arg_names[:-len(defaults)]
 
                 input_paths = [
                     self._input_name(arg_name) for arg_name in arg_names
@@ -63,7 +67,7 @@ class ModuleReflector(object):
         elif arg_name[-4:] == '_ids':
             return arg_name[:-4] + '.' + arg_name[-3:-1]
         elif arg_name[-3:] == '_id':
-            return arg_name[:-3]
+            return arg_name[:-3] + '.' + arg_name[-2:]
         else:
             return arg_name
 

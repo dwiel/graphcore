@@ -58,3 +58,12 @@ def test_join(gc):
     assert ret == [
         {'user.book.id': i} for i in [1, 2, 3]
     ]
+
+
+def test_optional_arg(gc):
+    ret = gc.query({
+        'user.id': 1,
+        'user.optionally_complex?': None,
+    })
+
+    assert ret == [{'user.optionally_complex': 2}]
