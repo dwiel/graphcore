@@ -40,7 +40,8 @@ class ModuleReflector(object):
                 self.graphcore.register_rule(
                     input_paths,
                     self._output_name(name),
-                    function=input_mapping_decorator(value, input_mapping)
+                    function=input_mapping_decorator(value, input_mapping),
+                    cardinality=self._cardinality(name),
                 )
 
     def _canonical_property_name(self, arg_name):
@@ -59,8 +60,20 @@ class ModuleReflector(object):
                 property_name = property_name[1:]
 
             return property_name
+        elif arg_name[-4:] == '_ids':
+            return arg_name[:-4] + '.' + arg_name[-3:-1]
+        elif arg_name[-3:] == '_id':
+            return arg_name[:-3]
         else:
             return arg_name
+
+    def _cardinality(self, function_name):
+        """ infer the cardinality of a function from its name """
+
+        if function_name[-4:] == '_ids':
+            return 'many'
+        else:
+            return 'one'
 
     def _input_name(self, arg_name):
         """ given the name of an argument to a function, return

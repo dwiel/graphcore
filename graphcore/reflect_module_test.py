@@ -47,3 +47,16 @@ def test_skip_complex(gc):
             'user.id': 1,
             'user.complex?': None,
         })
+
+
+def test_join(gc):
+    print gc.rules
+
+    ret = gc.query({
+        'user.id': 1,
+        'user.book.id?': None,
+    })
+
+    assert ret == [
+        {'user.book.id': i} for i in [1, 2, 3]
+    ]
