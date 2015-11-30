@@ -140,9 +140,7 @@ class ResultSet(EqualityMixin):
         ]
 
     def extract_json(self, paths):
-        print('rs.extract_json', self, paths)
         paths = self.shape_paths(paths)
-        print('rs.extract_json', self, paths)
         return [
             result.extract_json(paths) for result in self.results
         ]

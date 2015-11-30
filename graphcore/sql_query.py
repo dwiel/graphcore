@@ -260,8 +260,6 @@ class SQLQuery(HashMixin, EqualityMixin):
         function.one_column = False
         function.first = False
 
-        print('merged', function)
-
         inputs = child.incoming_paths
         outputs = parent.outgoing_paths + child.outgoing_paths
 

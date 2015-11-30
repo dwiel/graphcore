@@ -1,6 +1,3 @@
-from __future__ import print_function
-
-
 def reduce_like_parent_child(call_graph, rule_type, merge_function):
     """Given a call_graph, reduce parent, child nodes of rule_type
     using merge_function.
@@ -42,7 +39,5 @@ def reduce_like_parent_child(call_graph, rule_type, merge_function):
                 )
 
                 changes_made = True
-
-                print('new call_graph', call_graph)
 
     return call_graph

@@ -447,8 +447,6 @@ class Graphcore(object):
             query_search.call_graph, SQLQuery, SQLQuery.merge_parent_child
         )
 
-        print('post optimizer call graph:', query_search.call_graph)
-
         query_planner = QueryPlanner(
             query_search.call_graph, query_search.query, query
         )
