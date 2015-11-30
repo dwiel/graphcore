@@ -25,7 +25,7 @@ class ModuleReflector(object):
 
     def _reflect(self):
         for name, value in self.module.__dict__.items():
-            if callable(value):
+            if inspect.isfunction(value):
                 arg_names, _, __, ___ = inspect.getargspec(value)
 
                 input_paths = [
