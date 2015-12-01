@@ -9,7 +9,7 @@ def input_mapping_decorator(function, input_mapping):
             new_kwargs = {
                 input_mapping[k]: v for k, v in kwargs.items()
             }
-        except KeyError, e:
+        except KeyError as e:
             raise KeyError((
                 '{}; kwargs: {}; input_mapping: {}; ' +
                 'for function: {}').format(
