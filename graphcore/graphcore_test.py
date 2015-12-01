@@ -405,7 +405,7 @@ class TestGraphcore(unittest.TestCase):
         gc = graphcore.Graphcore()
 
         gc.register_rule(
-            ['x.y.name'], 'x.y_name', function=lambda y_name: name
+            ['x.y.name'], 'x.y_name', function=lambda y_name: y_name
         )
 
         ret = gc.query({
@@ -422,7 +422,7 @@ class TestGraphcore(unittest.TestCase):
             ['x.y.id'], 'x.z', function=lambda id: id
         )
 
-        ret = gc.query({
+        gc.query({
             'x': [{
                 'y.id': 1,
                 'z?': None,
