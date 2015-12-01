@@ -400,6 +400,35 @@ class TestGraphcore(unittest.TestCase):
                 'x.name?': None
             })
 
+    @pytest.mark.xfail
+    def test_long_input(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            ['x.y.name'], 'x.y_name', function=lambda y_name: name
+        )
+
+        ret = gc.query({
+            'x.y.name': 'abc',
+            'x.y_name?': None
+        })
+
+        assert ret == [{'x.y_name': 'abc'}]
+
+    def test_grounded_nested_value(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            ['x.y.id'], 'x.z', function=lambda id: id
+        )
+
+        ret = gc.query({
+            'x': [{
+                'y.id': 1,
+                'z?': None,
+            }]
+        })
+
 
 class TestQuerySearch(unittest.TestCase):
 

@@ -22,3 +22,7 @@ def book_ids(user_id):
 def user_optionally_complex(id, const=1):
     """ graphcore wont map const as an input """
     return id + const
+
+
+def book_with_user_name(first_name, book_id):
+    return 'user: {}; book: {}'.format(first_name, book_id)

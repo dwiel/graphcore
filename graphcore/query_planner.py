@@ -4,6 +4,7 @@ a QueryPlan
 """
 
 from .query_plan import QueryPlan
+from .result_set import ResultSet, Result
 
 
 class CallGraphIterator(object):
@@ -67,18 +68,42 @@ class QueryPlanner(object):
         state of the ResultSet object.
         """
         self.call_graph = call_graph
+
+        initial_bindings = self._extract_initial_bindings_from_query(
+            query, query_shape
+        )
+        if not isinstance(initial_bindings, ResultSet):
+            initial_bindings = ResultSet([initial_bindings])
+
         self.plan = QueryPlan(
-            self._extract_initial_bindings_from_query(query),
+            initial_bindings,
             call_graph.output_paths(),
             query_shape
         )
 
-    def _extract_initial_bindings_from_query(self, query):
-        initial_bindings = {}
-        for clause in query:
-            if clause.value:
-                initial_bindings[clause.lhs] = clause.value
-        return initial_bindings
+    def _extract_initial_bindings_from_query(self, query, query_shape):
+        """ convert a regular json query_shape into a nested structure of
+        ResultSets and Results.
+
+        WARNING: this wont work with list values like in a |= clause.  It
+        would be ideal if the query object could be useful since it already
+        knows these things.  Unfortunately it is the wrong shape though ...
+        """
+
+        if isinstance(query_shape, (list, tuple)):
+            return ResultSet([
+                self._extract_initial_bindings_from_query(q, qs)
+                for q, qs in zip(query, query_shape)
+            ])
+        elif isinstance(query_shape, dict):
+            initial_bindings = {}
+            for k, v in query_shape.items():
+                if v:
+                    v = self._extract_initial_bindings_from_query(query, v)
+                    initial_bindings[k] = v
+            return Result(initial_bindings)
+        else:
+            return query_shape
 
     def plan_query(self):
         for node in CallGraphIterator(self.call_graph):

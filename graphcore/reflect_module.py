@@ -1,11 +1,21 @@
 import inspect
 
+from .path import Path
+
 
 def input_mapping_decorator(function, input_mapping):
     def _input_mapping_decorator(**kwargs):
-        new_kwargs = {
-            input_mapping[k]: v for k, v in kwargs.items()
-        }
+        try:
+            new_kwargs = {
+                input_mapping[k]: v for k, v in kwargs.items()
+            }
+        except KeyError, e:
+            raise KeyError((
+                '{}; kwargs: {}; input_mapping: {}; ' +
+                'for function: {}').format(
+                    str(e), kwargs, input_mapping, function
+            ))
+
         return function(**new_kwargs)
 
     _input_mapping_decorator.__name__ = function.__name__
@@ -37,7 +47,7 @@ class ModuleReflector(object):
                 ]
 
                 input_mapping = {
-                    self._canonical_property_name(arg_name): arg_name
+                    self._input_mapping_name(arg_name): arg_name
                     for arg_name in arg_names
                 }
 
@@ -47,6 +57,9 @@ class ModuleReflector(object):
                     function=input_mapping_decorator(value, input_mapping),
                     cardinality=self._cardinality(name),
                 )
+
+    def _input_mapping_name(self, arg_name):
+        return Path(self._canonical_property_name(arg_name)).property
 
     def _canonical_property_name(self, arg_name):
         """ given the name of an argument to a function, return
