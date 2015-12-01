@@ -48,6 +48,18 @@ def test_result_set_filter():
     assert result_set.results == [{'a': 2}, {'a': 3}]
 
 
+def test_result_set_nested_filter():
+    result_set = ResultSet(
+        [Result({'a': ResultSet([Result({'b': b}) for b in [1, 2, 3]])})],
+        [{'a': [{'b': b} for b in [1, 2, 3]]}]
+    )
+
+    print(result_set.shape_path('a.b'))
+    result_set.filter('a.b', Relation('>', 1))
+
+    assert result_set.results == [{'a': [{'b': 2}, {'b': 3}]}]
+
+
 def test_shape_path():
     assert shape_path('a.b.c', [{'a': [{'b': [{}]}]}]) == ('a', 'b', 'c')
 

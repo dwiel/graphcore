@@ -45,6 +45,9 @@ class Path(object):
         for i in range(-2, -len(self.parts) - 1, -1):
             yield Path(self.parts[:i+1]), Path(self.parts[i:])
 
+    def subpath(self, root):
+        return Path(str(self)[len(root)+1:])
+
     def __repr__(self):
         return '<Path {str}>'.format(str=str(self))
 

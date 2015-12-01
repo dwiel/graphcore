@@ -93,14 +93,24 @@ class QueryPlanner(object):
         if isinstance(query_shape, (list, tuple)):
             return ResultSet([
                 self._extract_initial_bindings_from_query(q, qs)
-                for q, qs in zip(query, query_shape)
+                for q, qs in zip([query], query_shape)
             ])
         elif isinstance(query_shape, dict):
             initial_bindings = {}
             for k, v in query_shape.items():
-                if v:
-                    v = self._extract_initial_bindings_from_query(query, v)
+                # if the query shape has a list on the right hand side, we
+                # assume it is a nested resultset.
+                if isinstance(v, list):
+                    subquery = query.subquery(k)
+
+                    v = self._extract_initial_bindings_from_query(subquery, v)
                     initial_bindings[k] = v
+                else:
+                    # otherwise, look in the query to see what value it has
+                    for clause in query:
+                        if clause.lhs == k:
+                            initial_bindings[k] = v
+
             return Result(initial_bindings)
         else:
             return query_shape

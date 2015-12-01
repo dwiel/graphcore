@@ -1,3 +1,4 @@
+import six
 from six.moves import zip
 from collections import defaultdict
 
@@ -119,7 +120,6 @@ class ResultSet(EqualityMixin):
         stands, I'm not sure where else this transformation should go.
         """
 
-        # TODO handle more complex result set toplogies
         if isinstance(init, ResultSet):
             self.results = init.results
         elif isinstance(init, dict):
@@ -146,10 +146,21 @@ class ResultSet(EqualityMixin):
         ]
 
     def filter(self, path, relation):
-        self.results = [
-            result for result in self.results
-            if relation(result.get(path))
-        ]
+        if isinstance(path, (six.string_types, Path)):
+            path = self.shape_path(path)
+
+        # if this is the leaf, just filter on this result set
+        if len(path) == 1:
+            self.results = [
+                result for result in self.results
+                if relation(result[path[0]])
+            ]
+        # if this is a nested filter, recur down into the next level
+        else:
+            for result in self.results:
+                result[path[0]].filter(
+                    path[1:], relation
+                )
 
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
@@ -169,7 +180,10 @@ class ResultSet(EqualityMixin):
         return NotImplemented
 
     def shape_paths(self, paths):
-        return [shape_path(path, self.query_shape) for path in paths]
+        return [self.shape_path(path) for path in paths]
+
+    def shape_path(self, path):
+        return shape_path(path, self.query_shape)
 
 
 def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
