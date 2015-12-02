@@ -74,9 +74,8 @@ class Clause(object):
         else:
             if not isinstance(other.rhs, TempVar):
                 raise ValueError(
-                    'both clauses cant have a non-TempVar '
-                    'rhs: {rhs}, {other_rhs}; {self}, {other}'.format(
-                        rhs=self.rhs, other_rhs=other.rhs,
+                    'the two clauses can not both be present in the query:'
+                    '{self}, {other}'.format(
                         self=repr(self), other=repr(other),
                     )
                 )
