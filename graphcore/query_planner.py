@@ -91,6 +91,8 @@ class QueryPlanner(object):
         """
 
         if isinstance(query_shape, (list, tuple)):
+            assert len(query_shape) == 1
+
             return ResultSet([
                 self._extract_initial_bindings_from_query(q, qs)
                 for q, qs in zip([query], query_shape)
