@@ -112,8 +112,6 @@ class QueryPlanner(object):
                             initial_bindings[k] = v
 
             return Result(initial_bindings)
-        else:
-            return query_shape
 
     def plan_query(self):
         for node in CallGraphIterator(self.call_graph):
