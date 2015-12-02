@@ -3,7 +3,9 @@ from .relation import Relation
 
 
 class Var(object):
-    pass
+    @classmethod
+    def __repr__(cls):
+        return cls.__name__
 
 
 class OutVar(Var):
@@ -74,7 +76,7 @@ class Clause(object):
         else:
             if not isinstance(other.rhs, TempVar):
                 raise ValueError(
-                    'the two clauses can not both be present in the query:'
+                    'these two clauses can not both be present in the query:'
                     '{self}, {other}'.format(
                         self=repr(self), other=repr(other),
                     )
@@ -98,9 +100,14 @@ class Clause(object):
         return '{lhs} {rhs}'.format(**self.__dict__)
 
     def __repr__(self):
-        return '<Clause ({lhs}) ({rhs}) ({relation})>'.format(
-            **self.__dict__
-        )
+        if self.relation:
+            return '<Clause {lhs} {relation} {rhs})>'.format(
+                **self.__dict__
+            )
+        else:
+            return '<Clause {lhs} {rhs})>'.format(
+                **self.__dict__
+            )
 
     def __eq__(self, other):
         if self.lhs != other.lhs:
