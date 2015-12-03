@@ -297,3 +297,19 @@ class Graphcore(object):
         query.backward()
 
         return repr(query.call_graph)
+
+    def search_outputs(self, search="", prefix=""):
+        """ return a list of outputs which contain `search` and/or begin with
+        `prefix`
+
+        useful for interactive exploration and debugging.
+        """
+        ret = []
+
+        for rule in self.rules:
+            for output in rule.outputs:
+                if str(output).find(prefix) == 0:
+                    if search in str(output):
+                        ret.append(str(output))
+
+        return ret

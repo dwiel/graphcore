@@ -456,6 +456,29 @@ class TestGraphcore(unittest.TestCase):
             }],
         }]
 
+    def test_search_outputs(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule([], 'abc.id')
+        gc.register_rule([], 'abc.xyz.id')
+        gc.register_rule([], 'xyz.id')
+
+        assert gc.search_outputs('abc') == [
+            'abc.id', 'abc.xyz.id'
+        ]
+
+        assert gc.search_outputs(prefix='abc') == [
+            'abc.id', 'abc.xyz.id'
+        ]
+
+        assert gc.search_outputs('xyz') == [
+            'abc.xyz.id', 'xyz.id'
+        ]
+
+        assert gc.search_outputs(prefix='xyz') == [
+            'xyz.id'
+        ]
+
 
 class TestQuerySearch(unittest.TestCase):
 
