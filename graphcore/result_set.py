@@ -83,8 +83,15 @@ class Result(EqualityMixin):
 
         return ret
 
-    def copy(self):
-        return Result(self)
+    def deepcopy(self):
+        new_result = {}
+        for k, v in self.result.items():
+            if isinstance(v, ResultSet):
+                v = v.deepcopy()
+
+            new_result[k] = v
+
+        return Result(new_result)
 
     def __getitem__(self, k):
         return self.result[str(k)]
@@ -161,6 +168,16 @@ class ResultSet(EqualityMixin):
                 result[path[0]].filter(
                     path[1:], relation
                 )
+
+    def deepcopy(self):
+        new_results = []
+        for result in self.results:
+            if isinstance(result, Result):
+                result = result.deepcopy()
+
+            new_results.append(result)
+
+        return ResultSet(new_results)
 
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
@@ -269,7 +286,8 @@ def apply_rule(data, fn, outputs, cardinality, scope):
 
         new_datas = []
         for values in values_set:
-            new_data = data.copy()
+            # deepcopy: recursively copy Result and ResultSet objects only
+            new_data = data.deepcopy()
             for output, value in zip(outputs, values):
                 new_data[output[0]] = value
             new_datas.append(new_data)

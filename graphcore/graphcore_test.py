@@ -479,6 +479,30 @@ class TestGraphcore(unittest.TestCase):
             'xyz.id'
         ]
 
+    def test_nested_results(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'x.id', function=lambda: [1, 2, 3], cardinality='many'
+        )
+        gc.register_rule(
+            ['x.id'], ['x.ys.z'], function=lambda id:id
+        )
+
+        ret = gc.query({
+            'x.ys': [{
+                'z?': None,
+            }]
+        })
+
+        assert ret == [{
+            'x.ys': [{'z': 1}],
+        }, {
+            'x.ys': [{'z': 2}],
+        }, {
+            'x.ys': [{'z': 3}],
+        }]
+
 
 class TestQuerySearch(unittest.TestCase):
 
