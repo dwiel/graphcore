@@ -125,7 +125,6 @@ class QuerySearch(object):
             # relation, instead of a ground value
             for clause in self.query:
                 if clause.lhs not in used_paths:
-                    print('unused clause:', clause)
                     clause.convert_to_constraint()
 
             # rerun with new constraints
