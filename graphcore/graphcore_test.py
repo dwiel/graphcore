@@ -486,7 +486,7 @@ class TestGraphcore(unittest.TestCase):
             [], 'x.id', function=lambda: [1, 2, 3], cardinality='many'
         )
         gc.register_rule(
-            ['x.id'], ['x.ys.z'], function=lambda id:id
+            ['x.id'], ['x.ys.z'], function=lambda id: id
         )
 
         ret = gc.query({
