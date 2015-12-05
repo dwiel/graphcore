@@ -1,4 +1,5 @@
-from .call_graph import Edge
+from .call_graph import Edge, Node
+from .relation import Relation
 
 
 def test_edge_hash():
@@ -12,3 +13,19 @@ def test_edge_ne():
 
 def test_edge_not_ne():
     assert not Edge('a', [1], [2], True) != Edge('a', [], [], False)
+
+
+def test_explain():
+    def f():
+        pass
+
+    node = Node(None, ['a.b.c'], ['x.y.z'], f, 'one', None)
+    assert 'one' not in node.explain()
+
+    node = Node(None, ['a.b.c'], ['x.y.z'], f, 'many', None)
+    assert 'many' in node.explain()
+
+    node = Node(None, ['a.b.c'], ['x.y.z'], f, 'one', (Relation(
+        '>', 1
+    ),))
+    assert '>' in node.explain()

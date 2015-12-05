@@ -295,7 +295,7 @@ class Graphcore(object):
 
         query.backward()
 
-        return repr(query.call_graph)
+        return query.call_graph.explain()
 
     def search_outputs(self, search="", prefix=""):
         """ return a list of outputs which contain `search` and/or begin with

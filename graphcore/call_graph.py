@@ -59,6 +59,7 @@ TODO: out_paths: {key: (Path, Node), ...}
 
 from .path import Path
 from .rule import Cardinality
+from .relation import Relation
 
 
 class Node(object):
@@ -106,19 +107,32 @@ class Node(object):
     def __eq__(self, other):
         return self.__key() == other.__key()
 
-    def __repr__(self):
-        string = '<Node '
+    def explain(self):
+        string = ''
         string += '{outgoing_paths} = {name}({incoming_paths}) '
-        string += 'cardinality={cardinality} '
-        string += 'realtions={realtions}'
-        string += '>'
-        return (string.format(
+        if self.cardinality is not Cardinality.one:
+            string += '{cardinality} '
+        for relation, outgoing_path in zip(self.relations, self.outgoing_paths):
+            if relation is None:
+                continue
+
+            for op, value in zip(*Relation._tuplify(relation)):
+                string += '\n    {outgoing_path} {op} {value}'.format(
+                    outgoing_path=outgoing_path,
+                    op=op,
+                    value=value
+                )
+
+        return string.format(
             outgoing_paths=', '.join(map(str, self.outgoing_paths)),
             incoming_paths=', '.join(map(str, self.incoming_paths)),
             name=self.name,
             cardinality=self.cardinality,
             realtions=self.relations
-        ))
+        )
+
+    def __repr__(self):
+        return '<Node {}>'.format(self.explain())
 
     @property
     def name(self):
@@ -223,6 +237,9 @@ class CallGraph(object):
             ),
         )
     __str__ = __repr__
+
+    def explain(self):
+        return '\n'.join(node.explain() for node in self.nodes)
 
     def __key(self):
         return (
