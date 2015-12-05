@@ -110,9 +110,13 @@ class Node(object):
     def explain(self):
         string = ''
         string += '{outgoing_paths} = {name}({incoming_paths}) '
+
         if self.cardinality is not Cardinality.one:
             string += '{cardinality} '
-        for relation, outgoing_path in zip(self.relations, self.outgoing_paths):
+
+        for relation, outgoing_path in zip(
+            self.relations, self.outgoing_paths
+        ):
             if relation is None:
                 continue
 
