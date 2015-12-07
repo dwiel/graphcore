@@ -56,9 +56,9 @@ class Query(object):
         return self.clauses[index]
 
     def __str__(self):
-        return '[\n%s]' % ''.join(
+        return '[\n{0!s}]'.format(''.join(
             '  ' + str(clause) + '\n' for clause in self.clauses
-        )
+        ))
 
     def __repr__(self):
         return '<Query {}>'.format(str(self))
