@@ -2,6 +2,8 @@
 
 # Graphcore
 
+[![Join the chat at https://gitter.im/dwiel/graphcore](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dwiel/graphcore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Graphcore is a python library which allows you to query a computational graph
 structure with a query language similar to MQL, Falcor or GraphQL.
 
