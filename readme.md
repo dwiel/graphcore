@@ -6,14 +6,20 @@ Graphcore is a python library which allows you to query a computational graph
 structure with a query language similar to MQL, Falcor or GraphQL.
 
 At the moment, the graph structure can be defined by python functions or SQL
-relations.
+relations.  This allows you to write one query which is backed by multiple SQL
+databases, NoSQL databases, internal services and 3rd party services.
+Determining which database or python functions to call and how to glues them
+together to satisfy your query is Graphcore's job.
 
-### Example
+### Example Queries
 
-Here is an example of a query and the returned data structure:
+All of the following queries assume that you have already set up your graphcore
+environment.
+
+Return all of user 1's book names
 
 ```python
-ret = gc.query({
+ret = graphcore.query({
     'user.id': 1,
     'user.books.name?': None,
 })
@@ -23,6 +29,95 @@ assert ret == [
     {'user.books.name': 'The Diamond Age'},
 ]
 ```
+
+Sometimes with longer queries it is nice split it up heirarchically:
+
+```
+graphcore.query({
+    'user.id': 1,
+    'user.books': {
+        'name?': None,
+    },
+})
+
+
+assert ret == [{
+    'user.books': [{
+        'name': 'The Giver',
+    }, {
+        'name': 'REAMDE',
+    }, {
+        'name': 'The Diamond Age',
+    }],
+}]
+```
+
+Here is the same query, but no restricting to only books by Neal Stephenson:
+
+```
+graphcore.query({
+    'user.id': 1,
+    'user.books': {
+        'name?': None,
+        'author': 'Neal Stephenson',
+    },
+})
+
+assert ret == [{
+    'user.books': [{
+        'name': 'REAMDE',
+    }, {
+        'name': 'The Diamond Age',
+    }],
+}]
+```
+
+### Relations
+
+Relations can be expressed by adding the relation to the end of the key:
+
+```
+graphcore.query({
+    'user.id': 1,
+    'user.books': {
+        'name?': None,
+        'pages<': 1000,
+    },
+})
+
+assert ret == [{
+    'user.books': [{
+        'name': 'The Giver',
+    }, {
+        'name': 'The Diamond Age',
+    }],
+}]
+```
+
+Allowed relations are `>`, `<`, `>=`, `<=`, `!=` and `|=`.  `|=` is an `in`
+operator:
+
+```
+graphcore.query({
+    'user.id': 1,
+    'user.books': {
+        'name?': None,
+        'author|=': ('Neal Stephenson', 'Dr. Suess'),
+    },
+})
+
+assert ret == [{
+    'user.books': [{
+        'name': 'REAMDE',
+    }, {
+        'name': 'The Diamond Age',
+    }, {
+        'name': 'The Cat in The Hat',
+    }],
+}]
+```
+
+### Example Setup
 
 Here is an example of setting up a graphcore environment with both rules
 reflected from a SQL database as well as 3rd party libraries.
