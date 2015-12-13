@@ -252,3 +252,29 @@ def test_copy():
     assert len(sql_query_copy.selects) == 1
     assert len(sql_query_copy.where) == 1
     assert len(sql_query_copy.input_mapping) == 1
+
+
+def test_driver():
+    import sqlalchemy
+
+    engine = sqlalchemy.create_engine('sqlite://')
+
+    from sqlalchemy import MetaData, Table, Column, Integer, String
+
+    meta = MetaData()
+    users = Table(
+        'users', meta,
+        Column('id', Integer, primary_key=True),
+        Column('name', String(255)),
+    )
+    users.create(engine)
+
+    name = 'bob'
+    engine.execute(users.insert(), id=1, name=name)
+
+    sql_query = SQLQuery(
+        ['users'], ['name'], {'id': 1}, engine=engine, param_style='?'
+    )
+
+    assert sql_query()[0].name == name
+    assert sql_query()[0][0] == name
