@@ -91,7 +91,3 @@ you to describe the dependencies between all of the functions / paths and allow
 graphcore to find an optimal way to glue your backend together.  There will
 also be hooks which allow you to give hints or make specific changes to the AST
 and control how the query is executed if you need to.
-
-### More topics
-
-- [AST](docs/ast.md)
