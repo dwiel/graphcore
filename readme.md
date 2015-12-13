@@ -1,8 +1,6 @@
-[![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore) [![Coverage Status](https://coveralls.io/repos/dwiel/graphcore/badge.svg?branch=master&service=github)](https://coveralls.io/github/dwiel/graphcore?branch=master) [![Documentation Status](https://readthedocs.org/projects/graphcore/badge/?version=latest)](http://graphcore.readthedocs.org/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/dwiel/graphcore.svg?branch=master)](https://travis-ci.org/dwiel/graphcore) [![Coverage Status](https://coveralls.io/repos/dwiel/graphcore/badge.svg?branch=master&service=github)](https://coveralls.io/github/dwiel/graphcore?branch=master) [![Documentation Status](https://readthedocs.org/projects/graphcore/badge/?version=latest)](http://graphcore.readthedocs.org/en/latest/?badge=latest) [![Join the chat at https://gitter.im/dwiel/graphcore](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dwiel/graphcore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # Graphcore
-
-[![Join the chat at https://gitter.im/dwiel/graphcore](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dwiel/graphcore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Graphcore is a python library which allows you to query a computational graph
 structure with a query language similar to MQL, Falcor or GraphQL.
