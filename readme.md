@@ -48,8 +48,8 @@ def user_gravatar_email(email):
 # given a gravatar email, return a url to their profile picture
 @gc.rule(['gravatar.email'], 'gravatar.url')
 def gravatar_url(email):
-    import gravatar
-    return gravatar.lookup_url(email)
+    from gravatar import Gravatar
+    return Gravatar(email).thumb
 
 
 # user's location's zipcode is the same as the user
