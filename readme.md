@@ -35,9 +35,9 @@ Sometimes with longer queries it is nice split it up heirarchically:
 ```python
 graphcore.query({
     'user.id': 1,
-    'user.books': {
+    'user.books': [{
         'name?': None,
-    },
+    }],
 })
 
 
@@ -57,10 +57,10 @@ Here is the same query, but no restricting to only books by Neal Stephenson:
 ```python
 graphcore.query({
     'user.id': 1,
-    'user.books': {
+    'user.books': [{
         'name?': None,
         'author': 'Neal Stephenson',
-    },
+    }],
 })
 
 assert ret == [{
@@ -79,10 +79,10 @@ Relations can be expressed by adding the relation to the end of the key:
 ```python
 graphcore.query({
     'user.id': 1,
-    'user.books': {
+    'user.books': [{
         'name?': None,
         'pages<': 1000,
-    },
+    }],
 })
 
 assert ret == [{
@@ -100,10 +100,10 @@ operator:
 ```python
 graphcore.query({
     'user.id': 1,
-    'user.books': {
+    'user.books': [{
         'name?': None,
         'author|=': ('Neal Stephenson', 'Dr. Suess'),
-    },
+    }],
 })
 
 assert ret == [{
