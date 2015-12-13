@@ -14,9 +14,28 @@ together to satisfy your query is Graphcore's job.
 ### Example Queries
 
 All of the following queries assume that you have already set up your graphcore
-environment.
+environment and are now ready to query it.
 
 Return all of user 1's book names
+
+```python
+ret = graphcore.query({
+    'user.id': 1,
+    'user.name?': None,
+})
+assert ret == [
+    {'user.name': 'John'},
+]
+```
+
+The `?` at the end of `user.name?` signifies that you want to get a user's name
+in the output.  This is similar to the `SELECT users.name ...` part of a SQL
+query.  `'user.id': 1` signifies that you want to restrict the results to user
+objects whose id is 1.  This is similar to the where clause in SQL query.
+
+#### Joins
+
+In the following query we get the name of all books a user has:
 
 ```python
 ret = graphcore.query({
@@ -29,6 +48,8 @@ assert ret == [
     {'user.books.name': 'The Diamond Age'},
 ]
 ```
+
+Note that the input query shape and the output shape is the same.
 
 Sometimes with longer queries it is nice split it up heirarchically:
 
@@ -119,8 +140,27 @@ assert ret == [{
 
 ### Example Setup
 
-Here is an example of setting up a graphcore environment with both rules
-reflected from a SQL database as well as 3rd party libraries.
+In the previous example queries, a Graphcore instance was already expected to
+be set up.  A graphcore instance stores the set of rules that are available to
+the query.  There are multiple ways to set one up.  You can reflect rules from
+a SQL database, add custom SQL query rules or write python functions.  You can
+also reflect all of the methods in a python package into graphcore.  I don't
+yet have any examples of this.  
+
+Graphcore rules map from a set of input paths to an output path.  For example,
+this rule maps from a gravatar email to a gravatar url.  This function will be
+called anytime a query filters on or expects a gravatar.url output.
+
+```python
+# given a gravatar email, return a url to their profile picture
+@gc.rule(['gravatar.email'], 'gravatar.url')
+def gravatar_url(email):
+    from gravatar import Gravatar
+    return Gravatar(email).thumb
+```
+
+Here is a more complete example of setting up a graphcore environment with both
+rules reflected from a SQL database as well as 3rd party libraries.
 
 ```python
 import graphcore
