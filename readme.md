@@ -79,7 +79,6 @@ gc.query({
 This query will find users whose location is currently under 30 degrees, and
 return you a URL to their gravatar profile and a list of the names of the
 books they have.
-```
 
 
 ### Comparison with Falcor
