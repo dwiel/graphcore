@@ -21,7 +21,7 @@ class SQLQuery(HashMixin, EqualityMixin):
 
     def __init__(self, tables, selects, where,
                  limit=None, one_column=False, first=False,
-                 input_mapping=None, engine=None):
+                 input_mapping=None, engine=None, param_style=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
@@ -52,6 +52,10 @@ class SQLQuery(HashMixin, EqualityMixin):
             primarily it needs to implement the following interface:
 
                 engine.connect().execute(SQL, vals)
+
+        param_style: str
+            the style the engine expects parameters to take.  MySQL expects
+            %s and sqlite expects ?
         """
 
         self.tables = parse_comma_seperated_set(tables)
@@ -65,6 +69,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         else:
             self.input_mapping = {}
         self.engine = engine
+        self.param_style = param_style
 
     @property
     def __name__(self):
@@ -91,6 +96,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             limit=self.limit, one_column=self.one_column, first=self.first,
             input_mapping=dict(self.input_mapping),
             engine=self.engine,
+            param_style=self.param_style,
         )
 
     def _assert_flattenable(self):
@@ -203,6 +209,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             where,
             input_mapping=input_mapping,
             engine=self.engine,
+            param_style=self.param_style,
         )
 
     def __call__(self, **kwargs):
@@ -217,7 +224,8 @@ class SQLQuery(HashMixin, EqualityMixin):
             where[self.input_mapping[k]] = v
 
         sql, vals = sql_query_dict.select(
-            self.tables, self.selects, where, limit=self.limit
+            self.tables, self.selects, where, limit=self.limit,
+            param_style=self.param_style
         )
 
         ret = self.driver(sql, vals)
@@ -234,7 +242,7 @@ class SQLQuery(HashMixin, EqualityMixin):
         if self.engine is None:
             raise ValueError('can not execute SQLQueries with no engine')
 
-        self.engine.connect().execute(sql, *vals)
+        return self.engine.execute(sql, vals).fetchall()
 
     @staticmethod
     def merge_parent_child(child, parent):
