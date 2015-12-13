@@ -21,7 +21,7 @@ class SQLQuery(HashMixin, EqualityMixin):
 
     def __init__(self, tables, selects, where,
                  limit=None, one_column=False, first=False,
-                 input_mapping=None):
+                 input_mapping=None, engine=None):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
@@ -46,6 +46,12 @@ class SQLQuery(HashMixin, EqualityMixin):
 
         first: bool
             if first is True, only returns the first result
+
+        engine: object
+            an engine can be anything which acts like a sqlalchemy engine.
+            primarily it needs to implement the following interface:
+
+                engine.connect().execute(SQL, vals)
         """
 
         self.tables = parse_comma_seperated_set(tables)
@@ -58,6 +64,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             self.input_mapping = input_mapping.copy()
         else:
             self.input_mapping = {}
+        self.engine = engine
 
     @property
     def __name__(self):
@@ -83,6 +90,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             set(self.tables), list(self.selects), dict(self.where),
             limit=self.limit, one_column=self.one_column, first=self.first,
             input_mapping=dict(self.input_mapping),
+            engine=self.engine,
         )
 
     def _assert_flattenable(self):
@@ -186,11 +194,15 @@ class SQLQuery(HashMixin, EqualityMixin):
         input_mapping.update(self.input_mapping)
         input_mapping.update(other.input_mapping)
 
+        # can't merge sql queries backed by different databases
+        assert self.engine == other.engine
+
         return self.__class__(
             self.tables.union(other.tables),
             self.selects + other.selects,
             where,
             input_mapping=input_mapping,
+            engine=self.engine,
         )
 
     def __call__(self, **kwargs):
@@ -219,7 +231,10 @@ class SQLQuery(HashMixin, EqualityMixin):
         return ret
 
     def driver(self, sql, vals):
-        raise NotImplementedError()
+        if self.engine is None:
+            raise ValueError('can not execute SQLQueries with no engine')
+
+        self.engine.connect().execute(sql, *vals)
 
     @staticmethod
     def merge_parent_child(child, parent):
