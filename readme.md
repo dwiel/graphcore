@@ -32,7 +32,7 @@ assert ret == [
 
 Sometimes with longer queries it is nice split it up heirarchically:
 
-```
+```python
 graphcore.query({
     'user.id': 1,
     'user.books': {
@@ -54,7 +54,7 @@ assert ret == [{
 
 Here is the same query, but no restricting to only books by Neal Stephenson:
 
-```
+```python
 graphcore.query({
     'user.id': 1,
     'user.books': {
@@ -76,7 +76,7 @@ assert ret == [{
 
 Relations can be expressed by adding the relation to the end of the key:
 
-```
+```python
 graphcore.query({
     'user.id': 1,
     'user.books': {
@@ -97,7 +97,7 @@ assert ret == [{
 Allowed relations are `>`, `<`, `>=`, `<=`, `!=` and `|=`.  `|=` is an `in`
 operator:
 
-```
+```python
 graphcore.query({
     'user.id': 1,
     'user.books': {
@@ -161,7 +161,7 @@ def location_current_temperature(zipcode):
 
 And now after that setup, here is a query you could make
 
-```
+```python
 gc.query({
     'user.books': [{
         'name?': None,
