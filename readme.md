@@ -62,10 +62,11 @@ def user_location_zipcode(zipcode):
 @gc.rule(['location.zipcode'], 'location.current_temperature')
 def location_current_temperature(zipcode):
     return weather_lib.current_temperature_by_zipcode(zipcode)
+```
 
+And now after that setup, here is a query you could make
 
-# now a query you could make:
-
+```
 gc.query({
     'user.books': [{
         'name?': None,
@@ -73,10 +74,11 @@ gc.query({
     'user.gravatar.url?': None,
     'user.location.current_temperature<': 30,
 })
+```
 
-# this query will find users whose location is currently under 30 degrees, and
-# return you a URL to their gravatar profile and a list of the names of the
-# books they have.
+This query will find users whose location is currently under 30 degrees, and
+return you a URL to their gravatar profile and a list of the names of the
+books they have.
 ```
 
 
