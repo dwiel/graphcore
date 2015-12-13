@@ -159,7 +159,7 @@ def location_current_temperature(zipcode):
     return weather_lib.current_temperature_by_zipcode(zipcode)
 ```
 
-And now after that setup, here is a query you could make
+And now after that setup, here is an example query:
 
 ```python
 gc.query({
@@ -171,9 +171,13 @@ gc.query({
 })
 ```
 
-This query will find users whose location is currently under 30 degrees, and
-return you a URL to their gravatar profile and a list of the names of the
-books they have.
+This query will find users in locations where the temperature is currently
+under 30 degrees, and return you a URL to their gravatar profile and a list of
+the names of the books they have.  This query will hit a SQL database and two
+3rd party libraries.  If you decide that a user's books should no longer be
+stored in a SQL database, your queries can remain the same.  The new graphcore
+environment can be setup to map that relationship to a different database or
+service instead.
 
 
 ### Comparison with Falcor
