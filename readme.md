@@ -2,12 +2,83 @@
 
 # Graphcore
 
-Graphcore is a python library which allows you to query a graph structure with
-a query language similar to MQL, Falcor or GraphQL.
+Graphcore is a python library which allows you to query a computational graph
+structure with a query language similar to MQL, Falcor or GraphQL.
 
-The graph structure can be defined by python functions or SQL relations.
-Graphcore will find an optimal way to organize the call graph so as to group
-SQL queries together.
+At the moment, the graph structure can be defined by python functions or SQL
+relations.
+
+### Example
+
+Here is an example of a query and the returned data structure:
+
+```python
+ret = gc.query({
+    'user.id': 1,
+    'user.books.name?': None,
+})
+assert ret == [
+    {'user.books.name': 'The Giver'},
+    {'user.books.name': 'REAMDE'},
+    {'user.books.name': 'The Diamond Age'},
+]
+```
+
+Here is an example of setting up a graphcore environment with both rules
+reflected from a SQL database as well as 3rd party libraries.
+
+```python
+import graphcore
+
+# setup a graphcore environment where rules and a schema can be stored
+gc = graphcore.Graphcore()
+
+# reflect on the sql database using db_engine and SampleSQLQuery which
+# inherits from the provided graphore.sql_query.SQLQuery class.
+graphcore.sql_reflect.SQLReflector(gc, db_engine, SampleSQLQuery)
+
+
+# defines a rule which takes as input user.email, and returns the user's
+# gravatar email.  In this case it is a one to one mapping
+@gc.rule(['user.email'], 'user.gravatar.email')
+def user_gravatar_email(email):
+    return email
+
+
+# given a gravatar email, return a url to their profile picture
+@gc.rule(['gravatar.email'], 'gravatar.url')
+def gravatar_url(email):
+    import gravatar
+    return gravatar.lookup_url(email)
+
+
+# user's location's zipcode is the same as the user
+@gc.rule(['user.zipcode'], 'user.location.zipcode')
+def user_location_zipcode(zipcode):
+    return zipcode
+
+
+# given a location's zipcode, return the current temperature there
+@gc.rule(['location.zipcode'], 'location.current_temperature')
+def location_current_temperature(zipcode):
+    return weather_lib.current_temperature_by_zipcode(zipcode)
+
+
+# now a query you could make:
+
+gc.query({
+    'user.books': [{
+        'name?': None,
+    }],
+    'user.gravatar.url?': None,
+    'user.location.current_temperature<': 30,
+})
+
+# this query will find users whose location is currently under 30 degrees, and
+# return you a URL to their gravatar profile and a list of the names of the
+# books they have.
+```
+
 
 ### Comparison with Falcor
 
@@ -19,67 +90,6 @@ you to describe the dependencies between all of the functions / paths and allow
 graphcore to find an optimal way to glue your backend together.  There will
 also be hooks which allow you to give hints or make specific changes to the AST
 and control how the query is executed if you need to.
-
-### Example
-
-Here is an example of a query and the returned data structure:
-
-```python
-ret = testgraphcore.query({
-    'user.id': 1,
-    'user.books.name?': None,
-})
-assert ret == [
-    {'user.books.name': 'The Giver'},
-    {'user.books.name': 'REAMDE'},
-    {'user.books.name': 'The Diamond Age'},
-]
-```
-
-Here is the setup code used to make that query possible:
-
-```python
-import graphcore
-
-testgraphcore = graphcore.Graphcore()
-
-
-@testgraphcore.rule(['user.name'], 'user.abbreviation')
-def user_abbreviation(name):
-    return ''.join(part[0].upper() for part in name.split(' '))
-
-
-USER_ID_TO_USER_NAME = {
-    1: 'John Smith',
-}
-
-
-@testgraphcore.rule(['user.id'], 'user.name')
-def user_name(id):
-    return USER_ID_TO_USER_NAME[id]
-
-
-testgraphcore.has_many('user', 'books', 'book')
-
-
-@testgraphcore.rule(['user.id'], 'user.books.id', cardinality='many')
-def user_books_id(id):
-    # this would normally come out of a db
-    return [1, 2, 3]
-
-
-BOOK_ID_TO_BOOK_NAME = {
-    1: 'The Giver',
-    2: 'REAMDE',
-    3: 'The Diamond Age',
-}
-
-
-@testgraphcore.rule(['book.id'], 'book.name')
-def book_name(id):
-    return BOOK_ID_TO_BOOK_NAME[id]
-
-```
 
 ### More topics
 
