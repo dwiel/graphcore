@@ -169,6 +169,10 @@ class ResultSet(EqualityMixin):
                     path[1:], relation
                 )
 
+    def limit(self, limit):
+        """ naive limit for now.  won't limit sub results """
+        self.results = self.results[:limit]
+
     def deepcopy(self):
         new_results = []
         for result in self.results:

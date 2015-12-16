@@ -22,7 +22,7 @@ class QueryPlan(object):
     def append(self, node):
         self.nodes.append(node)
 
-    def forward(self):
+    def forward(self, limit=None):
         for node in self.nodes:
             self.result_set = result_set_apply_rule(
                 self.result_set, node.function,
@@ -37,10 +37,13 @@ class QueryPlan(object):
                 if relation:
                     self.result_set.filter(outgoing_path, relation)
 
+            if limit:
+                self.result_set.limit(limit)
+
     def outputs(self):
         return self.result_set.extract_json(self.output_paths)
 
-    def execute(self):
-        self.forward()
+    def execute(self, limit=None):
+        self.forward(limit=limit)
 
         return self.outputs()

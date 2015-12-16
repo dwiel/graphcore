@@ -271,11 +271,7 @@ class Graphcore(object):
 
         raise PathNotFound(path)
 
-    def query(self, query):
-        query_search = QuerySearch(self, query)
-
-        query_search.backward()
-
+    def optimize(self, query_search):
         # optimize query.call_graph here
         from .optimize_reduce_like_parent_child import reduce_like_parent_child
         from .sql_query import SQLQuery
@@ -283,19 +279,28 @@ class Graphcore(object):
             query_search.call_graph, SQLQuery, SQLQuery.merge_parent_child
         )
 
+    def query(self, query, limit=None):
+        query_search = QuerySearch(self, query)
+
+        query_search.backward()
+
+        self.optimize(query_search)
+
         query_planner = QueryPlanner(
             query_search.call_graph, query_search.query, query
         )
         query_plan = query_planner.plan_query()
 
-        return query_plan.execute()
+        return query_plan.execute(limit=limit)
 
     def explain(self, query):
-        query = QuerySearch(self, query)
+        query_search = QuerySearch(self, query)
 
-        query.backward()
+        query_search.backward()
 
-        return query.call_graph.explain()
+        self.optimize(query_search)
+
+        return query_search.call_graph.explain()
 
     def search_outputs(self, search="", prefix=""):
         """ return a list of outputs which contain `search` and/or begin with
