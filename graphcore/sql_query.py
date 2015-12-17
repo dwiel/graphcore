@@ -21,7 +21,7 @@ class SQLQuery(HashMixin, EqualityMixin):
 
     def __init__(self, tables, selects, where,
                  limit=None, one_column=False, first=False,
-                 input_mapping=None, engine=None, param_style=None):
+                 input_mapping=None, engine=None, param_style='%s'):
         """
         tables: ['table_name_1', 'table_name_2', ...] or
                 'table_name_1, table_name_2, ...'
