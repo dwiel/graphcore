@@ -28,6 +28,8 @@ def engine():
     )
     books.create(engine)
 
+    engine.execute("CREATE VIEW magazines AS SELECT * FROM books")
+
     return engine
 
 
@@ -65,6 +67,7 @@ def test_sql_reflect(gc, engine):
                 'id': 'users.id',
             }, one_column=True, first=True
         ), ['user.id'], 'user.name', 'one'),
+
         Rule(SQLQuery(
             'books', 'books.user_id', {}, input_mapping={
                 'id': 'books.id',
@@ -78,11 +81,27 @@ def test_sql_reflect(gc, engine):
         Rule(SQLQuery(
             'books', 'books.id', {}, one_column=True
         ), [], 'book.id', 'one'),
+
+        Rule(SQLQuery(
+            'magazines', 'magazines.user_id', {}, input_mapping={
+                'id': 'magazines.id',
+            }, one_column=True, first=True
+        ), ['magazine.id'], 'magazine.user.id', 'one'),
+        Rule(SQLQuery(
+            'magazines', 'magazines.id', {}, input_mapping={
+                'id': 'magazines.user_id',
+            }, one_column=True, first=False
+        ), ['user.id'], 'user.magazines.id', 'many'),
+        Rule(SQLQuery(
+            'magazines', 'magazines.id', {}, one_column=True
+        ), [], 'magazine.id', 'one'),
     ])
 
     assert gc.schema.property_types == [
         PropertyType('book', 'user', 'user'),
         PropertyType('user', 'books', 'book'),
+        PropertyType('magazine', 'user', 'user'),
+        PropertyType('user', 'magazines', 'magazine'),
     ]
 
 

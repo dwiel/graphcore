@@ -1,4 +1,6 @@
 import sqlalchemy
+from sqlalchemy.engine import reflection
+
 import inflect
 
 from .sql_query import SQLQuery
@@ -22,11 +24,15 @@ class SQLReflector(object):
         assumes all tables have a primary key id
         """
         self.graphcore = graphcore
-        self.metadata = self._metadata(engine)
         self.sql_query_class = sql_query_class
 
-        for table in self.metadata.tables.keys():
+        self.insp = reflection.Inspector.from_engine(engine)
+
+        for table in self.insp.get_table_names():
             self._sql_reflect_table(table)
+
+        for view in self.insp.get_view_names():
+            self._sql_reflect_table(view)
 
     def _type_name_from_table(self, table):
         type_name = _pluralizer.singular_noun(table)
@@ -108,16 +114,11 @@ class SQLReflector(object):
         else:
             self._property(table, column_name)
 
-    def _sql_reflect_table(self, table):
-        columns = self.metadata.tables[table].columns
+    def _sql_reflect_table(self, table_name):
+        columns = self.insp.get_columns(table_name)
 
         for column in columns:
-            if column.name == 'id':
-                self._unground_property(table, column.name)
+            if column['name'] == 'id':
+                self._unground_property(table_name, column['name'])
             else:
-                self.sql_reflect_column(table, column.name)
-
-    def _metadata(self, engine):
-        metadata = sqlalchemy.schema.MetaData(bind=engine)
-        metadata.reflect()
-        return metadata
+                self.sql_reflect_column(table_name, column['name'])
