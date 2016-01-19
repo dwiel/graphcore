@@ -1,4 +1,3 @@
-import sqlalchemy
 from sqlalchemy.engine import reflection
 
 import inflect
