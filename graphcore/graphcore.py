@@ -279,6 +279,9 @@ class Graphcore(object):
             query_search.call_graph, SQLQuery, SQLQuery.merge_parent_child
         )
 
+        from .optimize_constrain_sql_queries import constrain_sql_queries
+        constrain_sql_queries(query_search.call_graph)
+
     def query(self, query, limit=None):
         query_search = QuerySearch(self, query)
 
