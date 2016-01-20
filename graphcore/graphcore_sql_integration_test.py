@@ -51,7 +51,7 @@ def SQLAlchemyQueryClass(engine):
 @pytest.fixture
 def gc(engine, SQLAlchemyQueryClass):
     gc = Graphcore()
-    SQLReflector(gc, engine, SQLAlchemyQueryClass)
+    SQLReflector(gc, engine, SQLAlchemyQueryClass, '?')
 
     return gc
 
