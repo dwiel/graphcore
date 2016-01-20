@@ -2,6 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, result_set_apply_rule, shape_path
+from .result_set import apply_rule, RuleApplicationException
 
 
 def test_result_init():
@@ -113,6 +114,16 @@ def test_extract_json(data):
         }],
         'c': 100,
     }]
+
+
+def test_apply_rule_exception(data):
+    with pytest.raises(RuleApplicationException):
+        apply_rule(
+            data, lambda x: 1/0,
+            outputs=[('y')],
+            cardinality='one',
+            scope={'x': 1},
+        )
 
 
 def test_apply_rule_single_output(data):

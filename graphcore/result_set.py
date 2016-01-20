@@ -267,10 +267,29 @@ def next_sub_path(inputs):
         return sub_path.pop()
 
 
+class RuleApplicationException(Exception):
+    def __init__(self, fn, scope, exception):
+        self.fn = fn
+        self.scope = scope
+        self.exception = exception
+
+    def __str__(self):
+        return (
+            'Exception raised while evaluating {fn} with '
+            'params {scope}.'
+        ).format(
+            fn=self.fn.__name__,
+            scope=repr(self.scope),
+        )
+
+
 def apply_rule(data, fn, outputs, cardinality, scope):
     cardinality = Cardinality.cast(cardinality)
 
-    ret = fn(**scope)
+    try:
+        ret = fn(**scope)
+    except Exception as e:
+        raise RuleApplicationException(fn, scope, e)
 
     if cardinality == Cardinality.one:
         if len(outputs) == 1:
