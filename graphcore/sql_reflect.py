@@ -14,7 +14,8 @@ def _column_to_property(column):
 
 class SQLReflector(object):
 
-    def __init__(self, graphcore, engine, sql_query_class=SQLQuery):
+    def __init__(self, graphcore, engine, sql_query_class=SQLQuery,
+                 param_style='%s'):
         """ add rules to graphcore instance based on schema found in SQL db.
 
         graphcore: Graphcore instance
@@ -24,6 +25,7 @@ class SQLReflector(object):
         """
         self.graphcore = graphcore
         self.sql_query_class = sql_query_class
+        self.param_style = param_style
 
         self.insp = reflection.Inspector.from_engine(engine)
 
@@ -90,7 +92,7 @@ class SQLReflector(object):
             [table], '{}.id'.format(table), {},
             input_mapping={
                 'id': '{}.{}'.format(table, column),
-            }, one_column=True,
+            }, one_column=True, param_style=self.param_style
         )
 
     def _sql_query_property(self, table, column):
@@ -98,13 +100,13 @@ class SQLReflector(object):
             [table], '{}.{}'.format(table, column), {},
             input_mapping={
                 'id': '{}.id'.format(table),
-            }, one_column=True, first=True
+            }, one_column=True, first=True, param_style=self.param_style
         )
 
     def _sql_query_unground_property(self, table, column):
         return self.sql_query_class(
             [table], '{}.{}'.format(table, column), {},
-            one_column=True
+            one_column=True, param_style=self.param_style
         )
 
     def sql_reflect_column(self, table, column_name):
