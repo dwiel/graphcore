@@ -294,8 +294,9 @@ def apply_rule(data, fn, outputs, cardinality, scope):
     try:
         ret = fn(**scope)
     except Exception as e:
-        traceback = traceback.format_exception(*sys.exc_info())
-        raise RuleApplicationException(fn, scope, e, traceback)
+        raise RuleApplicationException(
+            fn, scope, e, traceback.format_exception(*sys.exc_info())
+        )
 
     if cardinality == Cardinality.one:
         if len(outputs) == 1:
