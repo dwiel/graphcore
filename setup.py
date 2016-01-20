@@ -8,13 +8,14 @@ install_requires.append('sql_query_dict>=0.5')
 install_requires.append('sqlalchemy')
 install_requires.append('inflect')
 install_requires.append('pytest')
+install_requires.append('inflection')
 if sys.version_info < (3, 4):
     install_requires.append('enum34')
 
 
 setup(
     name='graphcore',
-    version='0.8.2',
+    version='0.8.3',
     description='Graphcore is a python library which allows you to query a '
                 'graph structure with a query language similar to MQL, '
                 'Falcor or GraphQL',
