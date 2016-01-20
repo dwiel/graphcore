@@ -1,5 +1,7 @@
 import six
 from six.moves import zip
+import sys
+import traceback
 from collections import defaultdict
 
 from .equality_mixin import EqualityMixin
@@ -268,18 +270,21 @@ def next_sub_path(inputs):
 
 
 class RuleApplicationException(Exception):
-    def __init__(self, fn, scope, exception):
+    def __init__(self, fn, scope, exception, traceback):
         self.fn = fn
         self.scope = scope
         self.exception = exception
+        self.traceback = traceback
 
     def __str__(self):
         return (
-            'Exception raised while evaluating {fn} with '
-            'params {scope}.'
+            'Exception {e} raised while evaluating {fn} with '
+            'params {scope}.  \n{traceback}'
         ).format(
+            e=self.exception,
             fn=self.fn.__name__,
             scope=repr(self.scope),
+            traceback=''.join(self.traceback),
         )
 
 
@@ -289,7 +294,8 @@ def apply_rule(data, fn, outputs, cardinality, scope):
     try:
         ret = fn(**scope)
     except Exception as e:
-        raise RuleApplicationException(fn, scope, e)
+        traceback = traceback.format_exception(*sys.exc_info())
+        raise RuleApplicationException(fn, scope, e, traceback)
 
     if cardinality == Cardinality.one:
         if len(outputs) == 1:
