@@ -13,6 +13,15 @@ def make_wrapped_function(name, fn):
     return wrapped_fn
 
 
+def _is_method_or_function(x):
+    """ returns True if x is a class method.
+
+    isfunction returns true on class methods in py3 and ismethod does in py2.
+    http://stackoverflow.com/questions/17019949/why-is-there-a-difference-between-inspect-ismethod-and-inspect-isfunction-from-p
+    """
+    return inspect.isfunction(x) or inspect.ismethod(x)
+
+
 def reflect_class(graphcore, cls, type_name=None):
     """ reflect a python class `cls` into graphcore with name `type_name`
 
@@ -24,9 +33,7 @@ def reflect_class(graphcore, cls, type_name=None):
         type_name = inflection.underscore(cls.__name__)
 
     # register a wrapped function for all methods of cls
-    print(inspect.getmembers(cls))
-    for name, fn in inspect.getmembers(cls, predicate=inspect.ismethod):
-        print(name, fn)
+    for name, fn in inspect.getmembers(cls, predicate=_is_method_or_function):
         if name[:2] == '__':
             continue
 
