@@ -24,7 +24,9 @@ def reflect_class(graphcore, cls, type_name=None):
         type_name = inflection.underscore(cls.__name__)
 
     # register a wrapped function for all methods of cls
+    print(inspect.getmembers(cls))
     for name, fn in inspect.getmembers(cls, predicate=inspect.ismethod):
+        print(name, fn)
         if name[:2] == '__':
             continue
 
