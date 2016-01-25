@@ -85,6 +85,7 @@ class SQLReflector(object):
         return self.graphcore.register_rule(
             [], '{}.{}'.format(type_name, column_name),
             function=self._sql_query_unground_property(table, column_name),
+            cardinality='many'
         )
 
     def _sql_query_backref(self, table, column):
