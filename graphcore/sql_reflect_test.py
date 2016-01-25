@@ -86,7 +86,7 @@ def test_sql_reflect(gc, engine):
             'magazines', 'magazines.user_id', {}, input_mapping={
                 'id': 'magazines.id',
             }, one_column=True, first=True
-        ), ['magazine.id'], 'magazine.user.id', 'many'),
+        ), ['magazine.id'], 'magazine.user.id', 'one'),
         Rule(SQLQuery(
             'magazines', 'magazines.id', {}, input_mapping={
                 'id': 'magazines.user_id',
@@ -94,7 +94,7 @@ def test_sql_reflect(gc, engine):
         ), ['user.id'], 'user.magazines.id', 'many'),
         Rule(SQLQuery(
             'magazines', 'magazines.id', {}, one_column=True
-        ), [], 'magazine.id', 'one'),
+        ), [], 'magazine.id', 'many'),
     ])
 
     assert gc.schema.property_types == [
