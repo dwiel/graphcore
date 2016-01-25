@@ -86,7 +86,7 @@ def test_sql_reflect(gc, engine):
             'magazines', 'magazines.user_id', {}, input_mapping={
                 'id': 'magazines.id',
             }, one_column=True, first=True
-        ), ['magazine.id'], 'magazine.user.id', 'one'),
+        ), ['magazine.id'], 'magazine.user.id', 'many'),
         Rule(SQLQuery(
             'magazines', 'magazines.id', {}, input_mapping={
                 'id': 'magazines.user_id',
