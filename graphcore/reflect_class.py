@@ -7,7 +7,10 @@ def make_wrapped_function(name, fn):
     instead of method with self """
 
     def wrapped_fn(obj):
-        return fn(obj)
+        # use getattr with the name so that if we get a subclass obj in
+        # we use that subclass's implementation instead of always using the
+        # base class implementation
+        return getattr(obj, fn.__name__)()
     wrapped_fn.__name__ = name
 
     return wrapped_fn
