@@ -10,6 +10,10 @@ def constrain_sql_queries(call_graph):
             new_relations = []
             for select, relation in zip(node.function.selects, node.relations):
                 if relation is not None:
+                    # we don't want to modify this function for all future
+                    # queries, just this one.
+                    node.function = node.function.copy()
+
                     if relation.operation == '==':
                         key = select
                     else:
