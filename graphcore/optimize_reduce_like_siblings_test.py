@@ -1,3 +1,5 @@
+from functools import reduce
+
 from .call_graph import CallGraph, Node
 from .rule import Cardinality
 
