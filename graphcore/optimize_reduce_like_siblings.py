@@ -1,8 +1,3 @@
-from functools import reduce
-
-from .rule import Cardinality
-
-
 def reduce_like_siblings(call_graph, rule_type, merge_function):
     """Given a call_graph, reduce sibling nodes of rule_type
     using merge_function.
