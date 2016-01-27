@@ -245,6 +245,30 @@ class SQLQuery(HashMixin, EqualityMixin):
         return self.engine.execute(sql, vals).fetchall()
 
     @staticmethod
+    def merge_like_siblings(nodes):
+        # combine nodes
+        incoming_paths = []
+        outgoing_paths = []
+        relations = []
+        for node in nodes:
+            incoming_paths.extend(node.incoming_paths)
+            outgoing_paths.extend(node.outgoing_paths)
+            relations.extend(node.relations)
+
+        function = nodes[0].function.copy()
+        for node in nodes[1:]:
+            function.tables.update(node.function.tables)
+            function.where.update(node.function.where)
+            function.selects.extend(node.function.selects)
+            assert function.input_mapping == node.function.input_mapping
+            function.input_mapping.update(node.function.input_mapping)
+
+        return Node(
+            None, incoming_paths, outgoing_paths, function, Cardinality.one,
+            relations
+        )
+
+    @staticmethod
     def merge_parent_child(child, parent):
         """ NOTE: child and parent are switched here, it makes more sense """
         parent.function._assert_flattenable()

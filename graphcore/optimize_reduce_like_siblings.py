@@ -15,23 +15,15 @@ def reduce_like_siblings(call_graph, rule_type, merge_function):
             if isinstance(node.function, rule_type)
         ]
         if len(nodes) > 1:
-            # combine sql_queries
-            function = reduce(
-                merge_function,
-                [node.function for node in nodes]
-            )
+            node = merge_function(nodes)
 
-            # combine nodes
-            incoming_paths = set()
-            outgoing_paths = set()
-            for node in nodes:
-                incoming_paths.update(node.incoming_paths)
-                outgoing_paths.update(node.outgoing_paths)
-
-                call_graph.remove_node(node)
-
+            # TODO: less awkward insert pattern
             call_graph.add_node(
-                incoming_paths, outgoing_paths, function, Cardinality.one
+                node.incoming_paths, node.outgoing_paths, node.function,
+                node.cardinality, node.relations
             )
+
+            for node in nodes:
+                call_graph.remove_node(node)
 
     return call_graph
