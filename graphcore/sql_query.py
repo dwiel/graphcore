@@ -256,6 +256,7 @@ class SQLQuery(HashMixin, EqualityMixin):
             relations.extend(node.relations)
 
         function = nodes[0].function.copy()
+        function.one_column = False
         for node in nodes[1:]:
             function.tables.update(node.function.tables)
             function.where.update(node.function.where)
