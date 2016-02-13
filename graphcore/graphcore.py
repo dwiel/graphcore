@@ -240,14 +240,6 @@ class Graphcore(object):
             PropertyType(base_type, property, other_type)
         )
 
-    def base_types(self):
-        ret = set()
-        for rule in self.rules:
-            for output in rule.outputs:
-                for subpath in Path(output)[:-1]:
-                    ret.add(str(subpath))
-        return sorted(ret)
-
     def register_rule(self, inputs, output,
                       cardinality=Cardinality.one,
                       function=None):
@@ -351,6 +343,14 @@ class Graphcore(object):
         self.optimize(query_search)
 
         return query_search.call_graph.explain()
+
+    def base_types(self):
+        ret = set()
+        for rule in self.rules:
+            for output in rule.outputs:
+                for subpath in Path(output)[:-1]:
+                    ret.add(str(subpath))
+        return sorted(ret)
 
     def search_outputs(self, search="", prefix=""):
         """ return a list of outputs which contain `search` and/or begin with
