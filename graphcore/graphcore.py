@@ -116,6 +116,7 @@ class QuerySearch(object):
                 )
         except PathNotFound as e:
             e.dependent_nodes = self.call_graph.nodes_depending_on_path(e.path)
+            e.call_graph = self.call_graph
             raise
 
         # all nodes should be either ground, or visited
@@ -173,30 +174,54 @@ class Schema(object):
 
 
 class PathNotFound(Exception):
-    def __init__(self, path):
+    def __init__(self, path, gc):
+        self.gc = gc
         self.path = path
         self.dependent_nodes = []
 
     def __str__(self):
+        property_name = str(self.path[-1])
+        details = 'call_graph so far:\n'
+        details += self.call_graph.explain()
+        details += '\n\n{} found in the following outputs:'.format(property_name)
+        for output in self.gc.search_outputs(property_name)[:10]:
+            if output[-len(property_name):] == property_name:
+                details += '\n    ' + output
+
         if self.dependent_nodes:
             return (
                 (
                     '{path} not found.  nodes depending on this '
-                    'path: {nodes}'
+                    'path: {nodes}\n\n{details}'
                 ).format(
                     path=self.path,
-                    nodes=', '.join(node.name for node in self.dependent_nodes)
+                    nodes=', '.join(node.name for node in self.dependent_nodes),
+                    details=details,
                 )
             )
         else:
             return (
                 (
                     '{path} not found.  {path} is not depended on by any '
-                    'node'
+                    'node\n\n{details}'
                 ).format(
                     path=self.path,
+                    details=details,
                 )
             )
+
+
+class BaseTypeNotFound(PathNotFound):
+    def __init__(self, subpath, path):
+        self.subpath = subpath
+        self.path = path
+
+    def __str__(self):
+        return (
+            '{subpath} type not found.  occurred in {path}'.format(
+                **self.__dict__
+            )
+        )
 
 
 class Graphcore(object):
@@ -210,6 +235,14 @@ class Graphcore(object):
         self.schema.append(
             PropertyType(base_type, property, other_type)
         )
+
+    def base_types(self):
+        ret = set()
+        for rule in self.rules:
+            for output in rule.outputs:
+                for subpath in Path(output)[:-1]:
+                    ret.add(str(subpath))
+        return sorted(ret)
 
     def register_rule(self, inputs, output,
                       cardinality=Cardinality.one,
@@ -269,7 +302,11 @@ class Graphcore(object):
                 if subpath in rule.outputs:
                     return prefix, rule
 
-        raise PathNotFound(path)
+        for subpath in path[:-1]:
+            if str(subpath) not in self.base_types():
+                raise BaseTypeNotFound(subpath, path)
+
+        raise PathNotFound(path, self)
 
     def optimize(self, query_search):
         # optimize query.call_graph here
