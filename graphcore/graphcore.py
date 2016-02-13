@@ -249,7 +249,7 @@ class Graphcore(object):
 
     def direct_map(self, input, output):
         def mapper(**kwargs):
-            return kwargs.values()[0]
+            return iter(kwargs.values()).next()
         mapper.__name__ = ''
         self.register_rule([input], output, function=mapper)
 
