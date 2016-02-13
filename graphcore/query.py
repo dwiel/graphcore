@@ -16,10 +16,10 @@ class Query(object):
         """
 
         for key, value in query.items():
-            if isinstance(value, list):
-                # TODO: check if value should be list
-                # Right now, this assumes that if value is a list, it is a
-                # subquery like [{'x>': 1}] and so makes a recursive call
+            if isinstance(value, list) and key[-2:] != '|=':
+                # if the value is a list and the key is not a contains
+                # operator, then this is a subquery like [{'x>': 1}] and so
+                # make a recursive call
                 self.extend(value[0], prefix=prefix+key+'.')
             else:
                 self.append(Clause(prefix+key, value))
