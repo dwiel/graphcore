@@ -183,7 +183,9 @@ class PathNotFound(Exception):
         property_name = str(self.path[-1])
         details = 'call_graph so far:\n'
         details += self.call_graph.explain()
-        details += '\n\n{} found in the following outputs:'.format(property_name)
+        details += '\n\n{} found in the following outputs:'.format(
+            property_name
+        )
         for output in self.gc.search_outputs(property_name)[:10]:
             if output[-len(property_name):] == property_name:
                 details += '\n    ' + output
@@ -195,7 +197,9 @@ class PathNotFound(Exception):
                     'path: {nodes}\n\n{details}'
                 ).format(
                     path=self.path,
-                    nodes=', '.join(node.name for node in self.dependent_nodes),
+                    nodes=', '.join(
+                        node.name for node in self.dependent_nodes
+                    ),
                     details=details,
                 )
             )
