@@ -312,6 +312,21 @@ class TestGraphcore(unittest.TestCase):
             {'user.id': i} for i in [1, 2, 3]
         ]
 
+    def test_direct_map(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
+        gc.direct_map('user.id', 'user.x')
+        ret = gc.query({
+            'user.x?': None,
+        })
+
+        assert ret == [
+            {'user.x': i} for i in [1, 2, 3]
+        ]
+
     def test_call_graph_ungrounded_query_non_root(self):
         """
         rules with no inputs should only be matched at the root level

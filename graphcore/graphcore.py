@@ -255,6 +255,12 @@ class Graphcore(object):
             function, inputs, output, cardinality
         ))
 
+    def direct_map(self, input, output):
+        def mapper(**kwargs):
+            return kwargs.values()[0]
+        mapper.__name__ = ''
+        self.register_rule([input], output, function=mapper)
+
     def rule(self, inputs, output, cardinality=Cardinality.one):
         def decorator(fn):
             self.rules.append(Rule(
