@@ -102,7 +102,7 @@ class QueryPlanner(object):
             for k, v in query_shape.items():
                 # if the query shape has a list on the right hand side, we
                 # assume it is a nested resultset.
-                if isinstance(v, list):
+                if isinstance(v, list) and k[-2:] != '|=':
                     subquery = query.subquery(k)
 
                     v = self._extract_initial_bindings_from_query(subquery, v)

@@ -283,6 +283,21 @@ class TestGraphcore(unittest.TestCase):
             'user.book.name': '1',
         }])
 
+    def test_contains_query(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'user.id', cardinality='many', function=lambda: [1, 2, 3]
+        )
+        ret = gc.query({
+            'user.id?': None,
+            'user.id|=': [1, 2]
+        })
+
+        assert ret == [
+            {'user.id': i} for i in [1, 2]
+        ]
+
     def test_call_graph_ungrounded_query(self):
         gc = graphcore.Graphcore()
 
