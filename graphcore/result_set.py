@@ -279,12 +279,15 @@ class RuleApplicationException(Exception):
     def __str__(self):
         return (
             'Exception {e} raised while evaluating {fn} with '
-            'params {scope}.  \n{traceback}'
+            'params {scope}.  \n{traceback}\n\nquery_plan:\n{query_plan}'
+            '\n\nin node:\n{node}'
         ).format(
             e=self.exception,
             fn=self.fn.__name__,
             scope=repr(self.scope),
             traceback=''.join(self.traceback),
+            query_plan='\n'.join(map(str, self.query_plan.nodes)),
+            node=self.node
         )
 
 

@@ -4,6 +4,7 @@ the future also handle parallel execution.
 """
 
 from .result_set import ResultSet, result_set_apply_rule
+from .result_set import RuleApplicationException
 
 
 class QueryPlan(object):
@@ -24,12 +25,17 @@ class QueryPlan(object):
 
     def forward(self, limit=None):
         for node in self.nodes:
-            self.result_set = result_set_apply_rule(
-                self.result_set, node.function,
-                self.result_set.shape_paths(node.incoming_paths),
-                self.result_set.shape_paths(node.outgoing_paths),
-                node.cardinality
-            )
+            try:
+                self.result_set = result_set_apply_rule(
+                    self.result_set, node.function,
+                    self.result_set.shape_paths(node.incoming_paths),
+                    self.result_set.shape_paths(node.outgoing_paths),
+                    node.cardinality
+                )
+            except RuleApplicationException as e:
+                e.query_plan = self
+                e.node = node
+                raise
 
             for outgoing_path, relation in zip(
                 node.outgoing_paths, node.relations

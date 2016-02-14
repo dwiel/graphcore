@@ -1,3 +1,5 @@
+import six
+
 from .rule import Rule, Cardinality
 from .path import Path
 from .query import Query
@@ -185,15 +187,23 @@ class PathNotFound(Exception):
         self.gc = gc
         self.path = path
         self.dependent_nodes = []
+        self.call_graph = None
 
     def __str__(self):
         property_name = str(self.path[-1])
-        details = 'call_graph so far:\n'
-        details += self.call_graph.explain()
+        if property_name == 'id':
+            property_name = str(self.path[-2:])
+
+        details = ''
+
+        if self.call_graph:
+            details += 'call_graph so far:\n'
+            details += self.call_graph.explain()
+
         details += '\n\n{} found in the following outputs:'.format(
             property_name
         )
-        for output in self.gc.search_outputs(property_name)[:10]:
+        for output in self.gc.search_outputs(property_name)[:30]:
             if output[-len(property_name):] == property_name:
                 details += '\n    ' + output
 
