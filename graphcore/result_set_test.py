@@ -2,7 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, result_set_apply_rule, shape_path
-from .result_set import apply_rule, RuleApplicationException
+from .result_set import apply_rule, RuleApplicationException, NoResult
 
 
 def test_result_init():
@@ -124,6 +124,28 @@ def test_apply_rule_exception(data):
             cardinality='one',
             scope={'x': 1},
         )
+
+
+def test_apply_rule_single_output_no_result(data):
+    def rule(c, b):
+        if b > 15:
+            raise NoResult()
+        return c + b
+
+    ret = result_set_apply_rule(
+        data, rule,
+        inputs=[('c',), ('a', 'b')],
+        outputs=[('a', 'd')],
+        cardinality='one',
+    )
+
+    assert ret == [{
+        'a': [{
+            'b': 10,
+            'd': 110,
+        }],
+        'c': 100,
+    }]
 
 
 def test_apply_rule_single_output(data):

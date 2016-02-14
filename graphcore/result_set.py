@@ -288,11 +288,22 @@ class RuleApplicationException(Exception):
         )
 
 
+class NoResult(Exception):
+    """ rules should raise this exception if there is no result given the
+    inputs provided.  This exception will remove the Result which was passed
+    in as if there were a filter applied to the ResultSet """
+    pass
+
+
 def apply_rule(data, fn, outputs, cardinality, scope):
     cardinality = Cardinality.cast(cardinality)
 
     try:
         ret = fn(**scope)
+    except NoResult:
+        # this scope has no value for these outputs, filter this result
+        # from the ResultSet
+        return ResultSet([])
     except Exception as e:
         raise RuleApplicationException(
             fn, scope, e, traceback.format_exception(*sys.exc_info())
