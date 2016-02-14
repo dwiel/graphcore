@@ -26,3 +26,10 @@ def user_optionally_complex(id, const=1):
 
 def book_with_user_name(first_name, book_id):
     return 'user: {}; book: {}'.format(first_name, book_id)
+
+
+def profile(first_name, location__city):
+    return '{first_name} lives in {location__city}'.format(
+        first_name=first_name,
+        location__city=location__city,
+    )
