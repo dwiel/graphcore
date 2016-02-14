@@ -99,6 +99,7 @@ def schema():
     schema.append(graphcore.PropertyType('a', 'bs', 'b'))
     return schema
 
+
 def test_schema_resolve_type_nop(schema):
     assert schema.resolve_type(Path('a')) == 'a'
 
@@ -427,7 +428,7 @@ class TestGraphcore(unittest.TestCase):
 
         gc.property_type('c', 'ds', 'd')
         gc.property_type('d', 'es', 'e')
-        gc.register_rule(['e.id'], 'e.id2', function=lambda id:id)
+        gc.register_rule(['e.id'], 'e.id2', function=lambda id: id)
         ret = gc.query({
             'c.ds.es.id': 1,
             'c.ds.es.id2?': None,
@@ -439,7 +440,7 @@ class TestGraphcore(unittest.TestCase):
         gc = graphcore.Graphcore()
 
         gc.property_type('d', 'es', 'e')
-        gc.register_rule(['e.id'], 'e.id2', function=lambda id:id)
+        gc.register_rule(['e.id'], 'e.id2', function=lambda id: id)
         ret = gc.query({
             'c.d.es.id': 1,
             'c.d.es.id2?': None,
