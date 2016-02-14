@@ -228,6 +228,44 @@ class BaseTypeNotFound(PathNotFound):
         )
 
 
+class DefineTypeContext(object):
+    def __init__(self, gc, type_name):
+        self.gc = gc
+        self.type_name = type_name
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    def module(self, module):
+        from .reflect_module import ModuleReflector
+        ModuleReflector(self.gc, module, self.type_name)
+
+    def reflect_class(self, cls, type_name=None):
+        from .reflect_class import reflect_class
+        reflect_class(self.gc, cls, type_name)
+
+    def property_type(self, property_name, property_type=None):
+        if property_type is None:
+            property_type = property_name
+
+        self.gc.property_type(self.type_name, property_name, property_type)
+
+    def direct_map(self, input, output):
+        if isinstance(output, six.string_types):
+            outputs = [output]
+        else:
+            outputs = output
+
+        input = self.type_name + '.' + input
+
+        for output in outputs:
+            output = self.type_name + '.' + output
+            self.gc.direct_map(input, output)
+
+
 class Graphcore(object):
 
     def __init__(self):
@@ -367,3 +405,6 @@ class Graphcore(object):
                         ret.append(str(output))
 
         return ret
+
+    def define_type(self, type_name):
+        return DefineTypeContext(self, type_name)
