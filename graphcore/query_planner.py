@@ -49,6 +49,8 @@ class CallGraphIterator(object):
                     nodes.remove(node)
                     self._ground(node)
 
+            # if we get here it means we made it through the entire list of
+            # nodes and didnt find a grounded_node at all
             if not grounded_node:
                 raise ValueError(
                     ('CallGraphIterator never saw some nodes: {nodes}.  '
