@@ -93,6 +93,29 @@ def test_query_nested_twice():
     ]) == 1
 
 
+@pytest.fixture
+def schema():
+    schema = graphcore.Schema()
+    schema.append(graphcore.PropertyType('a', 'bs', 'b'))
+    return schema
+
+def test_schema_resolve_type_nop(schema):
+    assert schema.resolve_type(Path('a')) == 'a'
+
+
+def test_schema_resolve_type_simple(schema):
+    assert schema.resolve_type(Path('a.bs')) == 'b'
+
+
+def test_schema_resolve_type_double(schema):
+    schema.append(graphcore.PropertyType('b', 'cs', 'c'))
+    assert schema.resolve_type(Path('a.bs.cs')) == 'c'
+
+
+def test_schema_resolve_type_unregistered(schema):
+    assert schema.resolve_type(Path('a.x')) == 'x'
+
+
 class TestGraphcore(unittest.TestCase):
 
     def test_available_rules_string(self):
@@ -399,20 +422,30 @@ class TestGraphcore(unittest.TestCase):
 
         assert ret == [{'a.b.c.d.e.f.out1': 1}]
 
+    def test_long_nested_property_type(self):
+        gc = graphcore.Graphcore()
+
+        gc.property_type('c', 'ds', 'd')
+        gc.property_type('d', 'es', 'e')
+        gc.register_rule(['e.id'], 'e.id2', function=lambda id:id)
+        ret = gc.query({
+            'c.ds.es.id': 1,
+            'c.ds.es.id2?': None,
+        })
+
+        assert ret == [{'c.ds.es.id2': 1}]
+
     def test_nested_property_type(self):
         gc = graphcore.Graphcore()
 
-        def function(id):
-            return str(id)
-
         gc.property_type('d', 'es', 'e')
-        gc.register_rule(['e.id'], 'e.name', function=function)
+        gc.register_rule(['e.id'], 'e.id2', function=lambda id:id)
         ret = gc.query({
             'c.d.es.id': 1,
-            'c.d.es.name?': None,
+            'c.d.es.id2?': None,
         })
 
-        assert ret == [{'c.d.es.name': '1'}]
+        assert ret == [{'c.d.es.id2': 1}]
 
     def test_constraint_on_missing_property(self):
         """

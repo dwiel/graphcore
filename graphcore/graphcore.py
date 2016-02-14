@@ -160,17 +160,24 @@ class Schema(object):
     def __repr__(self):
         return '<Schema {str}>'.format(str=str(self))
 
-    def base_type_and_property_of_path(self, path):
-        for relation in self.property_types:
-            if path[0] == relation.base_type:
-                if path[1] == relation.property:
-                    # TODO: this return type prefix, rule is kinda nasty ...
-                    return (
-                        path[:2],
-                        relation.other_type + path[2:],
-                    )
+    def _lookup(self, base_type, property):
+        # TODO: use dict
+        for property_type in self.property_types:
+            if base_type == property_type.base_type:
+                if property == property_type.property:
+                    return property_type.other_type
 
-        return Path([]), path
+    def resolve_type(self, path, pos=-1):
+        """ given a full path and an index into that path, return the type of
+        the value of the property at that index """
+
+        # this is the root so no way for it to have a different type
+        if abs(pos) == len(path):
+            return path[pos]
+
+        return self._lookup(
+            self.resolve_type(path, pos - 1), path[pos]
+        ) or path[pos]
 
 
 class PathNotFound(Exception):
@@ -311,7 +318,7 @@ class Graphcore(object):
         The prefix will be a list of parts of the lhs of the clause which
         the rule is applied to.  For example if there is a rule which maps
         from book.id to book.name and the query has a user.book.id then
-        this function will return ['user.'], Rule(book.id -> book.name).
+        this function will return ['user.book'], Rule(book.id -> book.name).
         """
 
         for prefix, subpath in path.subpaths():
@@ -323,21 +330,11 @@ class Graphcore(object):
             else:
                 rules = self.rules
 
+            # fix type of left most part of subpath
+            base_type = self.schema.resolve_type(prefix)
+            subpath = base_type + subpath[1:]
+
             # first try finding a match direct on the root
-            for rule in rules:
-                if subpath in rule.outputs:
-                    return prefix, rule
-
-            # then try extracting the base type out and finding a prefix
-            subprefix, subpath = self.schema.base_type_and_property_of_path(
-                subpath
-            )
-
-            # because prefix and subpath overlap where they meet, remove the
-            # last part from prefix so that this addition doesnt duplicate that
-            # part.
-            prefix = prefix[:-1] + subprefix
-
             for rule in rules:
                 if subpath in rule.outputs:
                     return prefix, rule
