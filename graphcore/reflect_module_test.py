@@ -80,3 +80,13 @@ def test_join_on_arg(gc):
         {'user.book_with_user_name': 'user: Bob1; book: 2'},
         {'user.book_with_user_name': 'user: Bob1; book: 3'},
     ]
+
+
+def test_double_under(gc):
+    for rule in gc.rules:
+        if rule.function.__name__ == 'profile':
+            assert 'user.location.city' in rule.inputs
+            return
+
+    # if we get here, there was no profile function in the rules, not good
+    assert False

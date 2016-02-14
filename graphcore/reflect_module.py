@@ -68,7 +68,10 @@ class ModuleReflector(object):
         user_id -> id
         id -> id
         name -> name
+        company__name -> company.name
         """
+        arg_name = arg_name.replace('__', '.')
+
         if arg_name.find(self.type_name) == 0:
             property_name = arg_name[len(self.type_name):]
 
