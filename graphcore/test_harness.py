@@ -3,6 +3,11 @@ from . import graphcore
 testgraphcore = graphcore.Graphcore()
 
 
+@testgraphcore.rule([], 'user.id', cardinality='many')
+def user_ids():
+    return [1]
+
+
 @testgraphcore.rule(['user.name'], 'user.abbreviation')
 def user_abbreviation(name):
     return ''.join(part[0].upper() for part in name.split(' '))
