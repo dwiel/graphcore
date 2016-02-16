@@ -172,6 +172,7 @@ class Result(EqualityMixin):
             return ResultSet([self])
 
     def _apply_rule(self, fn, outputs, cardinality, scope):
+        """ this one finally calls `fn` """
         cardinality = Cardinality.cast(cardinality)
 
         try:
