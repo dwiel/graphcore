@@ -81,7 +81,6 @@ class QueryPlanner(object):
         else:
             result_set = ResultSet([initial_bindings], query_shape)
 
-
         self.plan = QueryPlan(
             result_set,
             call_graph.output_paths(),
