@@ -7,6 +7,7 @@ from .clause import Clause, Var, OutVar, TempVar
 from . import call_graph
 from .query_planner import QueryPlanner
 from .equality_mixin import HashMixin, EqualityMixin
+from .result_set import ResultSet
 
 
 class QuerySearchIterator(object):
@@ -285,10 +286,11 @@ class DefineTypeContext(object):
 
 class Graphcore(object):
 
-    def __init__(self):
+    def __init__(self, ResultSetClass=ResultSet):
         # rules are indexed by the Path of thier output
         self.rules = []
         self.schema = Schema()
+        self.ResultSetClass = ResultSetClass
 
     def property_type(self, base_type, property, other_type):
         self.schema.append(
@@ -374,7 +376,8 @@ class Graphcore(object):
         self.optimize(query_search)
 
         query_planner = QueryPlanner(
-            query_search.call_graph, query_search.query, query
+            query_search.call_graph, query_search.query, query,
+            ResultSetClass=self.ResultSetClass
         )
         query_plan = query_planner.plan_query()
 

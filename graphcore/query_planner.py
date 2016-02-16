@@ -64,11 +64,12 @@ class CallGraphIterator(object):
 
 class QueryPlanner(object):
 
-    def __init__(self, call_graph, query, query_shape):
+    def __init__(self, call_graph, query, query_shape, ResultSetClass=ResultSet):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
         """
+        self.ResultSetClass = ResultSetClass
         self.call_graph = call_graph
 
         initial_bindings = self._extract_initial_bindings_from_query(
@@ -76,10 +77,10 @@ class QueryPlanner(object):
         )
 
         # attach query_shape to ResultSet
-        if isinstance(initial_bindings, ResultSet):
-            result_set = ResultSet(initial_bindings, query_shape)
+        if isinstance(initial_bindings, self.ResultSetClass):
+            result_set = self.ResultSetClass(initial_bindings, query_shape)
         else:
-            result_set = ResultSet([initial_bindings], query_shape)
+            result_set = self.ResultSetClass([initial_bindings], query_shape)
 
         self.plan = QueryPlan(
             result_set,
@@ -98,7 +99,7 @@ class QueryPlanner(object):
         if isinstance(query_shape, (list, tuple)):
             assert len(query_shape) == 1
 
-            return ResultSet([
+            return self.ResultSetClass([
                 self._extract_initial_bindings_from_query(q, qs)
                 for q, qs in zip([query], query_shape)
             ])
