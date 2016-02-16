@@ -183,7 +183,7 @@ class ResultSet(EqualityMixin):
 
             new_results.append(result)
 
-        return ResultSet(new_results)
+        return self.__class__(new_results)
 
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
