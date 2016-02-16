@@ -77,10 +77,11 @@ class QueryPlanner(object):
         if not isinstance(initial_bindings, ResultSet):
             initial_bindings = ResultSet([initial_bindings])
 
+        result_set = ResultSet(initial_bindings, query_shape)
+
         self.plan = QueryPlan(
-            initial_bindings,
+            result_set,
             call_graph.output_paths(),
-            query_shape
         )
 
     def _extract_initial_bindings_from_query(self, query, query_shape):

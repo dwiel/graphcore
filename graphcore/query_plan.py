@@ -3,22 +3,22 @@ The query plan is a sequential list of rules to apply.  Other QueryPlans may in
 the future also handle parallel execution.
 """
 
-from .result_set import ResultSet, result_set_apply_rule
+from .result_set import result_set_apply_rule
 from .result_set import RuleApplicationException
 
 
 class QueryPlan(object):
     """ Execute a sequential list of nodes. """
 
-    def __init__(self, initial_bindings, output_paths, query_shape):
+    def __init__(self, result_set, output_paths):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
         """
+        self.result_set = result_set
         self.output_paths = output_paths
 
         self.nodes = []
-        self.result_set = ResultSet(initial_bindings, query_shape)
 
     def append(self, node):
         self.nodes.append(node)
