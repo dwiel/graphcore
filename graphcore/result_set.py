@@ -112,7 +112,7 @@ class Result(EqualityMixin):
             return self.result == other
         return NotImplemented
 
-    def result_apply_rule(self, fn, inputs, outputs, cardinality, scope):
+    def apply_rule(self, fn, inputs, outputs, cardinality, scope):
         # collect inputs at this level
         for input in inputs:
             if len(input) == 1:
@@ -246,7 +246,7 @@ class ResultSet(EqualityMixin):
         new_result_set = []
         for result in self.results:
             new_result_set.extend(
-                result.result_apply_rule(
+                result.apply_rule(
                     fn, inputs, outputs, cardinality, scope
                 )
             )
