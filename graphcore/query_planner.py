@@ -64,7 +64,8 @@ class CallGraphIterator(object):
 
 class QueryPlanner(object):
 
-    def __init__(self, call_graph, query, query_shape, ResultSetClass=ResultSet):
+    def __init__(self, call_graph, query, query_shape,
+                 ResultSetClass=ResultSet):
         """
         query is necessary becuase the QueryPlan execution uses it to seed the
         state of the ResultSet object.
