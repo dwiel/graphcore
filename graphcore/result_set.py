@@ -9,6 +9,16 @@ from .path import Path
 from .rule import Cardinality
 
 
+def mapper(fn, data):
+    # override this if you want to implement a different distributed
+    # execution model
+    if len(data) > 20:
+        from plotwatt.pwcloud import pwcloud
+
+        return pwcloud.chunk_imap(fn, data, chunk_size=len(data)/8)
+    else:
+        return map(fn, data)
+
 def shape_path(path, query_shape):
     """ return a tuple of subpaths which add together to path, but are split
     in the same way as the data result_set.
@@ -73,7 +83,8 @@ class NoResult(Exception):
 
 class Result(EqualityMixin):
 
-    def __init__(self, result=None):
+    def __init__(self, result=None, mapper=map):
+        self.mapper = mapper
         if isinstance(result, Result):
             self.result = result.result.copy()
         elif isinstance(result, dict):
@@ -122,7 +133,7 @@ class Result(EqualityMixin):
 
             new_result[k] = v
 
-        return Result(new_result)
+        return Result(new_result, mapper=self.mapper)
 
     def __getitem__(self, k):
         return self.result[str(k)]
@@ -162,14 +173,17 @@ class Result(EqualityMixin):
             new_inputs = [input[1:] for input in inputs]
             new_outputs = [output[1:] for output in outputs]
 
-            existing_result_set = self.get(sub_path, ResultSet([Result()]))
+            default = ResultSet(
+                [Result(mapper=self.mapper)], mapper=self.mapper
+            )
+            existing_result_set = self.get(sub_path, default)
             self[sub_path] = existing_result_set.apply_rule(
                 fn, new_inputs, new_outputs, cardinality, scope
             )
 
             # return a list boxing the data so the return value is the same as
             # cardinality many
-            return ResultSet([self])
+            return ResultSet([self], mapper=self.mapper)
 
     def _apply_rule(self, fn, outputs, cardinality, scope):
         """ this one finally calls `fn` """
@@ -180,7 +194,7 @@ class Result(EqualityMixin):
         except NoResult:
             # this scope has no value for these outputs, filter this result
             # from the ResultSet
-            return ResultSet([])
+            return ResultSet([], mapper=self.mapper)
         except Exception as e:
             raise RuleApplicationException(
                 fn, scope, e, traceback.format_exception(*sys.exc_info())
@@ -195,7 +209,7 @@ class Result(EqualityMixin):
             for output, value in zip(outputs, values):
                 self[output[0]] = value
 
-            return ResultSet([self])
+            return ResultSet([self], mapper=self.mapper)
         elif cardinality == Cardinality.many:
             if len(outputs) == 1:
                 values_set = [(value,) for value in ret]
@@ -210,7 +224,7 @@ class Result(EqualityMixin):
                     new_data[output[0]] = value
                 new_datas.append(new_data)
 
-            return ResultSet(new_datas)
+            return ResultSet(new_datas, mapper=self.mapper)
         else:
             raise ValueError('cardinality must be one or many')
 
@@ -218,7 +232,7 @@ class Result(EqualityMixin):
 class ResultSet(EqualityMixin):
     """ The ResultSet holds the state of the query as it is executed. """
 
-    def __init__(self, init=None, query_shape=None):
+    def __init__(self, init=None, query_shape=None, mapper=map):
         """
         query_shape should be a json object with the same shape as the desired
         ResultSet.  for example:
@@ -231,10 +245,12 @@ class ResultSet(EqualityMixin):
         stands, I'm not sure where else this transformation should go.
         """
 
+        self.mapper = mapper
+
         if isinstance(init, ResultSet):
             self.results = init.results
         elif isinstance(init, dict):
-            self.results = [Result(init)]
+            self.results = [Result(init, mapper=self.mapper)]
         elif isinstance(init, list):
             self.results = init
         else:
@@ -312,12 +328,6 @@ class ResultSet(EqualityMixin):
 
     def shape_path(self, path):
         return shape_path(path, self.query_shape)
-
-    @staticmethod
-    def mapper(fn, data):
-        # override this if you want to implement a different distributed
-        # execution model
-        return map(fn, data)
 
     def apply_rule(self, fn, inputs, outputs, cardinality,
                    scope=None):

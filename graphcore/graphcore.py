@@ -286,11 +286,11 @@ class DefineTypeContext(object):
 
 class Graphcore(object):
 
-    def __init__(self, ResultSetClass=ResultSet):
+    def __init__(self, mapper=map):
         # rules are indexed by the Path of thier output
         self.rules = []
         self.schema = Schema()
-        self.ResultSetClass = ResultSetClass
+        self.mapper = mapper
 
     def property_type(self, base_type, property, other_type):
         self.schema.append(
@@ -377,7 +377,7 @@ class Graphcore(object):
 
         query_planner = QueryPlanner(
             query_search.call_graph, query_search.query, query,
-            ResultSetClass=self.ResultSetClass
+            mapper=self.mapper
         )
         query_plan = query_planner.plan_query()
 
