@@ -42,6 +42,35 @@ def _subpaths(path):
         yield Path(path.parts[:i]), Path(path.parts[i:])
 
 
+class RuleApplicationException(Exception):
+    def __init__(self, fn, scope, exception, traceback):
+        self.fn = fn
+        self.scope = scope
+        self.exception = exception
+        self.traceback = traceback
+
+    def __str__(self):
+        return (
+            'Exception {e} raised while evaluating {fn} with '
+            'params {scope}.  \n{traceback}\n\nquery_plan:\n{query_plan}'
+            '\n\nin node:\n{node}'
+        ).format(
+            e=self.exception,
+            fn=self.fn.__name__,
+            scope=repr(self.scope),
+            traceback=''.join(self.traceback),
+            query_plan='\n'.join(map(str, self.query_plan.nodes)),
+            node=self.node
+        )
+
+
+class NoResult(Exception):
+    """ rules should raise this exception if there is no result given the
+    inputs provided.  This exception will remove the Result which was passed
+    in as if there were a filter applied to the ResultSet """
+    pass
+
+
 class Result(EqualityMixin):
 
     def __init__(self, result=None):
@@ -311,32 +340,3 @@ def next_sub_path(paths):
         )
     elif len(sub_path) == 1:
         return sub_path.pop()
-
-
-class RuleApplicationException(Exception):
-    def __init__(self, fn, scope, exception, traceback):
-        self.fn = fn
-        self.scope = scope
-        self.exception = exception
-        self.traceback = traceback
-
-    def __str__(self):
-        return (
-            'Exception {e} raised while evaluating {fn} with '
-            'params {scope}.  \n{traceback}\n\nquery_plan:\n{query_plan}'
-            '\n\nin node:\n{node}'
-        ).format(
-            e=self.exception,
-            fn=self.fn.__name__,
-            scope=repr(self.scope),
-            traceback=''.join(self.traceback),
-            query_plan='\n'.join(map(str, self.query_plan.nodes)),
-            node=self.node
-        )
-
-
-class NoResult(Exception):
-    """ rules should raise this exception if there is no result given the
-    inputs provided.  This exception will remove the Result which was passed
-    in as if there were a filter applied to the ResultSet """
-    pass
