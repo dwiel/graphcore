@@ -2,7 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, shape_path
-from .result_set import apply_rule, RuleApplicationException, NoResult
+from .result_set import RuleApplicationException, NoResult
 
 
 def test_result_init():
@@ -118,8 +118,8 @@ def test_extract_json(data):
 
 def test_apply_rule_exception(data):
     with pytest.raises(RuleApplicationException):
-        apply_rule(
-            data, lambda x: 1/0,
+        data.results[0]._apply_rule(
+            lambda x: 1/0,
             outputs=[('y')],
             cardinality='one',
             scope={'x': 1},

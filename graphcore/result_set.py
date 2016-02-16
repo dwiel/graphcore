@@ -122,7 +122,7 @@ class Result(EqualityMixin):
         # outputs must all be at the same depth and must not depend on inputs
         # which are deeper
         if len(outputs[0]) == 1:
-            return apply_rule(self, fn, outputs, cardinality, scope)
+            return self._apply_rule(fn, outputs, cardinality, scope)
         else:
             # recur down to the next level of the data
             inputs = [input for input in inputs if len(input) > 1]
@@ -141,6 +141,48 @@ class Result(EqualityMixin):
             # return a list boxing the data so the return value is the same as
             # cardinality many
             return ResultSet([self])
+
+    def _apply_rule(self, fn, outputs, cardinality, scope):
+        cardinality = Cardinality.cast(cardinality)
+
+        try:
+            ret = fn(**scope)
+        except NoResult:
+            # this scope has no value for these outputs, filter this result
+            # from the ResultSet
+            return ResultSet([])
+        except Exception as e:
+            raise RuleApplicationException(
+                fn, scope, e, traceback.format_exception(*sys.exc_info())
+            )
+
+        if cardinality == Cardinality.one:
+            if len(outputs) == 1:
+                values = [ret]
+            else:
+                values = ret
+
+            for output, value in zip(outputs, values):
+                self[output[0]] = value
+
+            return ResultSet([self])
+        elif cardinality == Cardinality.many:
+            if len(outputs) == 1:
+                values_set = [(value,) for value in ret]
+            else:
+                values_set = ret
+
+            new_datas = []
+            for values in values_set:
+                # deepcopy: recursively copy Result and ResultSet objects only
+                new_data = self.deepcopy()
+                for output, value in zip(outputs, values):
+                    new_data[output[0]] = value
+                new_datas.append(new_data)
+
+            return ResultSet(new_datas)
+        else:
+            raise ValueError('cardinality must be one or many')
 
 
 class ResultSet(EqualityMixin):
@@ -298,46 +340,3 @@ class NoResult(Exception):
     inputs provided.  This exception will remove the Result which was passed
     in as if there were a filter applied to the ResultSet """
     pass
-
-
-def apply_rule(data, fn, outputs, cardinality, scope):
-    cardinality = Cardinality.cast(cardinality)
-
-    try:
-        ret = fn(**scope)
-    except NoResult:
-        # this scope has no value for these outputs, filter this result
-        # from the ResultSet
-        return ResultSet([])
-    except Exception as e:
-        raise RuleApplicationException(
-            fn, scope, e, traceback.format_exception(*sys.exc_info())
-        )
-
-    if cardinality == Cardinality.one:
-        if len(outputs) == 1:
-            values = [ret]
-        else:
-            values = ret
-
-        for output, value in zip(outputs, values):
-            data[output[0]] = value
-
-        return ResultSet([data])
-    elif cardinality == Cardinality.many:
-        if len(outputs) == 1:
-            values_set = [(value,) for value in ret]
-        else:
-            values_set = ret
-
-        new_datas = []
-        for values in values_set:
-            # deepcopy: recursively copy Result and ResultSet objects only
-            new_data = data.deepcopy()
-            for output, value in zip(outputs, values):
-                new_data[output[0]] = value
-            new_datas.append(new_data)
-
-        return ResultSet(new_datas)
-    else:
-        raise ValueError('cardinality must be one or many')
