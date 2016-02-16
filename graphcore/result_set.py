@@ -208,9 +208,8 @@ class ResultSet(EqualityMixin):
     def shape_path(self, path):
         return shape_path(path, self.query_shape)
 
-
     def apply_rule(self, fn, inputs, outputs, cardinality,
-                              scope=None):
+                   scope=None):
         if scope is None:
             scope = {}
 
