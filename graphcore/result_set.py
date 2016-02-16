@@ -112,6 +112,36 @@ class Result(EqualityMixin):
             return self.result == other
         return NotImplemented
 
+    def result_apply_rule(self, fn, inputs, outputs, cardinality, scope):
+        # collect inputs at this level
+        for input in inputs:
+            if len(input) == 1:
+                # TODO: dont require casting here
+                scope[Path(input[0]).relative.property] = self[input[0]]
+
+        # outputs must all be at the same depth and must not depend on inputs
+        # which are deeper
+        if len(outputs[0]) == 1:
+            return apply_rule(self, fn, outputs, cardinality, scope)
+        else:
+            # recur down to the next level of the data
+            inputs = [input for input in inputs if len(input) > 1]
+
+            sub_path = next_sub_path(inputs + outputs)
+
+            # remove left most part from input and output
+            new_inputs = [input[1:] for input in inputs]
+            new_outputs = [output[1:] for output in outputs]
+
+            existing_result_set = self.get(sub_path, ResultSet([Result()]))
+            self[sub_path] = existing_result_set.apply_rule(
+                fn, new_inputs, new_outputs, cardinality, scope
+            )
+
+            # return a list boxing the data so the return value is the same as
+            # cardinality many
+            return ResultSet([self])
+
 
 class ResultSet(EqualityMixin):
     """ The ResultSet holds the state of the query as it is executed. """
@@ -216,45 +246,14 @@ class ResultSet(EqualityMixin):
         new_result_set = []
         for result in self.results:
             new_result_set.extend(
-                result_apply_rule(
-                    result, fn, inputs, outputs, cardinality, scope
+                result.result_apply_rule(
+                    fn, inputs, outputs, cardinality, scope
                 )
             )
 
         # odd to be concerned with preserving the query_shape here, but
         # this value needs to be present in the new result_set
         return self.__class__(new_result_set, self.query_shape)
-
-
-def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
-    # collect inputs at this level
-    for input in inputs:
-        if len(input) == 1:
-            # TODO: dont require casting here
-            scope[Path(input[0]).relative.property] = data[input[0]]
-
-    # outputs must all be at the same depth and must not depend on inputs which
-    # are deeper
-    if len(outputs[0]) == 1:
-        return apply_rule(data, fn, outputs, cardinality, scope)
-    else:
-        # recur down to the next level of the data
-        inputs = [input for input in inputs if len(input) > 1]
-
-        sub_path = next_sub_path(inputs + outputs)
-
-        # remove left most part from input and output
-        new_inputs = [input[1:] for input in inputs]
-        new_outputs = [output[1:] for output in outputs]
-
-        existing_result_set = data.get(sub_path, ResultSet([Result()]))
-        data[sub_path] = existing_result_set.apply_rule(
-            fn, new_inputs, new_outputs, cardinality, scope
-        )
-
-        # return a list boxing the data so the return value is the same as
-        # cardinality many
-        return ResultSet([data])
 
 
 def next_sub_path(paths):
