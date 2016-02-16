@@ -248,7 +248,6 @@ def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
         new_inputs = [input[1:] for input in inputs]
         new_outputs = [output[1:] for output in outputs]
 
-        # a copy may not be strictly necessary ...
         data[sub_path] = result_set_apply_rule(
             data.get(sub_path, ResultSet([Result()])),
             fn, new_inputs, new_outputs, cardinality, scope
@@ -259,12 +258,17 @@ def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
         return ResultSet([data])
 
 
-def next_sub_path(inputs):
+def next_sub_path(paths):
     # NOTE: only handles inputs along one lineage in the tree. no sisters
     # or cousins allowed
-    sub_path = set([input[0] for input in inputs])
+    sub_path = set([path[0] for path in paths])
     if len(sub_path) > 1:
-        raise ValueError('no sisters!')
+        raise ValueError(
+            'currently dont allow inputs/outputs from multiple '
+            'levels, got: {}'.format(
+                ', '.join(map(str, paths))
+            )
+        )
     elif len(sub_path) == 1:
         return sub_path.pop()
 
