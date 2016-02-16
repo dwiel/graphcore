@@ -224,6 +224,7 @@ def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
 
     # odd to be concerned with preserving the query_shape here, but
     # this value needs to be present in the new result_set
+    # TODO: replace with self.__class__
     return ResultSet(new_data, data.query_shape)
 
 
