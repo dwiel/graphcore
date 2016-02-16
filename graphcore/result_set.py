@@ -209,23 +209,22 @@ class ResultSet(EqualityMixin):
         return shape_path(path, self.query_shape)
 
 
-def result_set_apply_rule(data, fn, inputs, outputs, cardinality,
-                          scope=None):
-    if scope is None:
-        scope = {}
+    def apply_rule(self, fn, inputs, outputs, cardinality,
+                              scope=None):
+        if scope is None:
+            scope = {}
 
-    new_data = []
-    for result in data:
-        new_data.extend(
-            result_apply_rule(
-                result, fn, inputs, outputs, cardinality, scope
+        new_result_set = []
+        for result in self.results:
+            new_result_set.extend(
+                result_apply_rule(
+                    result, fn, inputs, outputs, cardinality, scope
+                )
             )
-        )
 
-    # odd to be concerned with preserving the query_shape here, but
-    # this value needs to be present in the new result_set
-    # TODO: replace with self.__class__
-    return ResultSet(new_data, data.query_shape)
+        # odd to be concerned with preserving the query_shape here, but
+        # this value needs to be present in the new result_set
+        return self.__class__(new_result_set, self.query_shape)
 
 
 def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
@@ -249,8 +248,8 @@ def result_apply_rule(data, fn, inputs, outputs, cardinality, scope):
         new_inputs = [input[1:] for input in inputs]
         new_outputs = [output[1:] for output in outputs]
 
-        data[sub_path] = result_set_apply_rule(
-            data.get(sub_path, ResultSet([Result()])),
+        existing_result_set = data.get(sub_path, ResultSet([Result()]))
+        data[sub_path] = existing_result_set.apply_rule(
             fn, new_inputs, new_outputs, cardinality, scope
         )
 

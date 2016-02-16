@@ -1,7 +1,7 @@
 import pytest
 
 from .relation import Relation
-from .result_set import ResultSet, Result, result_set_apply_rule, shape_path
+from .result_set import ResultSet, Result, shape_path
 from .result_set import apply_rule, RuleApplicationException, NoResult
 
 
@@ -132,8 +132,8 @@ def test_apply_rule_single_output_no_result(data):
             raise NoResult()
         return c + b
 
-    ret = result_set_apply_rule(
-        data, rule,
+    ret = data.apply_rule(
+        rule,
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
         cardinality='one',
@@ -149,8 +149,8 @@ def test_apply_rule_single_output_no_result(data):
 
 
 def test_apply_rule_single_output(data):
-    ret = result_set_apply_rule(
-        data, lambda c, b: c + b,
+    ret = data.apply_rule(
+        lambda c, b: c + b,
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
         cardinality='one',
@@ -169,8 +169,8 @@ def test_apply_rule_single_output(data):
 
 
 def test_apply_rule_many_outputs(data):
-    ret = result_set_apply_rule(
-        data, lambda c, b: (c + b, -1 * (b + c)),
+    ret = data.apply_rule(
+        lambda c, b: (c + b, -1 * (b + c)),
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd'), ('a', 'e')],
         cardinality='one',
@@ -191,8 +191,8 @@ def test_apply_rule_many_outputs(data):
 
 
 def test_apply_rule_cardinality_many(data):
-    ret = result_set_apply_rule(
-        data, lambda c, b: [c + b + i for i in [1, 2, 3]],
+    ret = data.apply_rule(
+        lambda c, b: [c + b + i for i in [1, 2, 3]],
         inputs=[('c',), ('a', 'b')],
         outputs=[('a', 'd')],
         cardinality='many',
@@ -212,8 +212,8 @@ def test_apply_rule_cardinality_many(data):
 
 
 def test_apply_rule_cardinality_many_many_outputs(data):
-    ret = result_set_apply_rule(
-        data, lambda c, b: [
+    ret = data.apply_rule(
+        lambda c, b: [
             (c + b + i, -1 * (c + b + i)) for i in [1, 2, 3]
         ],
         inputs=[('c',), ('a', 'b')],

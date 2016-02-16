@@ -3,7 +3,6 @@ The query plan is a sequential list of rules to apply.  Other QueryPlans may in
 the future also handle parallel execution.
 """
 
-from .result_set import result_set_apply_rule
 from .result_set import RuleApplicationException
 
 
@@ -26,8 +25,8 @@ class QueryPlan(object):
     def forward(self, limit=None):
         for node in self.nodes:
             try:
-                self.result_set = result_set_apply_rule(
-                    self.result_set, node.function,
+                self.result_set = self.result_set.apply_rule(
+                    node.function,
                     self.result_set.shape_paths(node.incoming_paths),
                     self.result_set.shape_paths(node.outgoing_paths),
                     node.cardinality
