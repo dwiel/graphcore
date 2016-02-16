@@ -296,6 +296,9 @@ class ResultSet(EqualityMixin):
     def __iter__(self):
         return iter(self.results)
 
+    def __len__(self):
+        return len(self.results)
+
     def __eq__(self, other):
         """Override the default Equals behavior"""
         if isinstance(other, ResultSet):
@@ -310,18 +313,34 @@ class ResultSet(EqualityMixin):
     def shape_path(self, path):
         return shape_path(path, self.query_shape)
 
+    @staticmethod
+    def mapper(fn, data):
+        # override this if you want to implement a different distributed
+        # execution model
+        return map(fn, data)
+
     def apply_rule(self, fn, inputs, outputs, cardinality,
                    scope=None):
         if scope is None:
             scope = {}
 
+        # only use custom mapper when were actually doing the map over data. In
+        # some applications of this function we're recursively navigating the
+        # tree of ResultSets and that task shouldnt be distributed
+        if len(outputs[0]) == 1:
+            mapper = self.mapper
+        else:
+            mapper = map
+
+        # map across self
+        ret = mapper(lambda result: result.apply_rule(
+            fn, inputs, outputs, cardinality, scope
+        ), self)
+
+        # merge results
         new_result_set = []
-        for result in self.results:
-            new_result_set.extend(
-                result.apply_rule(
-                    fn, inputs, outputs, cardinality, scope
-                )
-            )
+        for row in ret:
+            new_result_set.extend(row)
 
         # odd to be concerned with preserving the query_shape here, but
         # this value needs to be present in the new result_set
