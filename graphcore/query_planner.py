@@ -74,10 +74,13 @@ class QueryPlanner(object):
         initial_bindings = self._extract_initial_bindings_from_query(
             query, query_shape
         )
-        if not isinstance(initial_bindings, ResultSet):
-            initial_bindings = ResultSet([initial_bindings])
 
-        result_set = ResultSet(initial_bindings, query_shape)
+        # attach query_shape to ResultSet
+        if isinstance(initial_bindings, ResultSet):
+            result_set = ResultSet(initial_bindings, query_shape)
+        else:
+            result_set = ResultSet([initial_bindings], query_shape)
+
 
         self.plan = QueryPlan(
             result_set,
