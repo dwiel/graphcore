@@ -188,6 +188,61 @@ class TestGraphcore(unittest.TestCase):
             ],
         }])
 
+    """
+    def test_multiple_outputs(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], ['x.a', 'x.b'],
+            cardinality='many',
+            function=lambda: [(1, 2), (3, 4)],
+        )
+
+        query = {
+            'x.a?': None,
+            'x.b?': None,
+        }
+
+        print gc.explain(query)
+
+        ret = gc.query(query)
+
+        self.assertRetEqual(ret, [
+            {'x.a': 1, 'x.b': 2},
+            {'x.a': 3, 'x.b': 4},
+        ])
+    """
+
+    def test_multilevel_output(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], ['user.id', 'user.books.id'],
+            cardinality='many',
+            function=lambda: [(1, 1), (1, 2), (1, 3)],
+        )
+
+        query = {
+            'user.id': 1,
+            'user.books.id?': None,
+        }
+
+        print(gc.explain(query))
+
+        ret = gc.query(query)
+
+        # ret = gc.query({
+        #     'user.id<': 2,
+        #     'user.books': [{
+        #         'id?': None,
+        #     }],
+        # })
+        self.assertRetEqual(ret, [{
+            'user.books': [
+                {'id': 1}, {'id': 2}, {'id': 3}
+            ],
+        }])
+
     def test_simple_nested_join_multi_property(self):
         ret = testgraphcore.query({
             'user.id': 1,
@@ -704,6 +759,19 @@ class TestQuerySearch(unittest.TestCase):
     def test_explain(self):
         gc = graphcore.Graphcore()
         assert isinstance(gc.explain({}), six.string_types)
+
+    def test_limit(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'a.x', cardinality='many', function=lambda: [1, 2, 3]
+        )
+
+        query = gc.query({
+            'a.x?': None,
+        }, limit=1)
+
+        assert len(query) == 1
 
 
 class TestClause(unittest.TestCase):

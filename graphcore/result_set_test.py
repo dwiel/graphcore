@@ -212,23 +212,27 @@ def test_apply_rule_cardinality_many(data):
 
 
 def test_apply_rule_cardinality_many_many_outputs(data):
+    data = ResultSet([Result({
+        'a.b': ResultSet([Result({})]),
+    })])
     ret = result_set_apply_rule(
-        data, lambda c, b: [
-            (c + b + i, -1 * (c + b + i)) for i in [1, 2, 3]
-        ],
-        inputs=[('c',), ('a', 'b')],
-        outputs=[('a', 'd'), ('a', 'e')],
+        data, lambda: [(1, 2)],
+        inputs=[],
+        outputs=[('a.b', 'd'), ('a.e')],
         cardinality='many',
     )
 
     assert ret == [{
-        'a': [
-            {'b': 10, 'd': 111, 'e': -111},
-            {'b': 10, 'd': 112, 'e': -112},
-            {'b': 10, 'd': 113, 'e': -113},
-            {'b': 20, 'd': 121, 'e': -121},
-            {'b': 20, 'd': 122, 'e': -122},
-            {'b': 20, 'd': 123, 'e': -123},
+        'a.b': [
+            {'d': 1}
         ],
-        'c': 100,
+        'a.e': 2,
     }]
+
+
+def test_result_apply_rule_multi_level(data):
+    """
+    ret = result_apply_rule(
+        data, lambda
+    """
+    pass

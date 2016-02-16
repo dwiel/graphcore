@@ -73,6 +73,10 @@ class QuerySearch(object):
     def apply_rule_backwards(self, output_clause, prefix, rule):
         """bind the output of rule to output_clause from the query"""
 
+        if len(rule.outputs) > 1:
+            print('rule.outputs', rule.outputs)
+            print(output_clause)
+
         # add input/unify clauses of function to query
         input_clauses = []
         for input in rule.inputs:
