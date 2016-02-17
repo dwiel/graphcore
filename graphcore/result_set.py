@@ -331,7 +331,7 @@ class ResultSet(EqualityMixin):
 
             new_results.append(result)
 
-        return self.__class__(new_results)
+        return ResultSet(new_results, mapper=self.mapper)
 
     def __repr__(self):
         return '<ResultSet {str}>'.format(str=str(self))
@@ -384,7 +384,7 @@ class ResultSet(EqualityMixin):
 
         # odd to be concerned with preserving the query_shape here, but
         # this value needs to be present in the new result_set
-        return self.__class__(new_result_set, self.query_shape)
+        return ResultSet(new_result_set, self.query_shape, mapper=self.mapper)
 
 
 def next_sub_path(paths):
