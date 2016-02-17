@@ -372,9 +372,11 @@ class ResultSet(EqualityMixin):
         else:
             mapper = map
 
-        wrapped_fn = lambda result: result.apply_rule(
-            fn, inputs, outputs, cardinality, scope
-        )
+        def wrapped_fn(result)
+            return result.apply_rule(
+                fn, inputs, outputs, cardinality, scope
+            )
+
         wrapped_fn.__name__ = fn.__name__
 
         # map across self
