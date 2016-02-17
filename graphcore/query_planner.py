@@ -78,9 +78,13 @@ class QueryPlanner(object):
 
         # attach query_shape to ResultSet
         if isinstance(initial_bindings, ResultSet):
-            result_set = ResultSet(initial_bindings, query_shape, mapper=self.mapper)
+            result_set = ResultSet(
+                initial_bindings, query_shape, mapper=self.mapper
+            )
         else:
-            result_set = ResultSet([initial_bindings], query_shape, mapper=self.mapper)
+            result_set = ResultSet(
+                [initial_bindings], query_shape, mapper=self.mapper
+            )
 
         self.plan = QueryPlan(
             result_set,

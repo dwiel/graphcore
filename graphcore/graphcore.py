@@ -7,7 +7,6 @@ from .clause import Clause, Var, OutVar, TempVar
 from . import call_graph
 from .query_planner import QueryPlanner
 from .equality_mixin import HashMixin, EqualityMixin
-from .result_set import ResultSet
 
 
 class QuerySearchIterator(object):
