@@ -19,6 +19,7 @@ def mapper(fn, data):
     else:
         return map(fn, data)
 
+
 def shape_path(path, query_shape):
     """ return a tuple of subpaths which add together to path, but are split
     in the same way as the data result_set.
