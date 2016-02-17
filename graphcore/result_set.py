@@ -375,7 +375,7 @@ class ResultSet(EqualityMixin):
         wrapped_fn = lambda result: result.apply_rule(
             fn, inputs, outputs, cardinality, scope
         )
-        wrapped_fn.__name__ == fn.__name__
+        wrapped_fn.__name__ = fn.__name__
 
         # map across self
         ret = mapper(wrapped_fn, self)
