@@ -79,6 +79,10 @@ def input_mapping(keys, parts=1):
 
 class RuleApplicationException(Exception):
     def __init__(self, fn, scope, exception, traceback):
+        super(RuleApplicationException, self).__init__(
+            fn, scope, exception, traceback
+        )
+
         self.fn = fn
         self.scope = scope
         self.exception = exception
@@ -372,7 +376,7 @@ class ResultSet(EqualityMixin):
         else:
             mapper = map
 
-        def wrapped_fn(result)
+        def wrapped_fn(result):
             return result.apply_rule(
                 fn, inputs, outputs, cardinality, scope
             )
