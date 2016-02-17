@@ -372,10 +372,13 @@ class ResultSet(EqualityMixin):
         else:
             mapper = map
 
-        # map across self
-        ret = mapper(lambda result: result.apply_rule(
+        wrapped_fn = lambda result: result.apply_rule(
             fn, inputs, outputs, cardinality, scope
-        ), self)
+        )
+        wrapped_fn.__name__ == fn.__name__
+
+        # map across self
+        ret = mapper(wrapped_fn, self)
 
         # merge results
         new_result_set = []
