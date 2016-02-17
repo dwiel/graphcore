@@ -1,6 +1,7 @@
 import inspect
 
 from .path import Path
+from . import result_set
 
 
 def input_mapping_decorator(function, input_mapping):
@@ -46,10 +47,7 @@ class ModuleReflector(object):
                     self._input_name(arg_name) for arg_name in arg_names
                 ]
 
-                input_mapping = {
-                    self._input_mapping_name(arg_name): arg_name
-                    for arg_name in arg_names
-                }
+                input_mapping = self._input_mapping(input_paths, arg_names)
 
                 self.graphcore.register_rule(
                     input_paths,
@@ -57,6 +55,19 @@ class ModuleReflector(object):
                     function=input_mapping_decorator(value, input_mapping),
                     cardinality=self._cardinality(name),
                 )
+
+    def _input_mapping(self, input_paths, arg_names):
+        """ Using result_set.input_mapping, return a map from the default
+        name graphcore uses to pass in names to functions, to the name of the
+        argument of this particular function """
+
+        canonical_to_arg_name = result_set.input_mapping(input_paths)
+
+        input_mapping = {}
+        for arg_name, input_path in zip(arg_names, input_paths):
+            input_mapping[canonical_to_arg_name[input_path]] = arg_name
+
+        return input_mapping
 
     def _input_mapping_name(self, arg_name):
         return Path(self._canonical_property_name(arg_name)).property

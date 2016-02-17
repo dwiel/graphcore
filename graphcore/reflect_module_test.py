@@ -90,3 +90,11 @@ def test_double_under(gc):
 
     # if we get here, there was no profile function in the rules, not good
     assert False
+
+
+def test_multi_id_thing(gc):
+    gc.query({
+        'user.book.id': 1,
+        'user.foo.id': 2,
+        'user.multi_id_thing?': None,
+    })

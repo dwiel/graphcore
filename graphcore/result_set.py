@@ -52,6 +52,30 @@ def _subpaths(path):
         yield Path(path.parts[:i]), Path(path.parts[i:])
 
 
+def input_mapping(keys, parts=1):
+    """ given a list of paths, return a dictionary of {path: shortened_path}
+    where shortened_path can be used as the argument name when calling a
+    function with `paths` inputs.
+
+    The algorithm is to use only the right most part of the path if it is
+    unique.  If not, it uses the right 2 most parts seperated by an underscore.
+    Otherwise, 3, etc.
+    """
+
+    d = defaultdict(list)
+    for k in keys:
+        d[str(Path(k)[-parts:]).replace('.', '_')].append(k)
+
+    mapping = {}
+    for short, _keys in d.items():
+        if len(_keys) == 1:
+            mapping[_keys[0]] = short
+        else:
+            mapping.update(input_mapping(_keys, parts+1))
+
+    return mapping
+
+
 class RuleApplicationException(Exception):
     def __init__(self, fn, scope, exception, traceback):
         self.fn = fn
@@ -157,7 +181,8 @@ class Result(EqualityMixin):
         for input in inputs:
             if len(input) == 1:
                 # TODO: dont require casting here
-                scope[Path(input[0]).relative.property] = self[input[0]]
+                # scope[Path(input[0]).relative.property] = self[input[0]]
+                scope[str(input[0])] = self[input[0]]
 
         # outputs must all be at the same depth and must not depend on inputs
         # which are deeper
@@ -185,12 +210,16 @@ class Result(EqualityMixin):
             # cardinality many
             return ResultSet([self], mapper=self.mapper)
 
+    def _simplify_scope(self, scope):
+        mapping = input_mapping(scope.keys())
+        return {mapping[k]: v for k, v in scope.items()}
+
     def _apply_rule(self, fn, outputs, cardinality, scope):
         """ this one finally calls `fn` """
         cardinality = Cardinality.cast(cardinality)
 
         try:
-            ret = fn(**scope)
+            ret = fn(**self._simplify_scope(scope))
         except NoResult:
             # this scope has no value for these outputs, filter this result
             # from the ResultSet

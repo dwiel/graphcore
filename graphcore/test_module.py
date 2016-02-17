@@ -33,3 +33,7 @@ def profile(first_name, location__city):
         first_name=first_name,
         location__city=location__city,
     )
+
+
+def multi_id_thing(book_id, foo_id):
+    return book_id + foo_id
