@@ -15,7 +15,7 @@ def _column_to_property(column):
 class SQLReflector(object):
 
     def __init__(self, graphcore, engine, sql_query_class=SQLQuery,
-                 param_style='%s'):
+                 param_style='%s', exclude_tables=None):
         """ add rules to graphcore instance based on schema found in SQL db.
 
         graphcore: Graphcore instance
@@ -27,9 +27,15 @@ class SQLReflector(object):
         self.sql_query_class = sql_query_class
         self.param_style = param_style
 
+        if exclude_tables is None:
+            exclude_tables = []
+
         self.insp = reflection.Inspector.from_engine(engine)
 
         for table in self.insp.get_table_names():
+            if table in exclude_tables:
+                continue
+
             self._sql_reflect_table(table)
 
         for view in self.insp.get_view_names():
