@@ -37,3 +37,7 @@ def profile(first_name, location__city):
 
 def multi_id_thing(book_id, foo_id):
     return book_id + foo_id
+
+
+def user_abc(user_name):
+    return user_name

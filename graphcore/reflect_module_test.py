@@ -98,3 +98,10 @@ def test_multi_id_thing(gc):
         'user.foo.id': 2,
         'user.multi_id_thing?': None,
     })
+
+
+def test_type_prefix(gc):
+    assert gc.query({
+        'user.user_name': 1,
+        'user.abc?': None,
+    })[0].values()[0]
