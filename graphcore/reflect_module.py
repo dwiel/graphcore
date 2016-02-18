@@ -70,9 +70,9 @@ class ModuleReflector(object):
         return input_mapping
 
     def _input_mapping_name(self, arg_name):
-        return Path(self._canonical_property_name(arg_name, False)).property
+        return Path(self._canonical_property_name(arg_name)).property
 
-    def _canonical_property_name(self, arg_name, is_output_name):
+    def _canonical_property_name(self, arg_name):
         """ given the name of an argument to a function, return
         the name of the graphcore property it is describing.
 
@@ -83,9 +83,7 @@ class ModuleReflector(object):
         """
         arg_name = arg_name.replace('__', '.')
 
-        if arg_name.find(self.type_name) == 0 and (
-            is_output_name or arg_name == self.type_name + '_id'
-        ):
+        if arg_name == self.type_name + '_id':
             property_name = arg_name[len(self.type_name):]
 
             # remove leading underscore if it is there
@@ -114,11 +112,11 @@ class ModuleReflector(object):
 
         return '{type_name}.{property_name}'.format(
             type_name=self.type_name,
-            property_name=self._canonical_property_name(arg_name, False),
+            property_name=self._canonical_property_name(arg_name),
         )
 
     def _output_name(self, function_name):
         return '{type_name}.{function_name}'.format(
             type_name=self.type_name,
-            function_name=self._canonical_property_name(function_name, True),
+            function_name=self._canonical_property_name(function_name),
         )

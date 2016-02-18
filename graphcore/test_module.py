@@ -7,7 +7,7 @@ def last_name(user_id):
     return 'Jones{}'.format(user_id)
 
 
-def user_age(user_id):
+def age(user_id):
     return user_id + 30
 
 
@@ -19,7 +19,7 @@ def book_ids(user_id):
     return [1, 2, 3]
 
 
-def user_optionally_complex(id, const=1):
+def optionally_complex(id, const=1):
     """ graphcore wont map const as an input """
     return id + const
 
