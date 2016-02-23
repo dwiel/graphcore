@@ -479,6 +479,24 @@ class TestGraphcore(unittest.TestCase):
 
         assert ret == [{'x.y_name': 'abc'}]
 
+    def test_longer_rule_first(self):
+        gc = graphcore.Graphcore()
+
+        gc.property_type('y', 'x', 'x')
+        gc.register_rule(
+            ['x.id'], 'x.name', function=lambda id: str(id)
+        )
+        gc.register_rule(
+            ['y.id'], 'y.x.name', function=lambda id: str(id) * 2
+        )
+
+        ret = gc.query({
+            'y.id': 1,
+            'y.x.name?': None,
+        })
+
+        assert ret == [{'y.x.name': '11'}]
+
     def test_grounded_nested_value(self):
         gc = graphcore.Graphcore()
 

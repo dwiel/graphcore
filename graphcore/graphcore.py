@@ -332,7 +332,11 @@ class Graphcore(object):
         this function will return ['user.book'], Rule(book.id -> book.name).
         """
 
-        for prefix, subpath in path.subpaths():
+        # check for rules matching longer subpaths first as they are more
+        # specific.  for example:
+        #     person.id might match on a [] -> person.id rule
+        #     github_account.person.id might match on a more specific rule
+        for prefix, subpath in reversed(list(path.subpaths())):
             # if there is a non empty prefix, only apply rules with more than 0
             # inputs.  0 input rules can only be applied to the root.  see
             # https://github.com/dwiel/graphcore/issues/17
