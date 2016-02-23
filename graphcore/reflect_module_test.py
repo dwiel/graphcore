@@ -101,7 +101,7 @@ def test_multi_id_thing(gc):
 
 
 def test_type_prefix(gc):
-    assert gc.query({
+    assert list(gc.query({
         'user.user_name': 1,
         'user.user_abc?': None,
-    })[0].values()[0]
+    })[0].values())[0]
