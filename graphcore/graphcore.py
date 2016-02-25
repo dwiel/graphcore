@@ -283,11 +283,42 @@ class DefineTypeContext(object):
             self.gc.direct_map(input, output)
 
 
+class Rules(object):
+    def __init__(self):
+        self.rules = []
+        self.require_input_rules = []
+
+        self.rules_by_output_path = {}
+        self.require_input_rules_by_output_path = {}
+
+    def append(self, rule):
+        self.rules.append(rule)
+        for output in rule.outputs:
+            self.rules_by_output_path[str(output)] = rule
+
+        if len(rule.inputs) > 0:
+            self.require_input_rules.append(rule)
+            for output in rule.outputs:
+                self.require_input_rules_by_output_path[str(output)] = rule
+
+    def lookup(self, path, require_input):
+        if require_input:
+            return self.require_input_rules_by_output_path.get(str(path))
+        else:
+            return self.rules_by_output_path.get(str(path))
+
+    def __iter__(self):
+        return iter(self.rules)
+
+    def __len__(self):
+        return len(self.rules)
+
+
 class Graphcore(object):
 
     def __init__(self, mapper=map):
         # rules are indexed by the Path of thier output
-        self.rules = []
+        self.rules = Rules()
         self.schema = Schema()
         self.mapper = mapper
 
@@ -340,19 +371,16 @@ class Graphcore(object):
             # if there is a non empty prefix, only apply rules with more than 0
             # inputs.  0 input rules can only be applied to the root.  see
             # https://github.com/dwiel/graphcore/issues/17
-            if len(prefix) != 1:
-                rules = [rule for rule in self.rules if len(rule.inputs) > 0]
-            else:
-                rules = self.rules
+            require_input = len(prefix) != 1
 
             # fix type of left most part of subpath
             base_type = self.schema.resolve_type(prefix)
             subpath = base_type + subpath[1:]
 
             # first try finding a match direct on the root
-            for rule in rules:
-                if subpath in rule.outputs:
-                    return prefix, rule
+            rule = self.rules.lookup(subpath, require_input)
+            if rule is not None:
+                return prefix, rule
 
         for subpath in path[:-1]:
             if str(subpath) not in self.base_types():
