@@ -146,6 +146,14 @@ class TestGraphcore(unittest.TestCase):
         })
         self.assertEqual(ret, [{'user.name': 'John Smith'}])
 
+    def test_not_equal_dict(self):
+        ret = testgraphcore.query({
+            'user.id': 1,
+            'user.books.id?': None,
+            'user.books.id!=': {},
+        })
+        self.assertEqual(len(ret), 3)
+
     def test_basic_two_step(self):
         ret = testgraphcore.query({
             'user.id': 1,

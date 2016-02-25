@@ -96,12 +96,17 @@ class Node(object):
         return hash(self.__key())
 
     def __key(self):
+        # only use relation.operation in key since relation.value wont always
+        # be hashable
         return (
             self.incoming_paths,
             self.outgoing_paths,
             self.function,
             self.cardinality,
-            self.relations
+            tuple(
+                relation.operation for relation in self.relations
+                if relation is not None
+            ),
         )
 
     def __eq__(self, other):
