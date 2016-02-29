@@ -229,7 +229,7 @@ class Result(EqualityMixin):
             # this scope has no value for these outputs, filter this result
             # from the ResultSet
             return ResultSet([], mapper=self.mapper)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, ArithmeticError) as e:
             raise RuleApplicationException(
                 fn, scope, e, traceback.format_exception(*sys.exc_info())
             )
