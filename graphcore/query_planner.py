@@ -75,8 +75,7 @@ class CallGraphIterator(object):
                     ('CallGraphIterator never saw some nodes: {nodes}.  '
                      'Did see these nodes: {grounded_nodes}').format(
                         nodes=nodes,
-                        grounded_nodes=set(
-                            self._call_graph.nodes.copy()) - nodes,
+                        grounded_nodes=set(self._call_graph.nodes) - nodes,
                     )
                 )
 
