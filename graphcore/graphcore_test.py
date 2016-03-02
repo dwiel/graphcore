@@ -594,6 +594,64 @@ class TestGraphcore(unittest.TestCase):
         }]
 
 
+    def test_call_filter(self):
+        gc = graphcore.Graphcore()
+
+        gc.register_rule(
+            [], 'x.id', function=lambda: [1, 2, 3], cardinality='many'
+        )
+        gc.register_rule(
+            ['x.id'], ['x.id2'], function=lambda id: id
+        )
+        gc.register_rule(
+            ['x.id'], ['x.id3'], function=lambda id: id
+        )
+        gc.register_rule(
+            ['x.id2'], ['x.id4'], function=lambda id2: id2
+        )
+
+        # this returns []
+        ret = gc.query({
+            'x.id?': None,
+            'x.id2': 4,
+        })
+        assert ret == []
+
+        ret = gc.query({
+            'x.id?': None,
+            'x.id3': 4,
+        })
+        assert ret == []
+
+
+        ret = gc.query({
+            'x.id2': 4,
+            'x.id3?': None,
+        })
+        assert ret == []
+
+        # because id4 depends on id2, id2 is getting accepted as is, instead
+        # of as a filter as it was above.  It should *always* act as a filter
+        # ... though this is going to make it very very slow if it has to
+        # check to 'verify' every single value ... this would make it more
+        # similar to SQL
+        #
+        # this is going to mean we have to ground out for every clause down to
+        # a rule which takes []
+        print '*'*80
+        print gc.explain({
+            'x.id2': 4,
+            'x.id3?': None,
+            'x.id4?': None,
+        })
+        print '*'*80
+        ret = gc.query({
+            'x.id2==': 4,
+            'x.id3?': None,
+            'x.id4?': None,
+        })
+        assert ret == []
+
 class TestQuerySearch(unittest.TestCase):
 
     def __init__(self, *args):
