@@ -636,13 +636,6 @@ class TestGraphcore(unittest.TestCase):
         #
         # this is going to mean we have to ground out for every clause down to
         # a rule which takes []
-        print '*'*80
-        print gc.explain({
-            'x.id2': 4,
-            'x.id3?': None,
-            'x.id4?': None,
-        })
-        print '*'*80
         ret = gc.query({
             'x.id2==': 4,
             'x.id3?': None,
