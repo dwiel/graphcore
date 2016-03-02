@@ -37,6 +37,9 @@ class Relation(object):
         if isinstance(other, self.__class__):
             return self.operation == other.operation and \
                 self.value == other.value
+        elif other is None:
+            return False
+
         raise TypeError
 
     def __ne__(self, other):

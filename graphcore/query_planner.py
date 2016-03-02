@@ -34,6 +34,26 @@ class CallGraphIterator(object):
         """ Add node to the _grounded set """
         self._grounded.add(id(node))
 
+    def _grounded_nodes(self, nodes):
+        nodes_with_no_relations = []
+        for node in list(nodes):
+            if self._is_grounded(node):
+                # put nodes with relations first so we can filter result set before
+                # running unnecessary computation
+                if node.relations != (None,):
+                    yield node
+                else:
+                    nodes_with_no_relations.append(node)
+
+        # we could use above algorithm and yield all nodes we know are ground
+        # but have no relations, or we could just pick one to yield and then
+        # see if that happens to ground any new nodes with relations before
+        # running all of the others
+        # There should be a smarter way to chose this search so as to optimally
+        # hit nodes with relations as soon as possible
+        if len(nodes_with_no_relations) > 0:
+            yield nodes_with_no_relations[0]
+
     def __iter__(self):
         # local copy of set that we can modify
         nodes = list(self._call_graph.nodes)
@@ -42,12 +62,11 @@ class CallGraphIterator(object):
         # iterate over a copy so that we can remove while we go
         while len(nodes):
             grounded_node = False
-            for node in list(nodes):
-                if self._is_grounded(node):
-                    grounded_node = True
-                    yield node
-                    nodes.remove(node)
-                    self._ground(node)
+            for node in self._grounded_nodes(nodes):
+                grounded_node = True
+                yield node
+                nodes.remove(node)
+                self._ground(node)
 
             # if we get here it means we made it through the entire list of
             # nodes and didnt find a grounded_node at all
