@@ -4,6 +4,7 @@ import sql_query_dict
 from .equality_mixin import EqualityMixin, HashMixin
 from .rule import Cardinality
 from .call_graph import Node
+from .result_set import NoResult
 
 
 def parse_comma_seperated_set(input):
@@ -234,7 +235,10 @@ class SQLQuery(HashMixin, EqualityMixin):
             ret = [row[0] for row in ret]
 
         if self.first:
-            ret = ret[0]
+            if len(ret):
+                ret = ret[0]
+            else:
+                raise NoResult()
 
         return ret
 
