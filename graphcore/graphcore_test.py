@@ -593,7 +593,6 @@ class TestGraphcore(unittest.TestCase):
             'x.ys': [{'z': 3}],
         }]
 
-
     def test_call_filter(self):
         gc = graphcore.Graphcore()
 
@@ -623,7 +622,6 @@ class TestGraphcore(unittest.TestCase):
         })
         assert ret == []
 
-
         ret = gc.query({
             'x.id2': 4,
             'x.id3?': None,
@@ -651,6 +649,7 @@ class TestGraphcore(unittest.TestCase):
             'x.id4?': None,
         })
         assert ret == []
+
 
 class TestQuerySearch(unittest.TestCase):
 

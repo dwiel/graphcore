@@ -38,8 +38,8 @@ class CallGraphIterator(object):
         nodes_with_no_relations = []
         for node in list(nodes):
             if self._is_grounded(node):
-                # put nodes with relations first so we can filter result set before
-                # running unnecessary computation
+                # put nodes with relations first so we can filter result set
+                # before running unnecessary computation
                 if node.relations != (None,):
                     yield node
                 else:
