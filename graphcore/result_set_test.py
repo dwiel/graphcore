@@ -232,3 +232,26 @@ def test_apply_rule_cardinality_many_many_outputs(data):
         ],
         'c': 100,
     }]
+
+
+def test_apply_rule_exception_pass():
+    result = Result()
+
+    class CustomException(Exception):
+        pass
+
+    def fn():
+        raise CustomException('xyz')
+
+    with pytest.raises(CustomException):
+        result._apply_rule(fn, None, 'one', {})
+
+
+def test_apply_rule_exception_handle():
+    result = Result()
+
+    def fn():
+        raise ValueError('xyz')
+
+    with pytest.raises(RuleApplicationException):
+        result._apply_rule(fn, None, 'one', {})
