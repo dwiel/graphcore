@@ -194,7 +194,8 @@ class Result(EqualityMixin):
             return self.result == other
         return NotImplemented
 
-    def apply_rule(self, fn, inputs, outputs, cardinality, scope):
+    def apply_rule(self, fn, inputs, outputs, cardinality, scope,
+                   exception_handler):
         # collect inputs at this level
         for input in inputs:
             if len(input) == 1:
@@ -205,7 +206,9 @@ class Result(EqualityMixin):
         # outputs must all be at the same depth and must not depend on inputs
         # which are deeper
         if len(outputs[0]) == 1:
-            return self._apply_rule(fn, outputs, cardinality, scope)
+            return self._apply_rule(
+                fn, outputs, cardinality, scope, exception_handler
+            )
         else:
             # recur down to the next level of the data
             inputs = [input for input in inputs if len(input) > 1]
@@ -221,7 +224,8 @@ class Result(EqualityMixin):
             )
             existing_result_set = self.get(sub_path, default)
             self[sub_path] = existing_result_set.apply_rule(
-                fn, new_inputs, new_outputs, cardinality, scope
+                fn, new_inputs, new_outputs, cardinality, scope,
+                exception_handler=exception_handler
             )
 
             # return a list boxing the data so the return value is the same as
@@ -232,8 +236,7 @@ class Result(EqualityMixin):
         mapping = input_mapping(scope.keys())
         return {mapping[k]: v for k, v in scope.items()}
 
-    def _apply_rule(self, fn, outputs, cardinality, scope,
-                    exception_handler=default_exception_handler):
+    def _apply_rule(self, fn, outputs, cardinality, scope, exception_handler):
         """ this one finally calls `fn` """
         cardinality = Cardinality.cast(cardinality)
 
@@ -371,8 +374,8 @@ class ResultSet(EqualityMixin):
     def shape_path(self, path):
         return shape_path(path, self.query_shape)
 
-    def apply_rule(self, fn, inputs, outputs, cardinality,
-                   scope=None):
+    def apply_rule(self, fn, inputs, outputs, cardinality, scope=None,
+                   exception_handler=default_exception_handler):
         if scope is None:
             scope = {}
 
@@ -386,7 +389,7 @@ class ResultSet(EqualityMixin):
 
         def wrapped_fn(result):
             return result.apply_rule(
-                fn, inputs, outputs, cardinality, scope
+                fn, inputs, outputs, cardinality, scope, exception_handler
             )
 
         wrapped_fn.__name__ = fn.__name__

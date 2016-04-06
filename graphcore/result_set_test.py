@@ -3,6 +3,7 @@ import pytest
 from .relation import Relation
 from .result_set import ResultSet, Result, shape_path
 from .result_set import RuleApplicationException, NoResult
+from .result_set import default_exception_handler
 
 
 def test_result_init():
@@ -123,6 +124,7 @@ def test_apply_rule_exception(data):
             outputs=[('y')],
             cardinality='one',
             scope={'x': 1},
+            exception_handler=default_exception_handler
         )
 
 
