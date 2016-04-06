@@ -246,7 +246,7 @@ def test_apply_rule_exception_pass():
         raise CustomException('xyz')
 
     with pytest.raises(CustomException):
-        result._apply_rule(fn, None, 'one', {})
+        result._apply_rule(fn, None, 'one', {}, default_exception_handler)
 
 
 def test_apply_rule_exception_handle():
@@ -256,4 +256,4 @@ def test_apply_rule_exception_handle():
         raise ValueError('xyz')
 
     with pytest.raises(RuleApplicationException):
-        result._apply_rule(fn, None, 'one', {})
+        result._apply_rule(fn, None, 'one', {}, default_exception_handler)
