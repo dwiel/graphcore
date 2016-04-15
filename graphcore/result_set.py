@@ -111,11 +111,7 @@ class NoResult(Exception):
 
 
 def default_exception_handler(result, e, fn, outputs, cardinality, scope):
-    if isinstance(e, NoResult):
-        # this scope has no value for these outputs, filter this result
-        # from the ResultSet
-        return ResultSet([], mapper=result.mapper)
-    elif isinstance(e, (ValueError, TypeError, KeyError, ArithmeticError)):
+    if isinstance(e, (ValueError, TypeError, KeyError, ArithmeticError)):
         raise RuleApplicationException(
             fn, scope, e, traceback.format_exception(*sys.exc_info())
         )
@@ -242,8 +238,12 @@ class Result(EqualityMixin):
 
         try:
             ret = fn(**self._simplify_scope(scope))
+        except NoResult as e:
+            # this scope has no value for these outputs, filter this result
+            # from the ResultSet
+            return ResultSet([], mapper=self.mapper)
         except Exception as e:
-            return exception_handler(self, e, fn, outputs, cardinality, scope)
+            exception_handler(self, e, fn, outputs, cardinality, scope)
 
         if cardinality == Cardinality.one:
             if len(outputs) == 1:
