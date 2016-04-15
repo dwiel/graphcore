@@ -6,6 +6,7 @@ from . import graphcore
 from .path import Path
 from .relation import Relation
 from .test_harness import testgraphcore
+from .result_set import NoneResult
 
 
 class hashabledict(dict):
@@ -400,6 +401,25 @@ class TestGraphcore(unittest.TestCase):
         assert 'a_b_out' in str(e)
 
         assert a_b_out(True)
+
+    def test_none_result_exception_handler(self):
+        gc = graphcore.Graphcore()
+
+        def function(in1):
+            1/0
+
+        def exception_handler(*args):
+            return NoneResult()
+
+        gc.register_rule(
+            ['x.in1'], 'x.out1', function=function
+        )
+        ret = gc.query({
+            'x.in1': 1,
+            'x.out1?': None,
+        }, exception_handler=exception_handler)
+
+        assert ret == [{'x.out1': None}]
 
     def test_long_rule(self):
         gc = graphcore.Graphcore()
