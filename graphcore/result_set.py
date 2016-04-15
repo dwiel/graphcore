@@ -110,6 +110,14 @@ class NoResult(Exception):
     pass
 
 
+class NoneResult(object):
+    """ rules or exception handlers should return this result if the value
+    should be set to None and all clauses dependent on this value should be
+    None. """
+    def __eq__(self, other):
+        return isinstance(other, NoneResult)
+
+
 def default_exception_handler(result, e, fn, outputs, cardinality, scope):
     if isinstance(e, (ValueError, TypeError, KeyError, ArithmeticError)):
         raise RuleApplicationException(
@@ -117,6 +125,13 @@ def default_exception_handler(result, e, fn, outputs, cardinality, scope):
         )
     else:
         raise
+
+
+def _replace_none_result(v):
+    if isinstance(v, NoneResult):
+        return None
+    else:
+        return v
 
 
 class Result(EqualityMixin):
@@ -137,7 +152,7 @@ class Result(EqualityMixin):
         return self.result.get(str(path), default)
 
     def to_json(self):
-        return self.result
+        return {k: _replace_none_result(v) for k, v in self.result.items()}
 
     def extract_json(self, paths):
         """ return the json representing paths.
@@ -232,18 +247,33 @@ class Result(EqualityMixin):
         mapping = input_mapping(scope.keys())
         return {mapping[k]: v for k, v in scope.items()}
 
+    def _computable(self, scope):
+        for v in scope.values():
+            if isinstance(v, NoneResult):
+                return False
+
+        return True
+
     def _apply_rule(self, fn, outputs, cardinality, scope, exception_handler):
         """ this one finally calls `fn` """
         cardinality = Cardinality.cast(cardinality)
 
-        try:
-            ret = fn(**self._simplify_scope(scope))
-        except NoResult as e:
-            # this scope has no value for these outputs, filter this result
-            # from the ResultSet
-            return ResultSet([], mapper=self.mapper)
-        except Exception as e:
-            exception_handler(self, e, fn, outputs, cardinality, scope)
+        computable = self._computable(scope)
+
+        if computable:
+            try:
+                ret = fn(**self._simplify_scope(scope))
+            except NoResult as e:
+                # this scope has no value for these outputs, filter this result
+                # from the ResultSet
+                return ResultSet([], mapper=self.mapper)
+            except Exception as e:
+                ret = exception_handler(
+                    self, e, fn, outputs, cardinality, scope
+                )
+
+        else:
+            ret = NoneResult()
 
         if cardinality == Cardinality.one:
             if len(outputs) == 1:

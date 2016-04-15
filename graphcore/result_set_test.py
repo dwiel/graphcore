@@ -2,7 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, shape_path
-from .result_set import RuleApplicationException, NoResult
+from .result_set import RuleApplicationException, NoResult, NoneResult
 from .result_set import default_exception_handler
 
 
@@ -257,3 +257,39 @@ def test_apply_rule_exception_handle():
 
     with pytest.raises(RuleApplicationException):
         result._apply_rule(fn, None, 'one', {}, default_exception_handler)
+
+
+def test_apply_rule_none_result():
+    result = Result()
+
+    def fn():
+        return NoneResult()
+
+    ret = result._apply_rule(fn, ['x'], 'one', {}, default_exception_handler)
+
+    assert ret == ResultSet([Result({'x': NoneResult()})])
+
+
+def test_apply_rule_nested_none_result():
+    result = Result()
+
+    def fn(y):
+        return y + 1
+
+    ret = result._apply_rule(
+        fn, ['x'], 'one', {'y': NoneResult()}, default_exception_handler
+    )
+
+    assert ret == ResultSet([Result({'x': NoneResult()})])
+
+
+def test_result_to_json_none_result():
+    assert Result({'x': NoneResult()}).to_json() == {
+        'x': None,
+    }
+
+
+def test_result_set_to_json_none_result():
+    assert ResultSet([Result({'x': NoneResult()})]).to_json() == [{
+        'x': None,
+    }]
