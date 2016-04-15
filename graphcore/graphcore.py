@@ -7,6 +7,7 @@ from .clause import Clause, Var, OutVar, TempVar
 from . import call_graph
 from .query_planner import QueryPlanner
 from .equality_mixin import HashMixin, EqualityMixin
+from .result_set import default_exception_handler
 
 
 class QuerySearchIterator(object):
@@ -399,7 +400,8 @@ class Graphcore(object):
         from .optimize_constrain_sql_queries import constrain_sql_queries
         constrain_sql_queries(query_search.call_graph)
 
-    def query(self, query, limit=None):
+    def query(self, query, limit=None,
+              exception_handler=default_exception_handler):
         query_search = QuerySearch(self, query)
 
         query_search.backward()
@@ -412,7 +414,9 @@ class Graphcore(object):
         )
         query_plan = query_planner.plan_query()
 
-        return query_plan.execute(limit=limit)
+        return query_plan.execute(
+            limit=limit, exception_handler=exception_handler
+        )
 
     def explain(self, query):
         query_search = QuerySearch(self, query)
