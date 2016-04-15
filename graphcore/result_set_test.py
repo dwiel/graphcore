@@ -270,6 +270,20 @@ def test_apply_rule_none_result():
     assert ret == ResultSet([Result({'x': NoneResult()})])
 
 
+def test_apply_rule_none_result_exception():
+    result = Result()
+
+    def fn():
+        1/0
+
+    def exception_handler(*args):
+        return NoneResult()
+
+    ret = result._apply_rule(fn, ['x'], 'one', {}, exception_handler)
+
+    assert ret == ResultSet([Result({'x': NoneResult()})])
+
+
 def test_apply_rule_nested_none_result():
     result = Result()
 
