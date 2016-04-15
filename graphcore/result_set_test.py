@@ -307,3 +307,9 @@ def test_result_set_to_json_none_result():
     assert ResultSet([Result({'x': NoneResult()})]).to_json() == [{
         'x': None,
     }]
+
+
+def test_result_set_extract_json_none_result():
+    assert ResultSet([Result({'x': NoneResult()})]).extract_json(['x']) == [{
+        'x': None,
+    }]

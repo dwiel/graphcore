@@ -174,7 +174,7 @@ class Result(EqualityMixin):
                 ret[sub_path] = value.extract_json(paths)
             else:
                 assert paths == [()]
-                ret[sub_path] = value
+                ret[sub_path] = _replace_none_result(value)
 
         return ret
 
