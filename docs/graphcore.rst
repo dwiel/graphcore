@@ -12,6 +12,22 @@ graphcore.call_graph module
     :undoc-members:
     :show-inheritance:
 
+graphcore.call_graph_test module
+--------------------------------
+
+.. automodule:: graphcore.call_graph_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.clause module
+-----------------------
+
+.. automodule:: graphcore.clause
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 graphcore.clause_test module
 ----------------------------
 
@@ -60,10 +76,26 @@ graphcore.graphcore module
     :undoc-members:
     :show-inheritance:
 
+graphcore.graphcore_sql_integration_test module
+-----------------------------------------------
+
+.. automodule:: graphcore.graphcore_sql_integration_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 graphcore.graphcore_test module
 -------------------------------
 
 .. automodule:: graphcore.graphcore_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.optimize_constrain_sql_queries module
+-----------------------------------------------
+
+.. automodule:: graphcore.optimize_constrain_sql_queries
     :members:
     :undoc-members:
     :show-inheritance:
@@ -116,6 +148,14 @@ graphcore.path_test module
     :undoc-members:
     :show-inheritance:
 
+graphcore.query module
+----------------------
+
+.. automodule:: graphcore.query
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 graphcore.query_plan module
 ---------------------------
 
@@ -136,6 +176,46 @@ graphcore.query_planner module
 ------------------------------
 
 .. automodule:: graphcore.query_planner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.query_test module
+---------------------------
+
+.. automodule:: graphcore.query_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.reflect_class module
+------------------------------
+
+.. automodule:: graphcore.reflect_class
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.reflect_class_test module
+-----------------------------------
+
+.. automodule:: graphcore.reflect_class_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.reflect_module module
+-------------------------------
+
+.. automodule:: graphcore.reflect_module
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.reflect_module_test module
+------------------------------------
+
+.. automodule:: graphcore.reflect_module_test
     :members:
     :undoc-members:
     :show-inheritance:
@@ -196,6 +276,14 @@ graphcore.sql_query module
     :undoc-members:
     :show-inheritance:
 
+graphcore.sql_query_sqlalchemy module
+-------------------------------------
+
+.. automodule:: graphcore.sql_query_sqlalchemy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 graphcore.sql_query_test module
 -------------------------------
 
@@ -224,6 +312,14 @@ graphcore.test_harness module
 -----------------------------
 
 .. automodule:: graphcore.test_harness
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+graphcore.test_module module
+----------------------------
+
+.. automodule:: graphcore.test_module
     :members:
     :undoc-members:
     :show-inheritance:
