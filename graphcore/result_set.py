@@ -119,12 +119,13 @@ class NoneResult(object):
 
 
 def default_exception_handler(result, e, fn, outputs, cardinality, scope):
-    if isinstance(e, (ValueError, TypeError, KeyError, ArithmeticError)):
-        raise RuleApplicationException(
-            fn, scope, e, traceback.format_exception(*sys.exc_info())
-        )
-    else:
-        raise
+    # if isinstance(e, (ValueError, TypeError, KeyError, ArithmeticError)):
+    #     raise RuleApplicationException(
+    #         fn, scope, e, traceback.format_exception(*sys.exc_info())
+    #     )
+    # else:
+    #     raise
+    raise
 
 
 def _replace_none_result(v):
