@@ -2,7 +2,7 @@ import pytest
 
 from .relation import Relation
 from .result_set import ResultSet, Result, shape_path
-from .result_set import RuleApplicationException, NoResult, NoneResult
+from .result_set import NoResult, NoneResult
 from .result_set import default_exception_handler
 
 
@@ -128,6 +128,7 @@ def test_apply_rule_exception(data):
             exception_handler=default_exception_handler
         )
 """
+
 
 def test_apply_rule_single_output_no_result(data):
     def rule(c, b):

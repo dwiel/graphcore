@@ -1,7 +1,5 @@
 import six
 from six.moves import zip
-import sys
-import traceback
 from collections import defaultdict
 
 from .equality_mixin import EqualityMixin
