@@ -262,14 +262,17 @@ class Result(EqualityMixin):
         if computable:
             try:
                 ret = fn(**self._simplify_scope(scope))
-            except NoResult as e:
-                # this scope has no value for these outputs, filter this result
-                # from the ResultSet
-                return ResultSet([], mapper=self.mapper)
             except Exception as e:
-                ret = exception_handler(
-                    self, e, fn, outputs, cardinality, scope
-                )
+                try:
+                    ret = exception_handler(
+                        self, e, fn, outputs, cardinality, scope
+                    )
+                except NoResult as e:
+                    # NoResult is handled here to give the exception_handler an
+                    # opportunity to raise NoResult or to handle NoResult itself
+                    # this scope has no value for these outputs, filter this
+                    # result from the ResultSet
+                    return ResultSet([], mapper=self.mapper)
 
         else:
             ret = NoneResult()
