@@ -10,8 +10,8 @@ structure with a query language similar to MQL, Falcor or GraphQL.
 At the moment, the graph structure can be defined by python functions or SQL
 relations.  This allows you to write one query which is backed by multiple SQL
 databases, NoSQL databases, internal services and 3rd party services.
-Determining which database or python functions to call and how to glues them
-together to satisfy your query is Graphcore's job.
+Graphcore's job is to determine which database or python functions to call and how to glue them
+together to satisfy your query.
 
 ### Example Queries
 
