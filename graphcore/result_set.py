@@ -269,7 +269,9 @@ class Result(EqualityMixin):
                     )
                 except NoResult as e:
                     # NoResult is handled here to give the exception_handler an
-                    # opportunity to raise NoResult or to handle NoResult itself
+                    # opportunity to raise NoResult or to handle NoResult
+                    # itself.
+
                     # this scope has no value for these outputs, filter this
                     # result from the ResultSet
                     return ResultSet([], mapper=self.mapper)
