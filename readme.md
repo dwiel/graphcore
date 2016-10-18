@@ -18,7 +18,7 @@ together to satisfy your query.
 All of the following queries assume that you have already set up your graphcore
 environment and are now ready to query it.
 
-Return all of user 1's book names
+Return user.id 1's name:
 
 ```python
 ret = graphcore.query({
